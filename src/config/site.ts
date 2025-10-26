@@ -75,6 +75,8 @@ export const siteConfig = {
         { name: 'CPU', icon: "Cpu" },
         { name: 'Camera', icon: "Camera" },
     ],
+    // Edit the product categories for the products page tabs here.
+    // Make sure to also add the corresponding category and sheet URL in `src/config/categories.json`
     productCategories: ['Apparel', 'Bags', 'Footwear', 'Accessories'] as ProductCategory[],
     topBrands: ['Apple', 'Microsoft', 'Starlink', 'HP', 'Asus', 'Dell', 'Lenovo', 'Acer', 'Intel', 'AMD', 'MSI'],
     checkout: {
