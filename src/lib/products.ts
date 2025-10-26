@@ -50,6 +50,59 @@ const products: Product[] = [
 let allProducts: Product[] = [];
 let productsInitialized = false;
 
+// Function to parse CSV data, handling quoted fields
+function parseCSV(csv: string): string[][] {
+    const lines: string[][] = [];
+    let currentLine: string[] = [];
+    let field = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < csv.length; i++) {
+        const char = csv[i];
+
+        if (inQuotes) {
+            if (char === '"') {
+                if (i + 1 < csv.length && csv[i + 1] === '"') {
+                    // Escaped quote
+                    field += '"';
+                    i++;
+                } else {
+                    inQuotes = false;
+                }
+            } else {
+                field += char;
+            }
+        } else {
+            if (char === '"') {
+                inQuotes = true;
+            } else if (char === ',') {
+                currentLine.push(field);
+                field = '';
+            } else if (char === '\n' || char === '\r') {
+                if(i > 0 && csv[i-1] !== '\n' && csv[i-1] !== '\r') {
+                    currentLine.push(field);
+                    field = '';
+                    lines.push(currentLine);
+                    currentLine = [];
+                }
+                 if (char === '\r' && i + 1 < csv.length && csv[i+1] === '\n') {
+                    i++; // Handle CRLF
+                }
+            } else {
+                field += char;
+            }
+        }
+    }
+
+    if (field || currentLine.length > 0) {
+        currentLine.push(field);
+        lines.push(currentLine);
+    }
+    
+    return lines;
+}
+
+
 // NOTE: This is a temporary solution. For a real app, you should use a proper database
 // and fetch the data from an API. The data is fetched from a Google Sheet and cached.
 async function initializeProducts() {
@@ -60,28 +113,44 @@ async function initializeProducts() {
     try {
         const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSlxPN_QY2wJWBmDKWhSoF3EkOdSDS6XqBN2Ncx-jaAX4qMzUq4F9WSBjPtILrBJEXnK4UobyCEPese/pub?output=csv');
         const csv = await response.text();
-        // The header row is: id,name,description,price,category,unit,imageUrl,imageAlt,imageHint
-        const lines = csv.split('\n').slice(1);
         
-        const productsFromSheet = lines.map(line => {
-            const values = line.split(',').map(s => s.trim().replace(/"/g, ''));
-            const [id, name, description, price, category, unit, imageUrl, imageAlt, imageHint] = values;
+        const parsedLines = parseCSV(csv);
+        // header is: id,name,description,price,category,unit,imageUrl,imageAlt,imageHint
+        const header = parsedLines[0].map(h => h.trim());
+        const lines = parsedLines.slice(1);
+        
+        const productsFromSheet = lines.map(values => {
+             const row = header.reduce((obj, key, index) => {
+                obj[key] = values[index] ? values[index].trim() : '';
+                return obj;
+            }, {} as any);
             
             return {
-                id,
-                name,
-                description,
-                price: parseFloat(price),
-                category,
-                unit,
+                id: row.id,
+                name: row.name,
+                description: row.description,
+                price: parseFloat(row.price),
+                category: row.category,
+                unit: row.unit,
                 image: {
-                    id: id, // Use product id for image id
-                    src: imageUrl,
-                    alt: imageAlt,
-                    hint: imageHint,
+                    id: row.id || `img_${Math.random()}`,
+                    src: row.imageUrl,
+                    alt: row.imageAlt,
+                    hint: row.imageHint,
                 }
             } as Product;
-        }).filter(p => p.id && p.name && p.image.src); // Filter out any invalid rows
+        }).filter(p => {
+             try {
+                if (p.id && p.name && p.image.src) {
+                    new URL(p.image.src); // Validate URL
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                console.warn(`Invalid URL for product ID ${p.id}: ${p.image.src}`);
+                return false;
+            }
+        });
 
         allProducts = productsFromSheet;
         productsInitialized = true;
