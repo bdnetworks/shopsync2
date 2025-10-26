@@ -17,6 +17,11 @@ export const siteConfig = {
     contactInfo: contact.contactInfo,
     heroBanners: banners.heroBanners,
     topCategories: home.topCategories,
+    /*
+     * The product categories tabs are rendered from `siteConfig.productCategories`.
+     * To edit the categories, please modify the `productCategories` array in `src/config/product-page.json`.
+     * You also need to make sure the category and its corresponding sheet URL are present in `src/config/categories.json`.
+    */
     productCategories: product.productCategories as ProductCategory[],
     topBrands: home.topBrands,
     checkout: {

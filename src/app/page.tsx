@@ -105,11 +105,20 @@ export default async function Home() {
 
 
       <section className="py-12">
-        <div className="container mx-auto px-4 text-center">
-            <h2 className="text-2xl font-bold mb-4">Top Brands</h2>
-            <div className="flex justify-center items-center gap-8 flex-wrap">
+        <div className="container mx-auto px-4">
+            <h2 className="text-2xl font-bold mb-8 text-center">Top Brands</h2>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 md:gap-8 items-center justify-items-center">
                 {siteConfig.topBrands.map(brand => (
-                    <span key={brand} className="font-semibold text-muted-foreground text-lg">{brand}</span>
+                    <div key={brand.name} className="grayscale hover:grayscale-0 transition-all duration-300">
+                        <Image
+                            src={brand.imageUrl}
+                            alt={`${brand.name} logo`}
+                            data-ai-hint={brand.imageHint}
+                            width={120}
+                            height={60}
+                            className="object-contain"
+                        />
+                    </div>
                 ))}
             </div>
         </div>
