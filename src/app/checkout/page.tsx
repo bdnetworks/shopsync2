@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
-import { sendOrderEmail } from '@/ai/flows/send-order-email';
+import { saveOrderToSheet } from '@/ai/flows/save-order-to-sheet';
 
 export default function CheckoutPage() {
   const { cartItems, subtotal, shippingFee, total, clearCart } = useCart();
@@ -28,49 +28,29 @@ export default function CheckoutPage() {
     return null;
   }
 
-  const generateOrderText = () => {
-    let orderDetails = "New Order Request:\n\n";
-    cartItems.forEach(item => {
-      orderDetails += `${item.name} (x${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}\n`;
-    });
-    orderDetails += `\nSubtotal: ${siteConfig.currency}${subtotal.toFixed(2)}`;
-    orderDetails += `\nShipping: ${siteConfig.currency}${shippingFee.toFixed(2)}`;
-    orderDetails += `\nTotal: ${siteConfig.currency}${total.toFixed(2)}`;
-    orderDetails += `\n\nCustomer Details:`;
-    orderDetails += `\nName: ${name}`;
-    orderDetails += `\nPhone: ${phone}`;
-    orderDetails += `\nAddress: ${address}`;
-    return orderDetails;
-  };
-
-  const handleWhatsAppOrder = () => {
-    const orderText = generateOrderText();
-    const whatsappUrl = `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${encodeURIComponent(orderText)}`;
-    window.open(whatsappUrl, '_blank');
-    setIsSubmitting(true);
-    clearCart();
-    router.push('/order-confirmation');
-  };
-
-  const handleEmailOrder = async () => {
+  const handlePlaceOrder = async () => {
     setIsSubmitting(true);
     try {
-      await sendOrderEmail({
-        customerDetails: { name, phone, address },
-        cartDetails: {
-          items: cartItems,
-          subtotal,
-          shipping: shippingFee,
-          total,
-        },
+      const orderItemsText = cartItems
+        .map(item => `${item.name} (x${item.quantity})`)
+        .join(', ');
+
+      await saveOrderToSheet({
+        customerName: name,
+        customerPhone: phone,
+        customerAddress: address,
+        orderItems: orderItemsText,
+        orderTotal: total.toFixed(2),
       });
+
       clearCart();
       router.push('/order-confirmation');
     } catch (error) {
-      console.error("Failed to send order email", error);
+      console.error("Failed to save order", error);
+      const errorMessage = (error as Error).message || "Failed to place order. Please try again.";
       toast({
         title: "Error",
-        description: "Failed to place order. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -107,15 +87,12 @@ export default function CheckoutPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">Submission Method</CardTitle>
-                    <CardDescription>Choose how you would like to place your order.</CardDescription>
+                    <CardTitle className="font-headline">Place Your Order</CardTitle>
+                    <CardDescription>Once your information is correct, you can place your order.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Button onClick={handleWhatsAppOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
-                        Order on WhatsApp
-                    </Button>
-                    <Button onClick={handleEmailOrder} variant="secondary" size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
-                        {isSubmitting ? 'Placing Order...' : 'Order via Email'}
+                <CardContent>
+                    <Button onClick={handlePlaceOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
+                        {isSubmitting ? 'Placing Order...' : 'Place Order'}
                     </Button>
                 </CardContent>
                  {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
