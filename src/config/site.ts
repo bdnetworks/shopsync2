@@ -10,6 +10,19 @@ import site from './site.json';
 import checkout from './checkout.json';
 import type { ProductCategory } from "@/lib/types";
 
+// Type assertion for checkout config
+interface CheckoutConfig {
+    shippingFee: {
+        insideDhaka: number;
+        outsideDhaka: number;
+    };
+    paymentMethods: string[];
+    contact: {
+        whatsappNumber: string;
+        email: string;
+    };
+}
+
 export const siteConfig = {
     ...site,
     navLinks: nav.navLinks,
@@ -25,5 +38,5 @@ export const siteConfig = {
     */
     productCategories: product.productCategories as ProductCategory[],
     topBrands: home.topBrands,
-    checkout: checkout
+    checkout: checkout as CheckoutConfig
 }

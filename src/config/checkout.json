@@ -1,6 +1,16 @@
 
 {
-    "shippingFee": 60,
+    "shippingFee": {
+        "insideDhaka": 100,
+        "outsideDhaka": 150
+    },
+    "paymentMethods": [
+        "CASH ON DELIVERY",
+        "Paypal",
+        "Bkash",
+        "Nagad",
+        "Card"
+    ],
     "contact": {
         "whatsappNumber": "1234567890",
         "email": "order@shopsync.com"

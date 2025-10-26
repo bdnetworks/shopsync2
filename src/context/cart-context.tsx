@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { CartItem, Product } from '@/lib/types';
+import type { CartItem, Product, ShippingOption } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 import { siteConfig } from '@/config/site';
 
@@ -17,6 +17,7 @@ interface CartContextType {
   shippingFee: number;
   total: number;
   isCartLoading: boolean;
+  setShippingOption: (option: ShippingOption) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -25,7 +26,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartLoading, setIsCartLoading] = useState(true);
   const { toast } = useToast();
-  const shippingFee = siteConfig.checkout.shippingFee;
+  const [shippingFee, setShippingFee] = useState(siteConfig.checkout.shippingFee.insideDhaka);
+  const [shippingOption, setShippingOption] = useState<ShippingOption>('insideDhaka');
 
   useEffect(() => {
     try {
@@ -42,7 +44,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    // Prevent writing to localStorage on initial load before cart is read
     if (!isCartLoading) {
         try {
             localStorage.setItem('cartItems', JSON.stringify(cartItems));
@@ -51,6 +52,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
     }
   }, [cartItems, isCartLoading]);
+
+  const handleSetShippingOption = (option: ShippingOption) => {
+    setShippingOption(option);
+    const newShippingFee = option === 'insideDhaka' 
+      ? siteConfig.checkout.shippingFee.insideDhaka 
+      : siteConfig.checkout.shippingFee.outsideDhaka;
+    setShippingFee(newShippingFee);
+  }
 
   const addToCart = (product: Product) => {
     setCartItems(prevItems => {
@@ -108,6 +117,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     shippingFee,
     total,
     isCartLoading,
+    setShippingOption: handleSetShippingOption,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -13,24 +13,67 @@ import { siteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
 import { sendOrderEmail } from '@/ai/flows/send-order-email';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import type { ShippingOption } from '@/lib/types';
 
 export default function CheckoutPage() {
-  const { cartItems, subtotal, shippingFee, total, clearCart, isCartLoading } = useCart();
+  const { cartItems, subtotal, total, clearCart, isCartLoading, shippingFee, setShippingOption } = useCart();
   const router = useRouter();
   const { toast } = useToast();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption>('insideDhaka');
+  const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Only redirect if cart is not loading and is empty
+    // Initially set shipping option in context
+    setShippingOption(selectedShipping);
+  }, []);
+
+  useEffect(() => {
     if (!isCartLoading && cartItems.length === 0) {
       router.push('/products');
     }
   }, [isCartLoading, cartItems.length, router]);
   
+  const handleShippingChange = (value: ShippingOption) => {
+    setSelectedShipping(value);
+    setShippingOption(value);
+  }
+
+  const handlePlaceOrder = async () => {
+    setIsSubmitting(true);
+    try {
+      const orderItemsText = cartItems
+        .map(item => `${item.name} (x${item.quantity})`)
+        .join(', ');
+
+      const deliveryLocation = selectedShipping === 'insideDhaka' ? 'Inside Dhaka' : 'Outside Dhaka';
+
+      await sendOrderEmail({
+        customerName: name,
+        customerEmail: email,
+        customerAddress: `${address} (${deliveryLocation})`,
+        orderItems: `${orderItemsText}. Payment via: ${paymentMethod}`,
+        orderTotal: total.toFixed(2),
+      });
+
+      clearCart();
+      router.push('/order-confirmation');
+    } catch (error) {
+      console.error("Failed to send order email", error);
+      const errorMessage = (error as Error).message || "Failed to place order. Please try again.";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
+  };
 
   if (isCartLoading) {
     return (
@@ -55,6 +98,15 @@ export default function CheckoutPage() {
                                 <Skeleton className="h-4 w-20" />
                                 <Skeleton className="h-10 w-full" />
                             </div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-40" />
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
                         </CardContent>
                     </Card>
                     <Card>
@@ -92,42 +144,11 @@ export default function CheckoutPage() {
     );
   }
 
-  // If cart is loaded and still empty, this will be caught by the useEffect for redirection.
-  // We can render a minimal loader or null while waiting for redirection.
   if (cartItems.length === 0) {
-    return null; // or a loading spinner
+    return null;
   }
 
-  const handlePlaceOrder = async () => {
-    setIsSubmitting(true);
-    try {
-      const orderItemsText = cartItems
-        .map(item => `${item.name} (x${item.quantity})`)
-        .join(', ');
-
-      await sendOrderEmail({
-        customerName: name,
-        customerEmail: email,
-        customerAddress: address,
-        orderItems: orderItemsText,
-        orderTotal: total.toFixed(2),
-      });
-
-      clearCart();
-      router.push('/order-confirmation');
-    } catch (error) {
-      console.error("Failed to send order email", error);
-      const errorMessage = (error as Error).message || "Failed to place order. Please try again.";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-    }
-  };
-
-  const isFormValid = name && email && address;
+  const isFormValid = name && email && address && paymentMethod;
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -150,9 +171,43 @@ export default function CheckoutPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Full Address</Label>
-                    <Input id="address" placeholder="123 Main St, Anytown, USA 12345" value={address} onChange={(e) => setAddress(e.target.value)} disabled={isSubmitting} />
+                    <Input id="address" placeholder="123 Main St, Anytown" value={address} onChange={(e) => setAddress(e.target.value)} disabled={isSubmitting} />
                 </div>
               </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Delivery Location</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <RadioGroup value={selectedShipping} onValueChange={(value) => handleShippingChange(value as ShippingOption)} disabled={isSubmitting}>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="insideDhaka" id="insideDhaka" />
+                            <Label htmlFor="insideDhaka">In Dhaka city ({siteConfig.currency}{siteConfig.checkout.shippingFee.insideDhaka})</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="outsideDhaka" id="outsideDhaka" />
+                            <Label htmlFor="outsideDhaka">Out of Dhaka ({siteConfig.currency}{siteConfig.checkout.shippingFee.outsideDhaka})</Label>
+                        </div>
+                    </RadioGroup>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Payment Method</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} disabled={isSubmitting}>
+                        {siteConfig.checkout.paymentMethods.map(method => (
+                            <div key={method} className="flex items-center space-x-2">
+                                <RadioGroupItem value={method} id={method} />
+                                <Label htmlFor={method}>{method}</Label>
+                            </div>
+                        ))}
+                    </RadioGroup>
+                </CardContent>
             </Card>
 
             <Card>
@@ -165,7 +220,7 @@ export default function CheckoutPage() {
                         {isSubmitting ? 'Placing Order...' : `Place Order - ${siteConfig.currency}${total.toFixed(2)}`}
                     </Button>
                 </CardContent>
-                 {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
+                 {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping and payment information to place an order.</p></CardContent>}
             </Card>
         </div>
         <div className="lg:order-first">

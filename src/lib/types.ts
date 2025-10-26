@@ -1,6 +1,9 @@
+
 import { z } from 'zod';
 
 export type ProductCategory = 'Apparel' | 'Bags' | 'Footwear' | 'Accessories';
+
+export type ShippingOption = 'insideDhaka' | 'outsideDhaka';
 
 export interface Product {
   id: string;
@@ -25,7 +28,7 @@ export const SendOrderInputSchema = z.object({
   customerName: z.string().describe("Customer's full name"),
   customerEmail: z.string().describe("Customer's email address"),
   customerAddress: z.string().describe("Customer's full shipping address"),
-  orderItems: z.string().describe("A comma-separated string of items in the order"),
+  orderItems: z.string().describe("A comma-separated string of items in the order, plus payment method"),
   orderTotal: z.string().describe("The total cost of the order"),
 });
 

@@ -1,3 +1,4 @@
+
 'use server';
 
 import { ai } from '@/ai/genkit';
@@ -37,10 +38,8 @@ export async function sendOrderEmail(input: SendOrderInput): Promise<void> {
         <p>We've received your order and will process it shortly.</p>
         <h2>Order Summary</h2>
         <p><strong>Address:</strong> ${input.customerAddress}</p>
-        <p><strong>Items:</strong></p>
-        <ul>
-          ${input.orderItems.split(', ').map(item => `<li>${item}</li>`).join('')}
-        </ul>
+        <p><strong>Items & Payment:</strong></p>
+        <p>${input.orderItems}</p>
         <h3>Total: ${siteConfig.currency}${input.orderTotal}</h3>
       `;
 
