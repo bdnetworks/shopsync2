@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getProducts } from '@/lib/products';
 import ProductCard from '@/components/product-card';
@@ -15,6 +15,12 @@ function ProductsComponent() {
   const selectedCategory = searchParams.get('category') as ProductCategory | null;
 
   const [activeTab, setActiveTab] = useState<ProductCategory | 'All'>(selectedCategory || 'All');
+
+  useEffect(() => {
+    if(selectedCategory) {
+        setActiveTab(selectedCategory);
+    }
+  }, [selectedCategory]);
 
   const filteredProducts = useMemo(() => {
     if (activeTab === 'All') {
@@ -52,7 +58,7 @@ function ProductsComponent() {
           ))}
         </TabsList>
         <TabsContent value={activeTab}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4 mt-6">
                 {filteredProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
                 ))}

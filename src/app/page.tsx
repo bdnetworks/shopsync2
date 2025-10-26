@@ -72,7 +72,7 @@ export default function Home() {
               <Link href="/products">View All</Link>
             </Button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
             {collectionsProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -92,7 +92,7 @@ export default function Home() {
                             <Link href={`/products?category=${category}`}>View All</Link>
                         </Button>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {categoryProducts.map((product) => (
                         <ProductCard key={product.id} product={product} />
                         ))}
