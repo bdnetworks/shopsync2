@@ -1,7 +1,7 @@
-import { PlaceHolderImages } from './placeholder-images';
+
 import type { Product } from './types';
 
-// This is a sample products list. You should replace it with your own data.
+// This is a sample products list for fallback purposes.
 const products: Product[] = [
   {
     id: 'prod_001',
@@ -12,9 +12,9 @@ const products: Product[] = [
     unit: '1 pc',
     image: {
       id: 'product-1',
-      src: PlaceHolderImages.find(p => p.id === 'product-1')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-1')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-1')?.imageHint || '',
+      src: 'https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0LXNoaXJ0fGVufDB8fHx8MTc2MTQ2MTYzMnww&ixlib=rb-4.1.0&q=80&w=1080',
+      alt: 'A comfortable and stylish cotton t-shirt.',
+      hint: 't-shirt',
     }
   },
   {
@@ -26,9 +26,9 @@ const products: Product[] = [
     unit: '1 pc',
     image: {
       id: 'product-2',
-      src: PlaceHolderImages.find(p => p.id === 'product-2')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-2')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-2')?.imageHint || '',
+      src: 'https://images.unsplash.com/photo-1622560481156-01fc7e1693e6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsZWF0aGVyJTIwYmFja3BhY2t8ZW58MHx8fHwxNzYxNDQ5MzEyfDA&ixlib=rb-4.1.0&q=80&w=1080',
+      alt: 'A durable and spacious leather backpack.',
+      hint: 'leather backpack',
     }
   },
   {
@@ -40,9 +40,9 @@ const products: Product[] = [
     unit: '1 pc',
     image: {
       id: 'product-12',
-      src: PlaceHolderImages.find(p => p.id === 'product-12')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-12')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-12')?.imageHint || '',
+      src: 'https://images.unsplash.com/photo-1664286022007-9d2eb1003165?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGVhdGhlciUyMGJlbHR8ZW58MHx8fHwxNzYxMzc0NjI1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      alt: 'A stylish and functional belt.',
+      hint: 'leather belt',
     }
   },
 ];
@@ -59,18 +59,19 @@ async function initializeProducts() {
 
     try {
         // IMPORTANT: Replace this with your own Google Sheet CSV URL
-        // 1. Create a Google Sheet with the same columns as the products object.
+        // 1. Create a Google Sheet with the correct columns.
         // 2. Click on File -> Share -> Publish to web.
         // 3. Select "Comma-separated values (.csv)" and publish.
         // 4. Copy the generated URL and paste it below.
         const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5pGjG0pBCfqw2n31aJ_xP_TsjL-1VDPEXL_DD1Nq60EHod2gmMO0Y4Ci9tS_c9Kj7aR8Mv3A3fB4u/pub?output=csv');
         const csv = await response.text();
+        // The header row is: id,name,description,price,category,unit,imageUrl,imageAlt,imageHint
         const lines = csv.split('\n').slice(1);
         
         const productsFromSheet = lines.map(line => {
-            const [id, name, description, price, category, unit, imageId] = line.split(',').map(s => s.trim());
-            const image = PlaceHolderImages.find(p => p.id === imageId);
-
+            const values = line.split(',').map(s => s.trim().replace(/"/g, ''));
+            const [id, name, description, price, category, unit, imageUrl, imageAlt, imageHint] = values;
+            
             return {
                 id,
                 name,
@@ -79,13 +80,13 @@ async function initializeProducts() {
                 category,
                 unit,
                 image: {
-                    id: imageId,
-                    src: image?.imageUrl || '',
-                    alt: image?.description || '',
-                    hint: image?.imageHint || '',
+                    id: id, // Use product id for image id
+                    src: imageUrl,
+                    alt: imageAlt,
+                    hint: imageHint,
                 }
             } as Product;
-        }).filter(p => p.id); // Filter out any empty rows
+        }).filter(p => p.id && p.name && p.image.src); // Filter out any invalid rows
 
         allProducts = productsFromSheet;
         productsInitialized = true;
