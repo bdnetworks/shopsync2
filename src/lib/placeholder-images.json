@@ -7,6 +7,18 @@
       "imageHint": "lifestyle flatlay"
     },
     {
+      "id": "hero-banner-1",
+      "description": "Promotional banner for a technology kit with a discount offer.",
+      "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80",
+      "imageHint": "tech kit"
+    },
+    {
+      "id": "hero-banner-2",
+      "description": "Banner advertising free online home delivery with an image of a delivery person.",
+      "imageUrl": "https://images.unsplash.com/photo-1594411440399-973405c935e4?w=800&q=80",
+      "imageHint": "online delivery"
+    },
+    {
       "id": "product-1",
       "description": "A comfortable and stylish cotton t-shirt.",
       "imageUrl": "https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0LXNoaXJ0fGVufDB8fHx8MTc2MTQ2MTYzMnww&ixlib=rb-4.1.0&q=80&w=1080",

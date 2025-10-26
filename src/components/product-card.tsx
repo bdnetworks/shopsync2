@@ -40,7 +40,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <p className="text-base font-bold text-primary">
           ${product.price.toFixed(2)}
         </p>
-        <Button onClick={handleAddToCart} className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground h-9 text-sm">
+        <Button onClick={handleAddToCart} className="w-full h-9 text-sm">
           <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
         </Button>
       </CardFooter>
