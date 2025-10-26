@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,9 +12,10 @@ import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
 import { sendOrderEmail } from '@/ai/flows/send-order-email';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CheckoutPage() {
-  const { cartItems, subtotal, shippingFee, total, clearCart } = useCart();
+  const { cartItems, subtotal, shippingFee, total, clearCart, isCartLoading } = useCart();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -23,9 +24,71 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (cartItems.length === 0 && typeof window !== 'undefined' && !isSubmitting) {
-    router.push('/products');
-    return null;
+  useEffect(() => {
+    if (!isCartLoading && cartItems.length === 0) {
+      router.push('/products');
+    }
+  }, [isCartLoading, cartItems, router]);
+  
+
+  if (isCartLoading || cartItems.length === 0) {
+    return (
+        <div className="container mx-auto px-4 py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                 <div className="space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-48" />
+                            <Skeleton className="h-4 w-64" />
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-40" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-12 w-full" />
+                        </CardContent>
+                    </Card>
+                 </div>
+                 <div className="lg:order-first">
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-48" />
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {[...Array(2)].map((_, i) => (
+                                <div key={i} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <Skeleton className="h-16 w-16 rounded-md" />
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-4 w-24" />
+                                            <Skeleton className="h-4 w-16" />
+                                        </div>
+                                    </div>
+                                    <Skeleton className="h-5 w-20" />
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                 </div>
+            </div>
+        </div>
+    );
   }
 
   const handlePlaceOrder = async () => {

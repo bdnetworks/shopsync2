@@ -16,12 +16,14 @@ interface CartContextType {
   itemCount: number;
   shippingFee: number;
   total: number;
+  isCartLoading: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCartLoading, setIsCartLoading] = useState(true);
   const { toast } = useToast();
   const shippingFee = siteConfig.checkout.shippingFee;
 
@@ -34,16 +36,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Failed to parse cart items from localStorage", error);
       setCartItems([]);
+    } finally {
+      setIsCartLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    try {
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    } catch (error) {
-        console.error("Failed to save cart items to localStorage", error);
+    // Prevent writing to localStorage on initial load before cart is read
+    if (!isCartLoading) {
+        try {
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        } catch (error) {
+            console.error("Failed to save cart items to localStorage", error);
+        }
     }
-  }, [cartItems]);
+  }, [cartItems, isCartLoading]);
 
   const addToCart = (product: Product) => {
     setCartItems(prevItems => {
@@ -100,6 +107,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     itemCount,
     shippingFee,
     total,
+    isCartLoading,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
