@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
-import { saveOrderToSheet } from '@/ai/flows/save-order-to-sheet';
+import { sendOrderEmail } from '@/ai/flows/send-order-email';
 
 export default function CheckoutPage() {
   const { cartItems, subtotal, shippingFee, total, clearCart } = useCart();
@@ -19,7 +19,7 @@ export default function CheckoutPage() {
   const { toast } = useToast();
 
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,9 +35,9 @@ export default function CheckoutPage() {
         .map(item => `${item.name} (x${item.quantity})`)
         .join(', ');
 
-      await saveOrderToSheet({
+      await sendOrderEmail({
         customerName: name,
-        customerPhone: phone,
+        customerEmail: email,
         customerAddress: address,
         orderItems: orderItemsText,
         orderTotal: total.toFixed(2),
@@ -46,7 +46,7 @@ export default function CheckoutPage() {
       clearCart();
       router.push('/order-confirmation');
     } catch (error) {
-      console.error("Failed to save order", error);
+      console.error("Failed to send order email", error);
       const errorMessage = (error as Error).message || "Failed to place order. Please try again.";
       toast({
         title: "Error",
@@ -57,7 +57,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const isFormValid = name && phone && address;
+  const isFormValid = name && email && address;
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -74,9 +74,9 @@ export default function CheckoutPage() {
                     <Label htmlFor="name">Full Name</Label>
                     <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} disabled={isSubmitting} />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" placeholder="+1 234 567 890" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={isSubmitting}/>
+                 <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isSubmitting} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Full Address</Label>
@@ -92,7 +92,7 @@ export default function CheckoutPage() {
                 </CardHeader>
                 <CardContent>
                     <Button onClick={handlePlaceOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
-                        {isSubmitting ? 'Placing Order...' : 'Place Order'}
+                        {isSubmitting ? 'Placing Order...' : `Place Order - ${siteConfig.currency}${total.toFixed(2)}`}
                     </Button>
                 </CardContent>
                  {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
