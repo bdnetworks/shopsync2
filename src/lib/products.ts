@@ -8,6 +8,7 @@ const products: Product[] = [
     description: 'A timeless crewneck t-shirt made from 100% premium cotton. Perfect for everyday wear.',
     price: 29.99,
     category: 'Apparel',
+    unit: '1 pc',
     image: {
       id: 'product-1',
       src: PlaceHolderImages.find(p => p.id === 'product-1')?.imageUrl || '',
@@ -21,6 +22,7 @@ const products: Product[] = [
     description: 'A durable and stylish backpack crafted from genuine leather, with multiple compartments for all your gear.',
     price: 149.99,
     category: 'Bags',
+    unit: '1 pc',
     image: {
       id: 'product-2',
       src: PlaceHolderImages.find(p => p.id === 'product-2')?.imageUrl || '',
@@ -34,6 +36,7 @@ const products: Product[] = [
     description: 'Iconic high-top sneakers with a durable canvas upper and a comfortable cushioned sole.',
     price: 79.99,
     category: 'Footwear',
+    unit: '1 pair',
     image: {
       id: 'product-3',
       src: PlaceHolderImages.find(p => p.id === 'product-3')?.imageUrl || '',
@@ -47,6 +50,7 @@ const products: Product[] = [
     description: 'A sophisticated timepiece with a stainless steel band and a multi-function chronograph dial.',
     price: 299.99,
     category: 'Accessories',
+    unit: '1 pc',
     image: {
       id: 'product-4',
       src: PlaceHolderImages.find(p => p.id === 'product-4')?.imageUrl || '',
@@ -60,6 +64,7 @@ const products: Product[] = [
     description: 'Stay warm with this soft, oversized wool-blend scarf. A perfect accessory for chilly days.',
     price: 49.99,
     category: 'Accessories',
+    unit: '1 pc',
     image: {
       id: 'product-5',
       src: PlaceHolderImages.find(p => p.id === 'product-5')?.imageUrl || '',
@@ -73,6 +78,7 @@ const products: Product[] = [
     description: 'A sleek and slim bifold wallet made from full-grain leather, designed to hold your essentials.',
     price: 69.99,
     category: 'Accessories',
+    unit: '1 pc',
     image: {
       id: 'product-6',
       src: PlaceHolderImages.find(p => p.id === 'product-6')?.imageUrl || '',
@@ -86,6 +92,7 @@ const products: Product[] = [
     description: 'Classic aviator frames with polarized lenses for maximum UV protection and style.',
     price: 129.99,
     category: 'Accessories',
+    unit: '1 pc',
     image: {
       id: 'product-7',
       src: PlaceHolderImages.find(p => p.id === 'product-7')?.imageUrl || '',
@@ -99,6 +106,7 @@ const products: Product[] = [
     description: 'Lightweight and responsive running shoes designed for speed and comfort over any distance.',
     price: 159.99,
     category: 'Footwear',
+    unit: '1 pair',
     image: {
       id: 'product-8',
       src: PlaceHolderImages.find(p => p.id === 'product-8')?.imageUrl || '',
@@ -112,6 +120,7 @@ const products: Product[] = [
     description: 'A classic trucker jacket in a vintage wash, made from rugged, non-stretch denim.',
     price: 119.99,
     category: 'Apparel',
+    unit: '1 pc',
     image: {
       id: 'product-9',
       src: PlaceHolderImages.find(p => p.id === 'product-9')?.imageUrl || '',
@@ -125,6 +134,7 @@ const products: Product[] = [
     description: 'The perfect travel companion for short trips, made from heavy-duty canvas with leather accents.',
     price: 99.99,
     category: 'Bags',
+    unit: '1 pc',
     image: {
       id: 'product-10',
       src: PlaceHolderImages.find(p => p.id === 'product-10')?.imageUrl || '',
@@ -138,6 +148,7 @@ const products: Product[] = [
     description: 'Elegant dress shoes handcrafted from polished calfskin leather, perfect for formal occasions.',
     price: 249.99,
     category: 'Footwear',
+    unit: '1 pair',
     image: {
       id: 'product-11',
       src: PlaceHolderImages.find(p => p.id === 'product-11')?.imageUrl || '',
@@ -151,6 +162,7 @@ const products: Product[] = [
     description: 'A versatile and durable belt made from 100% genuine leather with a solid brass buckle.',
     price: 59.99,
     category: 'Accessories',
+    unit: '1 pc',
     image: {
       id: 'product-12',
       src: PlaceHolderImages.find(p => p.id === 'product-12')?.imageUrl || '',
