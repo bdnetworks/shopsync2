@@ -102,6 +102,8 @@ function parseCSV(csv: string): string[][] {
     return lines;
 }
 
+const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlxPN_QY2wJWBmDKWhSoF3EkOdSDS6XqBN2Ncx-jaAX4qMzUq4F9WSBjPtILrBJEXnK4UobyCEPese/pub?output=csv';
+
 
 // NOTE: This is a temporary solution. For a real app, you should use a proper database
 // and fetch the data from an API. The data is fetched from a Google Sheet and cached.
@@ -111,7 +113,7 @@ async function initializeProducts() {
     }
 
     try {
-        const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSlxPN_QY2wJWBmDKWhSoF3EkOdSDS6XqBN2Ncx-jaAX4qMzUq4F9WSBjPtILrBJEXnK4UobyCEPese/pub?output=csv');
+        const response = await fetch(GOOGLE_SHEET_CSV_URL);
         const csv = await response.text();
         
         const parsedLines = parseCSV(csv);
