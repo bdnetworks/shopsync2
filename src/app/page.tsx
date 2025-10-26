@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -9,8 +10,8 @@ import { Card } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { getIcon } from '@/lib/icons';
 
-export default function Home() {
-  const allProducts = getProducts();
+export default async function Home() {
+  const allProducts = await getProducts();
   const collectionsProducts = allProducts.slice(0, 12);
 
   return (

@@ -2,27 +2,6 @@
 import type { Product } from './types';
 import categories from '@/config/categories.json';
 
-// This is a sample products list for fallback purposes.
-const fallbackProducts: Product[] = [
-  {
-    id: 'prod_001',
-    name: 'Classic Cotton Tee',
-    description: 'A timeless crewneck t-shirt made from 100% premium cotton. Perfect for everyday wear.',
-    price: 29.99,
-    category: 'Apparel',
-    unit: '1 pc',
-    image: {
-      id: 'product-1',
-      src: 'https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0LXNoaXJ0fGVufDB8fHx8MTc2MTQ2MTYzMnww&ixlib=rb-4.1.0&q=80&w=1080',
-      alt: 'A comfortable and stylish cotton t-shirt.',
-      hint: 't-shirt',
-    }
-  },
-];
-
-let allProducts: Product[] = [];
-let productsInitialized = false;
-
 function parseCSV(csv: string): string[][] {
     const lines: string[][] = [];
     let currentLine: string[] = [];
@@ -77,7 +56,11 @@ function parseCSV(csv: string): string[][] {
 async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
      if (!sheetUrl) return [];
     try {
-        const response = await fetch(sheetUrl);
+        const response = await fetch(sheetUrl, { cache: 'no-store' });
+        if (!response.ok) {
+            console.error(`Failed to fetch sheet: ${response.statusText} for url: ${sheetUrl}`);
+            return [];
+        }
         const csv = await response.text();
         
         const lines = parseCSV(csv);
@@ -119,38 +102,25 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
 }
 
 
-async function initializeProducts() {
-    if (productsInitialized) {
-        return;
-    }
-
+async function initializeProducts(): Promise<Product[]> {
     const fetchPromises = categories.map(category => fetchAndParseSheet(category.sheetUrl));
     
     try {
         const productArrays = await Promise.all(fetchPromises);
-        allProducts = productArrays.flat();
-
-        if (allProducts.length === 0) {
-            console.warn("No products loaded from Google Sheets, using fallback data.");
-            allProducts = fallbackProducts;
-        }
-
-        productsInitialized = true;
+        return productArrays.flat();
     } catch (error) {
-        console.error("Failed to initialize products from Google Sheets, using fallback data.", error);
-        allProducts = fallbackProducts;
-        productsInitialized = true;
+        console.error("Failed to initialize products from Google Sheets.", error);
+        return [];
     }
 }
 
-export const getProducts = (): Product[] => {
-    return allProducts;
+
+export const getProducts = async (): Promise<Product[]> => {
+    return initializeProducts();
 }
 
-export const getProductById = (id: string): Product | undefined => {
-    return allProducts.find(p => p.id === id);
+export const getProductById = async (id: string): Promise<Product | undefined> => {
+    const products = await getProducts();
+    return products.find(p => p.id === id);
 }
 
-(async () => {
-    await initializeProducts();
-})();

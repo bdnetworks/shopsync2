@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
@@ -16,8 +17,11 @@ function ProductDetail({ params }: { params: { id: string } }) {
     const [product, setProduct] = useState<Product | null | undefined>(null);
 
     useEffect(() => {
-        const foundProduct = getProductById(params.id);
-        setProduct(foundProduct);
+        const findProduct = async () => {
+            const foundProduct = await getProductById(params.id);
+            setProduct(foundProduct);
+        }
+        findProduct();
     }, [params.id]);
 
 
