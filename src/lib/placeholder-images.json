@@ -1,3 +1,82 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-1",
+      "description": "A stylishly arranged collection of various products on a clean background.",
+      "imageUrl": "https://images.unsplash.com/photo-1656103743123-b9990915d523?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsaWZlc3R5bGUlMjBmbGF0bGF5fGVufDB8fHx8MTc2MTQ3MjIyNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lifestyle flatlay"
+    },
+    {
+      "id": "product-1",
+      "description": "A comfortable and stylish cotton t-shirt.",
+      "imageUrl": "https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0LXNoaXJ0fGVufDB8fHx8MTc2MTQ2MTYzMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "t-shirt"
+    },
+    {
+      "id": "product-2",
+      "description": "A durable and spacious leather backpack.",
+      "imageUrl": "https://images.unsplash.com/photo-1622560481156-01fc7e1693e6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsZWF0aGVyJTIwYmFja3BhY2t8ZW58MHx8fHwxNzYxNDQ5MzEyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leather backpack"
+    },
+    {
+      "id": "product-3",
+      "description": "Classic canvas sneakers for everyday wear.",
+      "imageUrl": "https://images.unsplash.com/photo-1564484539125-88cbf21cbb25?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjYW52YXMlMjBzbmVha2Vyc3xlbnwwfHx8fDE3NjE0NTI0Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "canvas sneakers"
+    },
+    {
+      "id": "product-4",
+      "description": "A modern stainless steel watch.",
+      "imageUrl": "https://images.unsplash.com/photo-1565250634684-f5e306ee1fa0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzdGVlbCUyMHdhdGNofGVufDB8fHx8MTc2MTM5MjI4Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "steel watch"
+    },
+    {
+      "id": "product-5",
+      "description": "A warm and cozy wool scarf.",
+      "imageUrl": "https://images.unsplash.com/photo-1630412931755-766c52c640a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx3b29sJTIwc2NhcmZ8ZW58MHx8fHwxNzYxNDYzODk1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wool scarf"
+    },
+    {
+      "id": "product-6",
+      "description": "A sleek leather wallet with multiple compartments.",
+      "imageUrl": "https://images.unsplash.com/photo-1627123424574-724758594e93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxsZWF0aGVyJTIwd2FsbGV0fGVufDB8fHx8MTc2MTM5NjQxMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leather wallet"
+    },
+    {
+      "id": "product-7",
+      "description": "Stylish sunglasses with UV protection.",
+      "imageUrl": "https://images.unsplash.com/photo-1610136649349-0f646f318053?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzdW5nbGFzc2VzfGVufDB8fHx8MTc2MTQxMzkzMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sunglasses"
+    },
+    {
+      "id": "product-8",
+      "description": "Comfortable running shoes for athletes.",
+      "imageUrl": "https://images.unsplash.com/photo-1585944672394-4c58a015c1fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxydW5uaW5nJTIwc2hvZXN8ZW58MHx8fHwxNzYxNDE5OTE1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "running shoes"
+    },
+    {
+      "id": "product-9",
+      "description": "A versatile denim jacket.",
+      "imageUrl": "https://images.unsplash.com/photo-1614693348454-1e0710d21c60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkZW5pbSUyMGphY2tldHxlbnwwfHx8fDE3NjEzODI2MjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "denim jacket"
+    },
+    {
+      "id": "product-10",
+      "description": "A minimalist weekender bag.",
+      "imageUrl": "https://images.unsplash.com/photo-1759304426524-382146fa97a7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3ZWVrZW5kZXIlMjBiYWd8ZW58MHx8fHwxNzYxNDcyMjI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "weekender bag"
+    },
+    {
+      "id": "product-11",
+      "description": "Elegant leather dress shoes.",
+      "imageUrl": "https://images.unsplash.com/photo-1611937679167-a6c1d78d2fb5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkcmVzcyUyMHNob2VzfGVufDB8fHx8MTc2MTQ3MjIyNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dress shoes"
+    },
+    {
+      "id": "product-12",
+      "description": "A stylish and functional belt.",
+      "imageUrl": "https://images.unsplash.com/photo-1664286022007-9d2eb1003165?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGVhdGhlciUyMGJlbHR8ZW58MHx8fHwxNzYxMzc0NjI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leather belt"
+    }
+  ]
 }
