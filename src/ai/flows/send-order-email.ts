@@ -7,6 +7,7 @@ import { render } from '@react-email/render';
 import OrderReceiptEmail from '@/emails/order-receipt';
 import type { CartItem } from '@/lib/types';
 import { siteConfig } from '@/config/site';
+import sgMail from '@sendgrid/mail';
 
 const CustomerDetailsSchema = z.object({
   name: z.string(),
@@ -56,10 +57,32 @@ const sendOrderEmailFlow = ai.defineFlow(
   },
   async (input) => {
     
-    // In a real application, you would use a service like Nodemailer or Resend
-    // to actually send the email. For this example, we'll just render the email
-    // and log it to the console to simulate the email sending process.
+    if (!process.env.SENDGRID_API_KEY) {
+      console.warn("SENDGRID_API_KEY is not set. Email will be logged to console instead of sent.");
+      
+      const emailHtml = render(
+        OrderReceiptEmail({
+          customerName: input.customerDetails.name,
+          shippingAddress: input.customerDetails.address,
+          orderItems: input.cartDetails.items as CartItem[],
+          orderTotal: input.cartDetails.total,
+          siteName: siteConfig.name,
+          siteContactEmail: siteConfig.contactInfo.find(c => c.title === 'Email')?.value || '',
+        })
+      );
+      
+      console.log('--- SIMULATING SENDING ORDER EMAIL ---');
+      console.log(`To: ${siteConfig.checkout.contact.email}`);
+      console.log('--- HTML BODY ---');
+      console.log(emailHtml.substring(0, 500) + '...');
+      console.log('--- END OF SIMULATION ---');
+      
+      // Since we are simulating, we throw an error for the user to know it's not configured.
+      throw new Error("Email sending is not configured. Please set SENDGRID_API_KEY in your environment variables.");
+    }
     
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
     const emailHtml = render(
       OrderReceiptEmail({
         customerName: input.customerDetails.name,
@@ -71,39 +94,21 @@ const sendOrderEmailFlow = ai.defineFlow(
       })
     );
 
-    const emailText = render(
-        OrderReceiptEmail({
-          customerName: input.customerDetails.name,
-          shippingAddress: input.customerDetails.address,
-          orderItems: input.cartDetails.items as CartItem[],
-          orderTotal: input.cartDetails.total,
-          siteName: siteConfig.name,
-          siteContactEmail: siteConfig.contactInfo.find(c => c.title === 'Email')?.value || '',
-        }),
-        { plainText: true }
-    );
-      
-    // TODO: Replace this with an actual email sending service
-    console.log('--- SIMULATING SENDING ORDER EMAIL ---');
-    console.log(`To: ${siteConfig.checkout.contact.email}`);
-    console.log(`From: noreply@${siteConfig.name.toLowerCase().replace(/\s/g, '')}.com`);
-    console.log(`Subject: New Order Received from ${input.customerDetails.name}`);
-    console.log('--- TEXT BODY ---');
-    console.log(emailText);
-    console.log('--- HTML BODY ---');
-    console.log(emailHtml.substring(0, 500) + '...'); // Log a snippet of the HTML
-    console.log('--- END OF SIMULATION ---');
-
-    // Here you would add your email sending logic, for example using Nodemailer:
-    /*
-    const transporter = nodemailer.createTransport({ ... });
-    await transporter.sendMail({
-      from: `"${siteConfig.name}" <noreply@yourdomain.com>`,
-      to: siteConfig.checkout.contact.email,
-      subject: `New Order from ${input.customerDetails.name}`,
+    const msg = {
+      to: siteConfig.checkout.contact.email, // The store owner's email
+      from: `noreply@${siteConfig.name.toLowerCase().replace(/\s/g, '')}.com`,
+      subject: `New Order Received from ${input.customerDetails.name}`,
       html: emailHtml,
-      text: emailText,
-    });
-    */
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log('Order email sent successfully');
+    } catch (error) {
+      console.error('Error sending order email:', error);
+      // In case of error, re-throw to be handled by the caller
+      throw new Error('Failed to send order email.');
+    }
   }
 );
+
