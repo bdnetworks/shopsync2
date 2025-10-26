@@ -11,6 +11,7 @@ import { useCart } from '@/context/cart-context';
 import { ShoppingCart, CheckCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/lib/types';
+import { siteConfig } from '@/config/site';
 
 function ProductDetail({ params }: { params: { id: string } }) {
     const { addToCart } = useCart();
@@ -58,7 +59,7 @@ function ProductDetail({ params }: { params: { id: string } }) {
                     <p className="text-muted-foreground mb-6 text-lg">{product.description}</p>
                     
                     <div className="flex items-center justify-between mb-8 p-4 bg-muted/50 rounded-lg">
-                        <span className="text-3xl font-bold text-primary">${product.price.toFixed(2)}</span>
+                        <span className="text-3xl font-bold text-primary">{siteConfig.currency}{product.price.toFixed(2)}</span>
                         <div className="flex items-center gap-2 text-sm font-medium text-green-600">
                             <CheckCircle className="h-5 w-5" />
                             <span>In Stock</span>

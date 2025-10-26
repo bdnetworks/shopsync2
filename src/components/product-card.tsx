@@ -7,6 +7,7 @@ import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
+import { siteConfig } from '@/config/site';
 
 interface ProductCardProps {
   product: Product;
@@ -38,8 +39,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             <h3 className="font-semibold text-sm h-10 overflow-hidden hover:text-primary transition-colors">
                 {product.name}
             </h3>
-            <p className="text-base font-bold text-primary mt-1">
-              ${product.price.toFixed(2)}
+            <p className="text-base font-bold text-primary">
+              {siteConfig.currency}{product.price.toFixed(2)}
             </p>
         </CardContent>
         <CardFooter className="p-3 pt-0">

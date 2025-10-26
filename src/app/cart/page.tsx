@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import { siteConfig } from '@/config/site';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, subtotal, shippingFee, total, itemCount } = useCart();
@@ -58,7 +59,7 @@ export default function CartPage() {
                           </div>
                           <div>
                             <p className="font-medium">{item.name}</p>
-                            <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                            <p className="text-sm text-muted-foreground">{siteConfig.currency}{item.price.toFixed(2)}</p>
                           </div>
                         </div>
                       </TableCell>
@@ -90,7 +91,7 @@ export default function CartPage() {
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {siteConfig.currency}{(item.price * item.quantity).toFixed(2)}
                       </TableCell>
                       <TableCell>
                         <Button
@@ -118,15 +119,15 @@ export default function CartPage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{siteConfig.currency}{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>${shippingFee.toFixed(2)}</span>
+                <span>{siteConfig.currency}{shippingFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg border-t pt-4">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{siteConfig.currency}{total.toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter>

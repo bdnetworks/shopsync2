@@ -27,11 +27,11 @@ export default function CheckoutPage() {
   const generateOrderText = () => {
     let orderDetails = "New Order Request:\n\n";
     cartItems.forEach(item => {
-      orderDetails += `${item.name} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}\n`;
+      orderDetails += `${item.name} (x${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}\n`;
     });
-    orderDetails += `\nSubtotal: $${subtotal.toFixed(2)}`;
-    orderDetails += `\nShipping: $${shippingFee.toFixed(2)}`;
-    orderDetails += `\nTotal: $${total.toFixed(2)}`;
+    orderDetails += `\nSubtotal: ${siteConfig.currency}${subtotal.toFixed(2)}`;
+    orderDetails += `\nShipping: ${siteConfig.currency}${shippingFee.toFixed(2)}`;
+    orderDetails += `\nTotal: ${siteConfig.currency}${total.toFixed(2)}`;
     orderDetails += `\n\nCustomer Details:`;
     orderDetails += `\nName: ${name}`;
     orderDetails += `\nPhone: ${phone}`;
@@ -115,16 +115,16 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">{siteConfig.currency}{item.price.toFixed(2)}</p>
                     </div>
                   </div>
-                  <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="font-medium">{siteConfig.currency}{(item.price * item.quantity).toFixed(2)}</p>
                 </div>
               ))}
               <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Shipping Fee</span><span>${shippingFee.toFixed(2)}</span></div>
-                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${total.toFixed(2)}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{siteConfig.currency}{subtotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>Shipping Fee</span><span>{siteConfig.currency}{shippingFee.toFixed(2)}</span></div>
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>{siteConfig.currency}{total.toFixed(2)}</span></div>
               </div>
             </CardContent>
           </Card>
