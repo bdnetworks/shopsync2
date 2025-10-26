@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -10,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 
 export default function CartPage() {
-  const { cartItems, updateQuantity, removeFromCart, cartTotal, itemCount } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, subtotal, shippingFee, total, itemCount } = useCart();
 
   if (itemCount === 0) {
     return (
@@ -117,15 +118,15 @@ export default function CartPage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>Free</span>
+                <span>${shippingFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg border-t pt-4">
                 <span>Total</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>${total.toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter>

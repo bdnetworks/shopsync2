@@ -1,8 +1,10 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { CartItem, Product } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
+import { siteConfig } from '@/config/site';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -10,8 +12,10 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
-  cartTotal: number;
+  subtotal: number;
   itemCount: number;
+  shippingFee: number;
+  total: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -19,6 +23,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { toast } = useToast();
+  const shippingFee = siteConfig.checkout.shippingFee;
 
   useEffect(() => {
     try {
@@ -81,8 +86,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCartItems([]);
   };
 
-  const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const itemCount = cartItems.reduce((count, item) => count + item.quantity, 0);
+  const total = subtotal + shippingFee;
 
   const value = {
     cartItems,
@@ -90,8 +96,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     removeFromCart,
     updateQuantity,
     clearCart,
-    cartTotal,
+    subtotal,
     itemCount,
+    shippingFee,
+    total,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

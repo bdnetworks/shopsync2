@@ -7,6 +7,7 @@ import banners from './banners.json';
 import home from './home-page.json';
 import product from './product-page.json';
 import site from './site.json';
+import checkout from './checkout.json';
 import type { ProductCategory } from "@/lib/types";
 
 export const siteConfig = {
@@ -24,7 +25,5 @@ export const siteConfig = {
     */
     productCategories: product.productCategories as ProductCategory[],
     topBrands: home.topBrands,
-    checkout: {
-        // Add checkout page specific configurations here
-    }
+    checkout: checkout
 }
