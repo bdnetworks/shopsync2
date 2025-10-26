@@ -106,7 +106,6 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
                     new URL(product.image.src); // Validate URL
                     return product;
                 } catch (e) {
-                     console.warn(`Invalid URL for product ID ${product.id}: ${product.image.src}`);
                     return null;
                 }
             }
