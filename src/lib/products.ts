@@ -145,16 +145,10 @@ async function initializeProducts() {
 }
 
 export const getProducts = (): Product[] => {
-    if (!productsInitialized) {
-        console.warn("Products not initialized. Call initializeProducts() at your app's entry point.");
-    }
     return allProducts;
 }
 
 export const getProductById = (id: string): Product | undefined => {
-    if (!productsInitialized) {
-        console.warn("Products not initialized. Call initializeProducts() at your app's entry point.");
-    }
     return allProducts.find(p => p.id === id);
 }
 
