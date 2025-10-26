@@ -1,6 +1,7 @@
 import { PlaceHolderImages } from './placeholder-images';
 import type { Product } from './types';
 
+// This is a sample products list. You should replace it with your own data.
 const products: Product[] = [
   {
     id: 'prod_001',
@@ -31,132 +32,6 @@ const products: Product[] = [
     }
   },
   {
-    id: 'prod_003',
-    name: 'Retro Canvas High-Tops',
-    description: 'Iconic high-top sneakers with a durable canvas upper and a comfortable cushioned sole.',
-    price: 79.99,
-    category: 'Footwear',
-    unit: '1 pair',
-    image: {
-      id: 'product-3',
-      src: PlaceHolderImages.find(p => p.id === 'product-3')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-3')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-3')?.imageHint || '',
-    }
-  },
-  {
-    id: 'prod_004',
-    name: 'Chronograph Steel Watch',
-    description: 'A sophisticated timepiece with a stainless steel band and a multi-function chronograph dial.',
-    price: 299.99,
-    category: 'Accessories',
-    unit: '1 pc',
-    image: {
-      id: 'product-4',
-      src: PlaceHolderImages.find(p => p.id === 'product-4')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-4')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-4')?.imageHint || '',
-    }
-  },
-  {
-    id: 'prod_005',
-    name: 'Cozy Knit Scarf',
-    description: 'Stay warm with this soft, oversized wool-blend scarf. A perfect accessory for chilly days.',
-    price: 49.99,
-    category: 'Accessories',
-    unit: '1 pc',
-    image: {
-      id: 'product-5',
-      src: PlaceHolderImages.find(p => p.id === 'product-5')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-5')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-5')?.imageHint || '',
-    }
-  },
-  {
-    id: 'prod_006',
-    name: 'Minimalist Leather Wallet',
-    description: 'A sleek and slim bifold wallet made from full-grain leather, designed to hold your essentials.',
-    price: 69.99,
-    category: 'Accessories',
-    unit: '1 pc',
-    image: {
-      id: 'product-6',
-      src: PlaceHolderImages.find(p => p.id === 'product-6')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-6')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-6')?.imageHint || '',
-    }
-  },
-  {
-    id: 'prod_007',
-    name: 'Aviator Sunglasses',
-    description: 'Classic aviator frames with polarized lenses for maximum UV protection and style.',
-    price: 129.99,
-    category: 'Accessories',
-    unit: '1 pc',
-    image: {
-      id: 'product-7',
-      src: PlaceHolderImages.find(p => p.id === 'product-7')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-7')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-7')?.imageHint || '',
-    }
-  },
-  {
-    id: 'prod_008',
-    name: 'Performance Running Shoes',
-    description: 'Lightweight and responsive running shoes designed for speed and comfort over any distance.',
-    price: 159.99,
-    category: 'Footwear',
-    unit: '1 pair',
-    image: {
-      id: 'product-8',
-      src: PlaceHolderImages.find(p => p.id === 'product-8')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-8')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-8')?.imageHint || '',
-    }
-  },
-  {
-    id: 'prod_009',
-    name: 'Vintage Denim Jacket',
-    description: 'A classic trucker jacket in a vintage wash, made from rugged, non-stretch denim.',
-    price: 119.99,
-    category: 'Apparel',
-    unit: '1 pc',
-    image: {
-      id: 'product-9',
-      src: PlaceHolderImages.find(p => p.id === 'product-9')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-9')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-9')?.imageHint || '',
-    }
-  },
-  {
-    id: 'prod_010',
-    name: 'Canvas Weekender Duffle',
-    description: 'The perfect travel companion for short trips, made from heavy-duty canvas with leather accents.',
-    price: 99.99,
-    category: 'Bags',
-    unit: '1 pc',
-    image: {
-      id: 'product-10',
-      src: PlaceHolderImages.find(p => p.id === 'product-10')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-10')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-10')?.imageHint || '',
-    }
-  },
-  {
-    id: 'prod_011',
-    name: 'Oxford Leather Shoes',
-    description: 'Elegant dress shoes handcrafted from polished calfskin leather, perfect for formal occasions.',
-    price: 249.99,
-    category: 'Footwear',
-    unit: '1 pair',
-    image: {
-      id: 'product-11',
-      src: PlaceHolderImages.find(p => p.id === 'product-11')?.imageUrl || '',
-      alt: PlaceHolderImages.find(p => p.id === 'product-11')?.description || '',
-      hint: PlaceHolderImages.find(p => p.id === 'product-11')?.imageHint || '',
-    }
-  },
-  {
     id: 'prod_012',
     name: 'Classic Leather Belt',
     description: 'A versatile and durable belt made from 100% genuine leather with a solid brass buckle.',
@@ -172,10 +47,75 @@ const products: Product[] = [
   },
 ];
 
-export const getProducts = () => {
-  return products;
+let allProducts: Product[] = [];
+let productsInitialized = false;
+
+// NOTE: This is a temporary solution. For a real app, you should use a proper database
+// and fetch the data from an API. The data is fetched from a Google Sheet and cached.
+async function initializeProducts() {
+    if (productsInitialized) {
+        return;
+    }
+
+    try {
+        // IMPORTANT: Replace this with your own Google Sheet CSV URL
+        // 1. Create a Google Sheet with the same columns as the products object.
+        // 2. Click on File -> Share -> Publish to web.
+        // 3. Select "Comma-separated values (.csv)" and publish.
+        // 4. Copy the generated URL and paste it below.
+        const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5pGjG0pBCfqw2n31aJ_xP_TsjL-1VDPEXL_DD1Nq60EHod2gmMO0Y4Ci9tS_c9Kj7aR8Mv3A3fB4u/pub?output=csv');
+        const csv = await response.text();
+        const lines = csv.split('\n').slice(1);
+        
+        const productsFromSheet = lines.map(line => {
+            const [id, name, description, price, category, unit, imageId] = line.split(',').map(s => s.trim());
+            const image = PlaceHolderImages.find(p => p.id === imageId);
+
+            return {
+                id,
+                name,
+                description,
+                price: parseFloat(price),
+                category,
+                unit,
+                image: {
+                    id: imageId,
+                    src: image?.imageUrl || '',
+                    alt: image?.description || '',
+                    hint: image?.imageHint || '',
+                }
+            } as Product;
+        }).filter(p => p.id); // Filter out any empty rows
+
+        allProducts = productsFromSheet;
+        productsInitialized = true;
+    } catch (error) {
+        console.error("Failed to fetch products from Google Sheet, using fallback data.", error);
+        // If fetching fails, use the local products as a fallback
+        allProducts = products;
+        productsInitialized = true;
+    }
 }
 
-export const getProductById = (id: string) => {
-  return products.find(p => p.id === id);
+
+export const getProducts = (): Product[] => {
+    if (!productsInitialized) {
+        // This is not ideal for server components, but it's a simple way to handle initialization
+        // on first access. A better approach would be to ensure initialization happens at app startup.
+        console.warn("Products not initialized. Call initializeProducts() at your app's entry point.");
+    }
+    return allProducts;
 }
+
+export const getProductById = (id: string): Product | undefined => {
+    if (!productsInitialized) {
+        console.warn("Products not initialized. Call initializeProducts() at your app's entry point.");
+    }
+    return allProducts.find(p => p.id === id);
+}
+
+// Initialize products on module load. This works for client-side rendering and server-side
+// if the module is loaded once per request.
+(async () => {
+    await initializeProducts();
+})();

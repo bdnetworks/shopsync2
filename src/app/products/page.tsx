@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ProductCard from '@/components/product-card';
 import { getProducts } from '@/lib/products';
-import { ProductCategory } from '@/lib/types';
+import { ProductCategory, Product } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { LayoutGrid } from 'lucide-react';
 
-const allProducts = getProducts();
 const categories: ProductCategory[] = ['Apparel', 'Bags', 'Footwear', 'Accessories'];
 
 function ProductGrid() {
@@ -19,7 +18,17 @@ function ProductGrid() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category') as ProductCategory | null;
 
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | 'all'>(categoryParam || 'all');
+
+  useEffect(() => {
+    // getProducts might be async now or might need initialization
+    const products = getProducts();
+    setAllProducts(products);
+    setLoading(false);
+  }, []);
 
   const handleCategoryChange = (category: ProductCategory | 'all') => {
     setSelectedCategory(category);
@@ -37,7 +46,11 @@ function ProductGrid() {
       return allProducts;
     }
     return allProducts.filter(p => p.category === selectedCategory);
-  }, [selectedCategory]);
+  }, [selectedCategory, allProducts]);
+
+  if (loading) {
+    return <ProductsPageSkeleton />;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 bg-[#F2F4F8]">

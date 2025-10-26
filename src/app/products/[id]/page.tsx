@@ -1,22 +1,34 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { getProductById } from '@/lib/products';
 import { useCart } from '@/context/cart-context';
 import { ShoppingCart, CheckCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Product } from '@/lib/types';
 
 function ProductDetail({ params }: { params: { id: string } }) {
     const { addToCart } = useCart();
-    const product = getProductById(params.id);
+    const [product, setProduct] = useState<Product | null | undefined>(null);
 
-    if (!product) {
+    useEffect(() => {
+        const foundProduct = getProductById(params.id);
+        setProduct(foundProduct);
+    }, [params.id]);
+
+
+    if (product === undefined) {
         notFound();
     }
+    
+    if (product === null) {
+        return <ProductDetailSkeleton />;
+    }
+
 
     return (
         <div className="container mx-auto px-4 py-12">
