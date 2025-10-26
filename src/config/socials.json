@@ -1,0 +1,9 @@
+
+{
+    "socialLinks": [
+        { "name": "Facebook", "icon": "Facebook", "href": "#" },
+        { "name": "Twitter", "icon": "Twitter", "href": "#" },
+        { "name": "Youtube", "icon": "Youtube", "href": "#" },
+        { "name": "Instagram", "icon": "Instagram", "href": "#" }
+    ]
+}

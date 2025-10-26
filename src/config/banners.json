@@ -1,0 +1,17 @@
+
+{
+    "heroBanners": [
+        {
+            "id": "hero-banner-1",
+            "description": "Promotional banner for a technology kit with a discount offer.",
+            "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80",
+            "imageHint": "tech kit"
+        },
+        {
+            "id": "hero-banner-2",
+            "description": "Banner advertising free online home delivery with an image of a delivery person.",
+            "imageUrl": "https://images.unsplash.com/photo-1594411440399-973405c935e4?w=800&q=80",
+            "imageHint": "online delivery"
+        }
+    ]
+}

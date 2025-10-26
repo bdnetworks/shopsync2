@@ -1,0 +1,16 @@
+
+{
+    "topCategories": [
+        { "name": "Laptop", "icon": "Laptop" },
+        { "name": "Processor", "icon": "Cpu" },
+        { "name": "AIO PC", "icon": "Monitor" },
+        { "name": "Speaker", "icon": "Speaker" },
+        { "name": "Monitor", "icon": "Tv" },
+        { "name": "Software", "icon": "HardDrive" },
+        { "name": "Gaming", "icon": "Gamepad2" },
+        { "name": "Printer", "icon": "Printer" },
+        { "name": "CPU", "icon": "Cpu" },
+        { "name": "Camera", "icon": "Camera" }
+    ],
+    "topBrands": ["Apple", "Microsoft", "Starlink", "HP", "Asus", "Dell", "Lenovo", "Acer", "Intel", "AMD", "MSI"]
+}
