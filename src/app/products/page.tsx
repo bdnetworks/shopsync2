@@ -65,12 +65,19 @@ function ProductsComponent() {
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ProductCategory | 'All')} className="w-full">
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
           <TabsTrigger value="All">All</TabsTrigger>
-          {siteConfig.productCategories.map(category => (
-            <TabsTrigger key={category} value={category}>{category}</TabsTrigger>
-          ))}
+          {
+            /*
+             * The product categories tabs are rendered from `siteConfig.productCategories`.
+             * To edit the categories, please modify the `productCategories` array in `src/config/site.ts`.
+             * You also need to make sure the category and its corresponding sheet URL are present in `src/config/categories.json`.
+            */
+            siteConfig.productCategories.map(category => (
+              <TabsTrigger key={category} value={category}>{category}</TabsTrigger>
+            ))
+          }
         </TabsList>
         <TabsContent value={activeTab}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4 mt-6">
+            <div className="grid grid-cols-2 sm-grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4 mt-6">
                 {filteredProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
                 ))}
