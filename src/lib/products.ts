@@ -58,12 +58,7 @@ async function initializeProducts() {
     }
 
     try {
-        // IMPORTANT: Replace this with your own Google Sheet CSV URL
-        // 1. Create a Google Sheet with the correct columns.
-        // 2. Click on File -> Share -> Publish to web.
-        // 3. Select "Comma-separated values (.csv)" and publish.
-        // 4. Copy the generated URL and paste it below.
-        const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5pGjG0pBCfqw2n31aJ_xP_TsjL-1VDPEXL_DD1Nq60EHod2gmMO0Y4Ci9tS_c9Kj7aR8Mv3A3fB4u/pub?output=csv');
+        const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSlxPN_QY2wJWBmDKWhSoF3EkOdSDS6XqBN2Ncx-jaAX4qMzUq4F9WSBjPtILrBJEXnK4UobyCEPese/pub?output=csv');
         const csv = await response.text();
         // The header row is: id,name,description,price,category,unit,imageUrl,imageAlt,imageHint
         const lines = csv.split('\n').slice(1);
