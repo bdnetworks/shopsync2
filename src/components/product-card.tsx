@@ -34,15 +34,15 @@ export default function ProductCard({ product }: ProductCardProps) {
                 />
             </div>
         </CardHeader>
-        <CardContent className="flex-1 p-3 text-center">
-            <h3 className="font-semibold text-sm h-8 overflow-hidden text-center hover:text-primary transition-colors">
+        <CardContent className="flex-1 p-3 text-center flex flex-col justify-between">
+            <h3 className="font-semibold text-sm h-10 overflow-hidden hover:text-primary transition-colors">
                 {product.name}
             </h3>
-        </CardContent>
-        <CardFooter className="p-3 pt-0 flex-col gap-2">
-            <p className="text-base font-bold text-primary">
-            ${product.price.toFixed(2)}
+            <p className="text-base font-bold text-primary mt-1">
+              ${product.price.toFixed(2)}
             </p>
+        </CardContent>
+        <CardFooter className="p-3 pt-0">
             <Button onClick={handleAddToCart} className="w-full h-9 text-sm">
             <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
             </Button>
