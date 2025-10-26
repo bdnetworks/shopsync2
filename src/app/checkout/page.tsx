@@ -25,13 +25,14 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Only redirect if cart is not loading and is empty
     if (!isCartLoading && cartItems.length === 0) {
       router.push('/products');
     }
-  }, [isCartLoading, cartItems, router]);
+  }, [isCartLoading, cartItems.length, router]);
   
 
-  if (isCartLoading || cartItems.length === 0) {
+  if (isCartLoading) {
     return (
         <div className="container mx-auto px-4 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -89,6 +90,12 @@ export default function CheckoutPage() {
             </div>
         </div>
     );
+  }
+
+  // If cart is loaded and still empty, this will be caught by the useEffect for redirection.
+  // We can render a minimal loader or null while waiting for redirection.
+  if (cartItems.length === 0) {
+    return null; // or a loading spinner
   }
 
   const handlePlaceOrder = async () => {
