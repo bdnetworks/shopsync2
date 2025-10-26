@@ -40,13 +40,13 @@ function ProductGrid() {
   }, [selectedCategory]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-[#F2F4F8]">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
         <aside className="w-full md:w-64 lg:w-72">
           <Card>
-            <CardHeader className="p-4">
-                <h3 className="text-lg font-headline font-semibold flex items-center gap-2">
+            <CardHeader className="p-4 bg-secondary">
+                <h3 className="text-lg font-bold flex items-center gap-2">
                     <LayoutGrid className="h-5 w-5" />
                     Categories
                 </h3>
@@ -56,7 +56,7 @@ function ProductGrid() {
                     <button
                         onClick={() => handleCategoryChange('all')}
                         className={cn(
-                        "p-4 text-left text-sm font-medium border-l-4",
+                        "p-4 text-left font-medium border-l-4",
                         selectedCategory === 'all'
                             ? 'border-primary bg-primary/10 text-primary'
                             : 'border-transparent hover:bg-accent/50'
@@ -69,7 +69,7 @@ function ProductGrid() {
                             key={cat}
                             onClick={() => handleCategoryChange(cat)}
                             className={cn(
-                            "p-4 text-left text-sm font-medium border-l-4",
+                            "p-4 text-left font-medium border-l-4",
                             selectedCategory === cat
                                 ? 'border-primary bg-primary/10 text-primary'
                                 : 'border-transparent hover:bg-accent/50'
@@ -85,14 +85,14 @@ function ProductGrid() {
 
         {/* Main Content */}
         <main className="flex-1">
-          <div className="mb-6">
-            <h1 className="text-3xl md:text-4xl font-headline font-bold">
+          <div className="mb-6 p-4 rounded-md bg-white">
+            <h1 className="text-2xl font-bold">
               {selectedCategory === 'all' ? 'Popular Products' : selectedCategory}
             </h1>
           </div>
           
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -135,16 +135,15 @@ function ProductsPageSkeleton() {
             </aside>
             <main className="flex-1">
                 <div className="mb-6"><Skeleton className="h-10 w-1/2" /></div>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                    {Array.from({ length: 8 }).map((_, i) => (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                    {Array.from({ length: 10 }).map((_, i) => (
                         <Card key={i}>
-                            <CardHeader><Skeleton className="aspect-[4/3]" /></CardHeader>
-                            <CardContent className="space-y-2 p-3">
-                                <Skeleton className="h-4 w-3/4" />
-                                <Skeleton className="h-4 w-1/4" />
-                                <Skeleton className="h-6 w-1/2" />
+                            <CardHeader><Skeleton className="aspect-square" /></CardHeader>
+                            <CardContent className="space-y-2 p-3 text-center">
+                                <Skeleton className="h-4 w-3/4 mx-auto" />
                             </CardContent>
-                            <CardFooter className="p-3">
+                            <CardFooter className="p-3 flex-col gap-2">
+                                <Skeleton className="h-6 w-1/2 mx-auto" />
                                 <Skeleton className="h-10 w-full" />
                             </CardFooter>
                         </Card>

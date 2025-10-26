@@ -19,9 +19,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-lg">
-      <CardHeader className="p-0">
-        <div className="aspect-[4/3] relative w-full p-4">
+    <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <CardHeader className="p-0 border-b">
+        <div className="aspect-square relative w-full p-4">
             <Image
               src={product.image.src}
               alt={product.image.alt}
@@ -31,15 +31,16 @@ export default function ProductCard({ product }: ProductCardProps) {
             />
         </div>
       </CardHeader>
-      <CardContent className="flex-1 p-3 space-y-1">
-        <h3 className="font-semibold text-sm h-10 overflow-hidden">{product.name}</h3>
-        {product.unit && <p className="text-xs text-muted-foreground">{product.unit}</p>}
-        <p className="text-base font-bold">
+      <CardContent className="flex-1 p-3 text-center">
+        <h3 className="font-semibold text-sm h-10 overflow-hidden text-center hover:text-primary transition-colors">
+            {product.name}
+        </h3>
+      </CardContent>
+      <CardFooter className="p-3 pt-0 flex-col gap-2">
+        <p className="text-base font-bold text-primary">
           ${product.price.toFixed(2)}
         </p>
-      </CardContent>
-      <CardFooter className="p-3 pt-0">
-        <Button onClick={handleAddToCart} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-9 text-sm">
+        <Button onClick={handleAddToCart} className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground h-9 text-sm">
           <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
         </Button>
       </CardFooter>
