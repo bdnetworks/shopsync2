@@ -15,13 +15,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
-
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/products', label: 'Products' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-];
+import { siteConfig } from '@/config/site';
 
 export default function Header() {
   const { itemCount } = useCart();
@@ -75,7 +69,7 @@ export default function Header() {
                     </Link>
                   </SheetHeader>
                   <div className="flex flex-col gap-4">
-                    {navLinks.map((link) => (
+                    {siteConfig.navLinks.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href}
@@ -97,7 +91,7 @@ export default function Header() {
       </div>
       <nav className="hidden md:flex bg-background border-b">
         <div className="container flex items-center gap-6 text-sm font-medium h-12 max-w-screen-2xl">
-          {navLinks.map((link) => (
+          {siteConfig.navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}

@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { siteConfig } from "@/config/site";
+import { getIcon } from "@/lib/icons";
 
 export default function ContactPage() {
   return (
@@ -48,33 +49,20 @@ export default function ContactPage() {
         
         <div className="space-y-8">
             <h2 className="font-headline text-2xl font-semibold">Our Information</h2>
-            <div className="flex items-start gap-4">
-                <div className="bg-primary/10 text-primary p-3 rounded-full">
-                    <Mail className="h-6 w-6" />
+            {siteConfig.contactInfo.map(info => {
+              const Icon = getIcon(info.icon);
+              return (
+                <div key={info.title} className="flex items-start gap-4">
+                    <div className="bg-primary/10 text-primary p-3 rounded-full">
+                        {Icon && <Icon className="h-6 w-6" />}
+                    </div>
+                    <div>
+                        <h3 className="font-semibold">{info.title}</h3>
+                        <p className="text-muted-foreground">{info.value}</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 className="font-semibold">Email</h3>
-                    <p className="text-muted-foreground">hello@shopsync.com</p>
-                </div>
-            </div>
-            <div className="flex items-start gap-4">
-                <div className="bg-primary/10 text-primary p-3 rounded-full">
-                    <Phone className="h-6 w-6" />
-                </div>
-                <div>
-                    <h3 className="font-semibold">Phone</h3>
-                    <p className="text-muted-foreground">(123) 456-7890</p>
-                </div>
-            </div>
-            <div className="flex items-start gap-4">
-                <div className="bg-primary/10 text-primary p-3 rounded-full">
-                    <MapPin className="h-6 w-6" />
-                </div>
-                <div>
-                    <h3 className="font-semibold">Office</h3>
-                    <p className="text-muted-foreground">123 Commerce St, Online City, 10101</p>
-                </div>
-            </div>
+              )
+            })}
         </div>
       </div>
     </div>

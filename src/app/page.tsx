@@ -4,32 +4,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { getProducts } from '@/lib/products';
 import ProductCard from '@/components/product-card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { ProductCategory } from '@/lib/types';
-import { Laptop, Cpu, Monitor, Speaker, Component, Gamepad2, Printer, Camera, HardDrive, Tv } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { siteConfig } from '@/config/site';
+import { Card } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-
-const categories: {name: string, icon: React.ElementType}[] = [
-    { name: 'Laptop', icon: Laptop },
-    { name: 'Processor', icon: Cpu },
-    { name: 'AIO PC', icon: Monitor },
-    { name: 'Speaker', icon: Speaker },
-    { name: 'Monitor', icon: Tv },
-    { name: 'Software', icon: HardDrive },
-    { name: 'Gaming', icon: Gamepad2 },
-    { name: 'Printer', icon: Printer },
-    { name: 'CPU', icon: Cpu },
-    { name: 'Camera', icon: Camera },
-];
-
-const productCategories: ProductCategory[] = ['Apparel', 'Bags', 'Footwear', 'Accessories'];
+import { getIcon } from '@/lib/icons';
 
 export default function Home() {
   const allProducts = getProducts();
-  const heroImages = PlaceHolderImages.filter(p => p.id.startsWith('hero-banner-'));
   const collectionsProducts = allProducts.slice(0, 12);
-
 
   return (
     <div className="flex flex-col bg-background">
@@ -42,7 +24,7 @@ export default function Home() {
               className="w-full"
           >
               <CarouselContent>
-                  {heroImages.map(image => (
+                  {siteConfig.heroBanners.map(image => (
                       <CarouselItem key={image.id}>
                           <div className="relative w-full h-[30vh] md:h-[40vh] rounded-lg overflow-hidden">
                               <Image
@@ -67,14 +49,17 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-6">Top Categories</h2>
           <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
-            {categories.map((category) => (
-              <Link href={'/products'} key={category.name}>
-                <Card className="flex flex-col items-center justify-center p-2 md:p-4 hover:shadow-lg transition-shadow aspect-square">
-                  <category.icon className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-                  <p className="mt-2 text-xs md:text-sm text-center font-medium">{category.name}</p>
-                </Card>
-              </Link>
-            ))}
+            {siteConfig.topCategories.map((category) => {
+              const Icon = getIcon(category.icon);
+              return (
+                <Link href={'/products'} key={category.name}>
+                  <Card className="flex flex-col items-center justify-center p-2 md:p-4 hover:shadow-lg transition-shadow aspect-square">
+                    {Icon && <Icon className="h-6 w-6 md:h-8 md:w-8 text-primary" />}
+                    <p className="mt-2 text-xs md:text-sm text-center font-medium">{category.name}</p>
+                  </Card>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -95,7 +80,7 @@ export default function Home() {
         </div>
       </section>
 
-      {productCategories.map(category => {
+      {siteConfig.productCategories.map(category => {
         const categoryProducts = allProducts.filter(p => p.category === category).slice(0, 6);
         if (categoryProducts.length === 0) return null;
         return (
@@ -122,7 +107,7 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
             <h2 className="text-2xl font-bold mb-4">Top Brands</h2>
             <div className="flex justify-center items-center gap-8 flex-wrap">
-                {['Apple', 'Microsoft', 'Starlink', 'HP', 'Asus', 'Dell', 'Lenovo', 'Acer', 'Intel', 'AMD', 'MSI'].map(brand => (
+                {siteConfig.topBrands.map(brand => (
                     <span key={brand} className="font-semibold text-muted-foreground text-lg">{brand}</span>
                 ))}
             </div>

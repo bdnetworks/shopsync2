@@ -7,8 +7,7 @@ import ProductCard from '@/components/product-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProductCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const productCategories: ProductCategory[] = ['Apparel', 'Bags', 'Footwear', 'Accessories'];
+import { siteConfig } from '@/config/site';
 
 function ProductsComponent() {
   const allProducts = getProducts();
@@ -48,7 +47,7 @@ function ProductsComponent() {
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ProductCategory | 'All')} className="w-full">
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
           <TabsTrigger value="All">All</TabsTrigger>
-          {productCategories.map(category => (
+          {siteConfig.productCategories.map(category => (
             <TabsTrigger key={category} value={category}>{category}</TabsTrigger>
           ))}
         </TabsList>

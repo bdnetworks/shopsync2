@@ -1,8 +1,9 @@
 
 import type { Product } from './types';
+import categories from '@/config/categories.json';
 
 // This is a sample products list for fallback purposes.
-const products: Product[] = [
+const fallbackProducts: Product[] = [
   {
     id: 'prod_001',
     name: 'Classic Cotton Tee',
@@ -17,40 +18,11 @@ const products: Product[] = [
       hint: 't-shirt',
     }
   },
-  {
-    id: 'prod_002',
-    name: 'Urban Explorer Backpack',
-    description: 'A durable and stylish backpack crafted from genuine leather, with multiple compartments for all your gear.',
-    price: 149.99,
-    category: 'Bags',
-    unit: '1 pc',
-    image: {
-      id: 'product-2',
-      src: 'https://images.unsplash.com/photo-1622560481156-01fc7e1693e6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsZWF0aGVyJTIwYmFja3BhY2t8ZW58MHx8fHwxNzYxNDQ5MzEyfDA&ixlib=rb-4.1.0&q=80&w=1080',
-      alt: 'A durable and spacious leather backpack.',
-      hint: 'leather backpack',
-    }
-  },
-  {
-    id: 'prod_012',
-    name: 'Classic Leather Belt',
-    description: 'A versatile and durable belt made from 100% genuine leather with a solid brass buckle.',
-    price: 59.99,
-    category: 'Accessories',
-    unit: '1 pc',
-    image: {
-      id: 'product-12',
-      src: 'https://images.unsplash.com/photo-1664286022007-9d2eb1003165?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGVhdGhlciUyMGJlbHR8ZW58MHx8fHwxNzYxMzc0NjI1fDA&ixlib=rb-4.1.0&q=80&w=1080',
-      alt: 'A stylish and functional belt.',
-      hint: 'leather belt',
-    }
-  },
 ];
 
 let allProducts: Product[] = [];
 let productsInitialized = false;
 
-// Function to parse CSV data, handling quoted fields
 function parseCSV(csv: string): string[][] {
     const lines: string[][] = [];
     let currentLine: string[] = [];
@@ -63,7 +35,6 @@ function parseCSV(csv: string): string[][] {
         if (inQuotes) {
             if (char === '"') {
                 if (i + 1 < csv.length && csv[i + 1] === '"') {
-                    // Escaped quote
                     field += '"';
                     i++;
                 } else {
@@ -99,76 +70,82 @@ function parseCSV(csv: string): string[][] {
         lines.push(currentLine);
     }
     
-    return lines;
+    // remove header
+    return lines.length > 1 ? lines.slice(1) : [];
 }
 
-const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSlxPN_QY2wJWBmDKWhSoF3EkOdSDS6XqBN2Ncx-jaAX4qMzUq4F9WSBjPtILrBJEXnK4UobyCEPese/pub?output=csv';
+async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
+     if (!sheetUrl) return [];
+    try {
+        const response = await fetch(sheetUrl);
+        const csv = await response.text();
+        
+        const lines = parseCSV(csv);
+        
+        return lines.map(values => {
+             const [id, name, description, price, category, unit, imageUrl, imageAlt, imageHint] = values;
+             
+             const product: Product = {
+                id: id?.trim(),
+                name: name?.trim(),
+                description: description?.trim(),
+                price: parseFloat(price?.trim()),
+                category: category?.trim() as any,
+                unit: unit?.trim(),
+                image: {
+                    id: id?.trim() || `img_${Math.random()}`,
+                    src: imageUrl?.trim(),
+                    alt: imageAlt?.trim(),
+                    hint: imageHint?.trim(),
+                }
+            };
+
+            // Basic validation
+            if (product.id && product.name && product.image.src && !isNaN(product.price)) {
+                 try {
+                    new URL(product.image.src); // Validate URL
+                    return product;
+                } catch (e) {
+                     console.warn(`Invalid URL for product ID ${product.id}: ${product.image.src}`);
+                    return null;
+                }
+            }
+            return null;
+        }).filter((p): p is Product => p !== null);
+
+    } catch (error) {
+        console.error(`Failed to fetch or parse sheet: ${sheetUrl}`, error);
+        return [];
+    }
+}
 
 
-// NOTE: This is a temporary solution. For a real app, you should use a proper database
-// and fetch the data from an API. The data is fetched from a Google Sheet and cached.
 async function initializeProducts() {
     if (productsInitialized) {
         return;
     }
 
+    const fetchPromises = categories.map(category => fetchAndParseSheet(category.sheetUrl));
+    
     try {
-        const response = await fetch(GOOGLE_SHEET_CSV_URL);
-        const csv = await response.text();
-        
-        const parsedLines = parseCSV(csv);
-        // header is: id,name,description,price,category,unit,imageUrl,imageAlt,imageHint
-        const header = parsedLines[0].map(h => h.trim());
-        const lines = parsedLines.slice(1);
-        
-        const productsFromSheet = lines.map(values => {
-             const row = header.reduce((obj, key, index) => {
-                obj[key] = values[index] ? values[index].trim() : '';
-                return obj;
-            }, {} as any);
-            
-            return {
-                id: row.id,
-                name: row.name,
-                description: row.description,
-                price: parseFloat(row.price),
-                category: row.category,
-                unit: row.unit,
-                image: {
-                    id: row.id || `img_${Math.random()}`,
-                    src: row.imageUrl,
-                    alt: row.imageAlt,
-                    hint: row.imageHint,
-                }
-            } as Product;
-        }).filter(p => {
-             try {
-                if (p.id && p.name && p.image.src) {
-                    new URL(p.image.src); // Validate URL
-                    return true;
-                }
-                return false;
-            } catch (e) {
-                console.warn(`Invalid URL for product ID ${p.id}: ${p.image.src}`);
-                return false;
-            }
-        });
+        const productArrays = await Promise.all(fetchPromises);
+        allProducts = productArrays.flat();
 
-        allProducts = productsFromSheet;
+        if (allProducts.length === 0) {
+            console.warn("No products loaded from Google Sheets, using fallback data.");
+            allProducts = fallbackProducts;
+        }
+
         productsInitialized = true;
     } catch (error) {
-        console.error("Failed to fetch products from Google Sheet, using fallback data.", error);
-        // If fetching fails, use the local products as a fallback
-        allProducts = products;
+        console.error("Failed to initialize products from Google Sheets, using fallback data.", error);
+        allProducts = fallbackProducts;
         productsInitialized = true;
     }
 }
 
-
 export const getProducts = (): Product[] => {
     if (!productsInitialized) {
-        // This is not ideal for server components, but it's a simple way to handle initialization
-        // on first access. A better approach would be to ensure initialization happens at app startup.
         console.warn("Products not initialized. Call initializeProducts() at your app's entry point.");
     }
     return allProducts;
@@ -181,8 +158,6 @@ export const getProductById = (id: string): Product | undefined => {
     return allProducts.find(p => p.id === id);
 }
 
-// Initialize products on module load. This works for client-side rendering and server-side
-// if the module is loaded once per request.
 (async () => {
     await initializeProducts();
 })();

@@ -1,0 +1,19 @@
+
+[
+    {
+        "name": "Apparel",
+        "sheetUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlxPN_QY2wJWBmDKWhSoF3EkOdSDS6XqBN2Ncx-jaAX4qMzUq4F9WSBjPtILrBJEXnK4UobyCEPese/pub?gid=0&single=true&output=csv"
+    },
+    {
+        "name": "Bags",
+        "sheetUrl": ""
+    },
+    {
+        "name": "Footwear",
+        "sheetUrl": ""
+    },
+    {
+        "name": "Accessories",
+        "sheetUrl": ""
+    }
+]

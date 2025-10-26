@@ -1,41 +1,7 @@
 import Link from 'next/link';
-import { Github, Twitter, Facebook, Youtube, Instagram } from 'lucide-react';
 import Logo from '@/components/logo';
-
-const socialLinks = [
-  { name: 'Facebook', icon: Facebook, href: '#' },
-  { name: 'Twitter', icon: Twitter, href: '#' },
-  { name: 'Youtube', icon: Youtube, href: '#' },
-  { name: 'Instagram', icon: Instagram, href: '#' },
-];
-
-const footerLinks = [
-    {
-        title: "Shop",
-        links: [
-            { name: "All Products", href: "/products"},
-            { name: "Apparel", href: "/products?category=Apparel"},
-            { name: "Bags", href: "/products?category=Bags"},
-            { name: "Accessories", href: "/products?category=Accessories"},
-        ]
-    },
-    {
-        title: "About Us",
-        links: [
-            { name: "Our Story", href: "/about"},
-            { name: "Contact", href: "/contact"},
-            { name: "FAQs", href: "#"},
-        ]
-    },
-    {
-        title: "Support",
-        links: [
-            { name: "Shipping & Returns", href: "#"},
-            { name: "Privacy Policy", href: "#"},
-            { name: "Terms of Service", href: "#"},
-        ]
-    }
-]
+import { siteConfig } from '@/config/site';
+import { getIcon } from '@/lib/icons';
 
 export default function Footer() {
   return (
@@ -47,18 +13,21 @@ export default function Footer() {
               <Logo />
             </Link>
             <p className="text-sm text-gray-400">
-              Syncing you with the best products from across the web.
+              {siteConfig.description}
             </p>
             <div className="flex space-x-4 mt-4">
-              {socialLinks.map((social) => (
-                <Link key={social.name} href={social.href} className="text-gray-400 hover:text-white">
-                  <social.icon className="h-5 w-5" />
-                  <span className="sr-only">{social.name}</span>
-                </Link>
-              ))}
+              {siteConfig.socialLinks.map((social) => {
+                const Icon = getIcon(social.icon);
+                return (
+                  <Link key={social.name} href={social.href} className="text-gray-400 hover:text-white">
+                    {Icon && <Icon className="h-5 w-5" />}
+                    <span className="sr-only">{social.name}</span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
-          {footerLinks.map((section) => (
+          {siteConfig.footerLinks.map((section) => (
             <div key={section.title}>
                 <h3 className="font-headline font-semibold text-white">{section.title}</h3>
                 <ul className="mt-4 space-y-2">
@@ -74,7 +43,7 @@ export default function Footer() {
           ))}
         </div>
         <div className="mt-8 border-t border-gray-800 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} ShopSync. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
         </div>
       </div>
     </footer>
