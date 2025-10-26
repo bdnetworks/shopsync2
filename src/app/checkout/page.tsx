@@ -10,16 +10,20 @@ import { useCart } from '@/context/cart-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { siteConfig } from '@/config/site';
+import { useToast } from '@/hooks/use-toast';
+import { sendOrderEmail } from '@/ai/flows/send-order-email';
 
 export default function CheckoutPage() {
   const { cartItems, subtotal, shippingFee, total, clearCart } = useCart();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (cartItems.length === 0 && typeof window !== 'undefined') {
+  if (cartItems.length === 0 && typeof window !== 'undefined' && !isSubmitting) {
     router.push('/products');
     return null;
   }
@@ -43,17 +47,34 @@ export default function CheckoutPage() {
     const orderText = generateOrderText();
     const whatsappUrl = `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${encodeURIComponent(orderText)}`;
     window.open(whatsappUrl, '_blank');
+    setIsSubmitting(true);
     clearCart();
     router.push('/order-confirmation');
   };
 
-  const handleEmailOrder = () => {
-    const orderText = generateOrderText();
-    const subject = `New Order from ${name}`;
-    const mailtoUrl = `mailto:${siteConfig.checkout.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(orderText)}`;
-    window.location.href = mailtoUrl;
-    clearCart();
-    router.push('/order-confirmation');
+  const handleEmailOrder = async () => {
+    setIsSubmitting(true);
+    try {
+      await sendOrderEmail({
+        customerDetails: { name, phone, address },
+        cartDetails: {
+          items: cartItems,
+          subtotal,
+          shipping: shippingFee,
+          total,
+        },
+      });
+      clearCart();
+      router.push('/order-confirmation');
+    } catch (error) {
+      console.error("Failed to send order email", error);
+      toast({
+        title: "Error",
+        description: "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid = name && phone && address;
@@ -71,15 +92,15 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} />
+                    <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} disabled={isSubmitting} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" placeholder="+1 234 567 890" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    <Input id="phone" placeholder="+1 234 567 890" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={isSubmitting}/>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Full Address</Label>
-                    <Input id="address" placeholder="123 Main St, Anytown, USA 12345" value={address} onChange={(e) => setAddress(e.target.value)} />
+                    <Input id="address" placeholder="123 Main St, Anytown, USA 12345" value={address} onChange={(e) => setAddress(e.target.value)} disabled={isSubmitting} />
                 </div>
               </CardContent>
             </Card>
@@ -90,11 +111,11 @@ export default function CheckoutPage() {
                     <CardDescription>Choose how you would like to place your order.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Button onClick={handleWhatsAppOrder} size="lg" className="w-full" disabled={!isFormValid}>
+                    <Button onClick={handleWhatsAppOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
                         Order on WhatsApp
                     </Button>
-                    <Button onClick={handleEmailOrder} variant="secondary" size="lg" className="w-full" disabled={!isFormValid}>
-                        Order via Email
+                    <Button onClick={handleEmailOrder} variant="secondary" size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
+                        {isSubmitting ? 'Placing Order...' : 'Order via Email'}
                     </Button>
                 </CardContent>
                  {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
