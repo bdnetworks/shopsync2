@@ -22,30 +22,41 @@ export default function ContactPage() {
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const scriptURL = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+
+    if (!scriptURL) {
+      toast({
+        title: "Configuration Error",
+        description: "Google Script URL is not configured. Please contact support.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      const response = await fetch('/api/submit-form', {
+      // We submit the form directly to the Google Apps Script URL.
+      // This response will likely be opaque (CORS issue), so we can't read its body.
+      // However, the request will go through and the script will execute.
+      // We will optimistically assume success if no network error is thrown.
+      await fetch(scriptURL, {
         method: 'POST',
         body: formData,
+        mode: 'no-cors', // Important: This prevents CORS errors in the browser.
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "Message Sent!",
-          description: "Thank you for contacting us. We'll get back to you shortly.",
-        });
-        form.reset(); // Reset the form fields
-      } else {
-        throw new Error(result.error || "Unknown error from the server");
-      }
+      // Since we can't read the response in 'no-cors' mode, we optimistically show success.
+      toast({
+        title: "Message Sent!",
+        description: "Thank you for contacting us. We'll get back to you shortly.",
+      });
+      form.reset();
 
     } catch (error: any) {
       console.error("Error submitting form:", error);
       toast({
         title: "Something went wrong",
-        description: error.message || "Could not send your message. Please try again later.",
+        description: "Could not send your message. Please try again later.",
         variant: "destructive",
       });
     } finally {
