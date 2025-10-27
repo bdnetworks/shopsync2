@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, Loader2 } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 import Link from 'next/link';
 
 const WhatsAppIcon = () => (
@@ -35,7 +35,7 @@ const WhatsAppIcon = () => (
 
 
 export default function CheckoutPage() {
-  const { cartItems, subtotal, total, clearCart, isCartLoading, shippingFee, setShippingOption } = useCart();
+  const { cartItems, subtotal, total, isCartLoading, shippingFee, setShippingOption } = useCart();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -45,19 +45,22 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>('insideDhaka');
   const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0].name);
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-
+  
   useEffect(() => {
     setShippingOption(selectedShipping);
   }, [selectedShipping, setShippingOption]);
 
   useEffect(() => {
     if (!isCartLoading && cartItems.length === 0) {
-      const orderDetails = sessionStorage.getItem('orderDetails');
-      if (!orderDetails) {
+      // Redirect if cart is empty and no order was just placed
+      if (!sessionStorage.getItem('order_placed_via_whatsapp')) {
         router.push('/products');
       }
     }
+     // Clean up session storage on component unmount
+     return () => {
+        sessionStorage.removeItem('order_placed_via_whatsapp');
+    };
   }, [isCartLoading, cartItems.length, router]);
   
   const handleShippingChange = (value: ShippingOption) => {
@@ -75,52 +78,15 @@ export default function CheckoutPage() {
     return `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${encodeURIComponent(message)}`;
   }, [name, email, mobile, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
 
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsPlacingOrder(true);
-
-    const orderId = `SS-${Date.now()}`;
-    const orderDetails = {
-        orderId,
-        customer: { name, email, mobile, address },
-        items: cartItems,
-        summary: {
-            subtotal,
-            shippingFee,
-            total,
-            paymentMethod,
-            paymentDetails: selectedPaymentMethodDetails?.details,
-        },
-        orderDate: new Date().toISOString(),
-    };
-
-    try {
-      // Send email
-      const response = await fetch('/api/send-order-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderDetails),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send order email.');
-      }
-      
-      // Store details and redirect
-      sessionStorage.setItem('orderDetails', JSON.stringify(orderDetails));
-      router.push('/order-confirmation');
-      clearCart();
-
-    } catch (error) {
-      console.error("Failed to place order:", error);
-      toast({
-        title: "Order Placement Failed",
-        description: "We couldn't process your order. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsPlacingOrder(false);
-    }
+  const handleOrderViaWhatsApp = () => {
+    sessionStorage.setItem('order_placed_via_whatsapp', 'true');
+    // We can't actually clear the cart here, as the user might not send the message.
+    // The user will be redirected to an empty cart page after sending, which is acceptable.
+    window.open(whatsappOrderLink, '_blank');
+    toast({
+        title: "Redirecting to WhatsApp",
+        description: "Your order details are ready. Please send the message in WhatsApp to confirm.",
+    });
   };
 
   if (isCartLoading) {
@@ -196,13 +162,12 @@ export default function CheckoutPage() {
     );
   }
 
-
   const isFormValid = name && email && mobile && address && paymentMethod;
   
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-4xl font-headline font-bold text-center mb-8">Checkout</h1>
-      <form onSubmit={handlePlaceOrder}>
+      <form onSubmit={(e) => e.preventDefault()}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-8">
               <Card>
@@ -279,21 +244,15 @@ export default function CheckoutPage() {
               <Card>
                   <CardHeader>
                       <CardTitle className="font-headline">Place Your Order</CardTitle>
-                      <CardDescription>Once your information is correct, you can place your order.</CardDescription>
+                      <CardDescription>Once your information is correct, you can place your order via WhatsApp.</CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-col sm:flex-row gap-4">
-                      <Button type="submit" size="lg" className="w-full" disabled={!isFormValid || isPlacingOrder}>
-                          {isPlacingOrder && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          {isPlacingOrder ? 'Placing Order...' : `Place Order - ${siteConfig.currency}${total.toFixed(2)}`}
-                      </Button>
-                      <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700" variant="secondary" disabled={!isFormValid}>
-                          <a href={whatsappOrderLink} target="_blank" rel="noopener noreferrer">
-                              <WhatsAppIcon />
-                            Order on WhatsApp
-                          </a>
+                  <CardContent>
+                      <Button onClick={handleOrderViaWhatsApp} size="lg" className="w-full bg-green-600 hover:bg-green-700" disabled={!isFormValid}>
+                          <WhatsAppIcon />
+                        Order on WhatsApp - {siteConfig.currency}{total.toFixed(2)}
                       </Button>
                   </CardContent>
-                  {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping and payment information to place an order.</p></CardContent>}
+                  {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
               </Card>
           </div>
           <div className="lg:order-first">
@@ -330,3 +289,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
