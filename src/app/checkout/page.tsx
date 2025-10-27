@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal } from 'lucide-react';
+import { Terminal, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const WhatsAppIcon = () => (
@@ -37,6 +37,7 @@ const WhatsAppIcon = () => (
 export default function CheckoutPage() {
   const { cartItems, subtotal, total, clearCart, isCartLoading, shippingFee, setShippingOption } = useCart();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -44,6 +45,7 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>('insideDhaka');
   const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0].name);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   useEffect(() => {
     setShippingOption(selectedShipping);
@@ -73,8 +75,10 @@ export default function CheckoutPage() {
     return `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${encodeURIComponent(message)}`;
   }, [name, email, mobile, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsPlacingOrder(true);
+
     const orderId = `SS-${Date.now()}`;
     const orderDetails = {
         orderId,
@@ -90,10 +94,33 @@ export default function CheckoutPage() {
         orderDate: new Date().toISOString(),
     };
 
-    sessionStorage.setItem('orderDetails', JSON.stringify(orderDetails));
-    
-    router.push('/order-confirmation');
-    clearCart();
+    try {
+      // Send email
+      const response = await fetch('/api/send-order-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderDetails),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send order email.');
+      }
+      
+      // Store details and redirect
+      sessionStorage.setItem('orderDetails', JSON.stringify(orderDetails));
+      router.push('/order-confirmation');
+      clearCart();
+
+    } catch (error) {
+      console.error("Failed to place order:", error);
+      toast({
+        title: "Order Placement Failed",
+        description: "We couldn't process your order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPlacingOrder(false);
+    }
   };
 
   if (isCartLoading) {
@@ -255,8 +282,9 @@ export default function CheckoutPage() {
                       <CardDescription>Once your information is correct, you can place your order.</CardDescription>
                   </CardHeader>
                   <CardContent className="flex flex-col sm:flex-row gap-4">
-                      <Button type="submit" size="lg" className="w-full" disabled={!isFormValid}>
-                          Place Order - {siteConfig.currency}{total.toFixed(2)}
+                      <Button type="submit" size="lg" className="w-full" disabled={!isFormValid || isPlacingOrder}>
+                          {isPlacingOrder && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {isPlacingOrder ? 'Placing Order...' : `Place Order - ${siteConfig.currency}${total.toFixed(2)}`}
                       </Button>
                       <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700" variant="secondary" disabled={!isFormValid}>
                           <a href={whatsappOrderLink} target="_blank" rel="noopener noreferrer">

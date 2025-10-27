@@ -4,6 +4,7 @@ export async function POST(req: NextRequest) {
   const { name, email, subject, message } = await req.json();
 
   const apiKey = process.env.ELASTIC_EMAIL_API_KEY;
+  const adminEmail = "saakib.com@gmail.com";
 
   if (!apiKey) {
     return NextResponse.json({ error: 'Elastic Email API Key is not configured.' }, { status: 500 });
@@ -12,10 +13,10 @@ export async function POST(req: NextRequest) {
   const formData = new URLSearchParams();
   formData.append('apikey', apiKey);
   formData.append('subject', `Contact Form: ${subject}`);
-  formData.append('from', 'saakib.com@gmail.com'); // This should be a verified sender email in your Elastic Email account
+  formData.append('from', adminEmail); // This should be a verified sender email in your Elastic Email account
   formData.append('fromName', name);
   formData.append('replyTo', email);
-  formData.append('to', 'saakib.com@gmail.com');
+  formData.append('to', adminEmail);
   formData.append('bodyHtml', `
     <h3>New Contact Form Submission</h3>
     <p><strong>Name:</strong> ${name}</p>
