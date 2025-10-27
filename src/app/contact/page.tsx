@@ -32,7 +32,7 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/submit-form', {
+      const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export default function ContactPage() {
 
       const result = await response.json();
 
-      if (response.ok && result.result === "success") {
+      if (response.ok) {
         toast({
           title: "Message Sent!",
           description: "Thank you for contacting us. We'll get back to you shortly.",
