@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,47 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
-import { useToast } from "@/hooks/use-toast";
 
 export default function ContactPage() {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Message Sent!",
-          description: "Thank you for reaching out. We'll get back to you soon.",
-        });
-        (event.target as HTMLFormElement).reset();
-      } else {
-        throw new Error('Failed to send message');
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -67,7 +27,9 @@ export default function ContactPage() {
             <CardDescription>Fill out the form and we'll get back to you as soon as possible.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form action={`https://formsubmit.co/${siteConfig.checkout.contact.email}`} method="POST" className="space-y-4">
+              <input type="hidden" name="_next" value={`${process.env.NEXT_PUBLIC_BASE_URL}/contact`} />
+              <input type="hidden" name="_subject" value="New message from your website!" />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
@@ -86,8 +48,8 @@ export default function ContactPage() {
                 <Label htmlFor="message">Message</Label>
                 <Textarea id="message" name="message" placeholder="Your message..." rows={5} required />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Sending...' : 'Send Message'}
+              <Button type="submit" className="w-full">
+                Send Message
               </Button>
             </form>
           </CardContent>
