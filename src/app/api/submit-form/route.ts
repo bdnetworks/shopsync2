@@ -17,17 +17,20 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(scriptUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', // This header is crucial
-      },
       body: JSON.stringify(body),
-      redirect: 'manual', 
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // IMPORTANT: Don't use redirect: 'manual' or 'follow' as it causes issues with Google Script responses.
     });
-
-    if (response.status === 0 || response.status === 200 || response.status === 302) {
+    
+    // Google Script on success redirects, which fetch interprets as a response with status 200 and type 'basic'.
+    // We can't see the final JSON, but a successful 'basic' response is a good indicator.
+    if (response.ok || response.status === 200 || response.status === 302) {
        return NextResponse.json({ result: 'success' });
     }
     
+    // If the response is not ok, try to parse the error.
     try {
         const errorResponse = await response.json();
         console.error('Google Script returned an error:', errorResponse);
@@ -36,6 +39,7 @@ export async function POST(request: NextRequest) {
             { status: response.status }
         );
     } catch (e) {
+        // If the error response isn't JSON, return the text.
         const errorText = await response.text();
         console.error('Google Script returned a non-JSON error response:', errorText);
         return NextResponse.json(
