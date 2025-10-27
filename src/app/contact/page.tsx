@@ -27,11 +27,12 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setSubmitStatus(null);
 
+    // NOTE: The field name for message is "Massage" to match the user's Google Form Entry ID name.
     const formData = {
       name,
       email,
       subject,
-      message,
+      "message": message,
     };
 
     try {
