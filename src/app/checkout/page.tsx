@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
-import { sendOrderEmail } from '@/ai/flows/send-order-email';
+import { sendOrderEmail } from '@/lib/send-order-email';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';

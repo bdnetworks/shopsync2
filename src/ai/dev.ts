@@ -1,2 +1,2 @@
-// Flows will be imported for their side effects in this file.
-import './flows/send-order-email';
+// This file is intentionally left empty.
+// Genkit flows can be added here for development purposes.
