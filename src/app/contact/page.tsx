@@ -31,21 +31,8 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
-
-    if (!scriptUrl) {
-      console.error("Google Script URL is not defined in .env.local");
-      toast({
-        title: "Configuration Error",
-        description: "The form is not configured correctly. Please contact support.",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      const response = await fetch(scriptUrl, {
+      const response = await fetch('/api/submit-form', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,21 +42,21 @@ export default function ContactPage() {
 
       const result = await response.json();
 
-      if (result.result === "success") {
+      if (response.ok && result.result === "success") {
         toast({
           title: "Message Sent!",
           description: "Thank you for contacting us. We'll get back to you shortly.",
         });
         setFormData({ name: '', email: '', subject: '', message: '' });
       } else {
-        throw new Error(result.error || "Unknown error from Google Script");
+        throw new Error(result.error || "Unknown error from the server");
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting form:", error);
       toast({
         title: "Something went wrong",
-        description: "Could not send your message. Please try again later.",
+        description: error.message || "Could not send your message. Please try again later.",
         variant: "destructive",
       });
     } finally {
