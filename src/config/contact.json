@@ -1,7 +1,7 @@
 
 {
     "contactInfo": [
-        { "title": "Email", "value": "hello@shopsync.com", "icon": "Mail" },
+        { "title": "Email", "value": "sakib.com@aol.com", "icon": "Mail" },
         { "title": "Phone", "value": "(123) 456-7890", "icon": "Phone" },
         { "title": "Office", "value": "123 Commerce St, Online City, 10101", "icon": "MapPin" }
     ]

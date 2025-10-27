@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -38,32 +37,27 @@ const WhatsAppIcon = () => (
 export default function CheckoutPage() {
   const { cartItems, subtotal, total, clearCart, isCartLoading, shippingFee, setShippingOption } = useCart();
   const router = useRouter();
-  const { toast } = useToast();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [address, setAddress] = useState('');
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>('insideDhaka');
   const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0].name);
 
   useEffect(() => {
-    // Initially set shipping option in context
     setShippingOption(selectedShipping);
-  }, []);
+  }, [selectedShipping, setShippingOption]);
 
   useEffect(() => {
     if (!isCartLoading && cartItems.length === 0) {
-      router.push('/products');
+      const orderDetails = sessionStorage.getItem('orderDetails');
+      if (!orderDetails) {
+        router.push('/products');
+      }
     }
   }, [isCartLoading, cartItems.length, router]);
   
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('submitted')) {
-      clearCart();
-    }
-  }, [clearCart]);
-
   const handleShippingChange = (value: ShippingOption) => {
     setSelectedShipping(value);
     setShippingOption(value);
@@ -75,12 +69,34 @@ export default function CheckoutPage() {
 
   const whatsappOrderLink = useMemo(() => {
     const orderItems = cartItems.map(item => `${item.name} (Qty: ${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}`).join('\n');
-    const message = `Hello, I'd like to place an order.\n\n*Name:* ${name}\n*Address:* ${address}\n\n*Items:*\n${orderItems}\n\n*Subtotal:* ${siteConfig.currency}${subtotal.toFixed(2)}\n*Shipping:* ${siteConfig.currency}${shippingFee.toFixed(2)}\n*Total:* ${siteConfig.currency}${total.toFixed(2)}\n\n*Payment Method:* ${paymentMethod}`;
+    const message = `Hello, I'd like to place an order.\n\n*Name:* ${name}\n*Email:* ${email}\n*Mobile:* ${mobile}\n*Address:* ${address}\n\n*Items:*\n${orderItems}\n\n*Subtotal:* ${siteConfig.currency}${subtotal.toFixed(2)}\n*Shipping:* ${siteConfig.currency}${shippingFee.toFixed(2)}\n*Total:* ${siteConfig.currency}${total.toFixed(2)}\n\n*Payment Method:* ${paymentMethod}`;
     return `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${encodeURIComponent(message)}`;
-  }, [name, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
+  }, [name, email, mobile, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
 
+  const handlePlaceOrder = (e: React.FormEvent) => {
+    e.preventDefault();
+    const orderId = `SS-${Date.now()}`;
+    const orderDetails = {
+        orderId,
+        customer: { name, email, mobile, address },
+        items: cartItems,
+        summary: {
+            subtotal,
+            shippingFee,
+            total,
+            paymentMethod,
+            paymentDetails: selectedPaymentMethodDetails?.details,
+        },
+        orderDate: new Date().toISOString(),
+    };
 
-  if (isCartLoading || (!isCartLoading && cartItems.length === 0)) {
+    sessionStorage.setItem('orderDetails', JSON.stringify(orderDetails));
+    
+    router.push('/order-confirmation');
+    clearCart();
+  };
+
+  if (isCartLoading) {
     return (
         <div className="container mx-auto px-4 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -96,6 +112,10 @@ export default function CheckoutPage() {
                                 <Skeleton className="h-10 w-full" />
                             </div>
                             <div className="space-y-2">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                             <div className="space-y-2">
                                 <Skeleton className="h-4 w-20" />
                                 <Skeleton className="h-10 w-full" />
                             </div>
@@ -150,25 +170,12 @@ export default function CheckoutPage() {
   }
 
 
-  const isFormValid = name && email && address && paymentMethod;
-
-  const orderItemsText = cartItems.map(item => `${item.name} (Qty: ${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}`).join('\n');
-  const orderSummary = `Subtotal: ${siteConfig.currency}${subtotal.toFixed(2)}\nShipping: ${siteConfig.currency}${shippingFee.toFixed(2)}\nTotal: ${siteConfig.currency}${total.toFixed(2)}`;
-
+  const isFormValid = name && email && mobile && address && paymentMethod;
+  
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-4xl font-headline font-bold text-center mb-8">Checkout</h1>
-      <form action={`https://formsubmit.co/${siteConfig.checkout.contact.email}`} method="POST">
-        {/* FormSubmit settings */}
-        <input type="hidden" name="_next" value={`${process.env.NEXT_PUBLIC_BASE_URL}/order-confirmation?submitted=true`} />
-        <input type="hidden" name="_subject" value={`New Order from ${name} - ${siteConfig.name}`} />
-        <input type="hidden" name="_captcha" value="false" />
-
-        {/* Order data */}
-        <input type="hidden" name="Order Items" value={orderItemsText} />
-        <input type="hidden" name="Order Summary" value={orderSummary} />
-
-
+      <form onSubmit={handlePlaceOrder}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-8">
               <Card>
@@ -184,6 +191,10 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <Input id="email" type="email" name="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="mobile">Mobile Number</Label>
+                      <Input id="mobile" type="tel" name="mobile" placeholder="01xxxxxxxxx" value={mobile} onChange={(e) => setMobile(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
                       <Label htmlFor="address">Full Address</Label>
@@ -234,7 +245,7 @@ export default function CheckoutPage() {
                     <p className="mb-2">Please complete your payment quickly using the details below. We will confirm your order upon receiving the payment.</p>
                     <p><strong>Method:</strong> {selectedPaymentMethodDetails.name}</p>
                     <p><strong>Details:</strong> {selectedPaymentMethodDetails.details}</p>
-                  </AlerTDescription>
+                  </AlertDescription>
                 </Alert>
               )}
 
