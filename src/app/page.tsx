@@ -7,42 +7,29 @@ import { getProducts } from '@/lib/products';
 import ProductCard from '@/components/product-card';
 import { siteConfig } from '@/config/site';
 import { Card } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { getIcon } from '@/lib/icons';
 
 export default async function Home() {
   const allProducts = await getProducts();
   const collectionsProducts = allProducts.slice(0, 12);
+  const heroBanner = siteConfig.heroBanners[0];
 
   return (
     <div className="flex flex-col bg-background">
       <section className="py-4 md:py-6">
         <div className="container mx-auto px-4">
-          <Carousel
-              opts={{
-                  loop: true,
-              }}
-              className="w-full"
-          >
-              <CarouselContent>
-                  {siteConfig.heroBanners.map(image => (
-                      <CarouselItem key={image.id}>
-                          <div className="relative w-full h-[30vh] md:h-[40vh] rounded-lg overflow-hidden">
-                              <Image
-                                  src={image.imageUrl}
-                                  alt={image.description}
-                                  data-ai-hint={image.imageHint}
-                                  fill
-                                  className="object-cover"
-                                  priority
-                              />
-                          </div>
-                      </CarouselItem>
-                  ))}
-              </CarouselContent>
-              <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-foreground" />
-              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-foreground" />
-          </Carousel>
+            {heroBanner && (
+              <div className="relative w-full h-[30vh] md:h-[40vh] rounded-lg overflow-hidden">
+                  <Image
+                      src={heroBanner.imageUrl}
+                      alt={heroBanner.description}
+                      data-ai-hint={heroBanner.imageHint}
+                      fill
+                      className="object-cover"
+                      priority
+                  />
+              </div>
+            )}
         </div>
       </section>
 

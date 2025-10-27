@@ -30,17 +30,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [shippingOption, setShippingOption] = useState<ShippingOption>('insideDhaka');
 
   useEffect(() => {
-    try {
-      const storedCart = localStorage.getItem('cartItems');
-      if (storedCart) {
+    setIsCartLoading(true);
+    const storedCart = localStorage.getItem('cartItems');
+    if (storedCart) {
+      try {
         setCartItems(JSON.parse(storedCart));
+      } catch (error) {
+        console.error("Failed to parse cart items from localStorage", error);
+        setCartItems([]);
       }
-    } catch (error) {
-      console.error("Failed to parse cart items from localStorage", error);
-      setCartItems([]);
-    } finally {
-      setIsCartLoading(false);
     }
+    setIsCartLoading(false);
   }, []);
 
   useEffect(() => {
