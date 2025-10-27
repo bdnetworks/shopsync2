@@ -10,22 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
 import { useToast } from '@/hooks/use-toast';
-
-const WhatsAppIcon = () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-5 w-5"
-    >
-      <path
-        d="M16.75 13.96c.25.13.43.2.5.28.08.09.14.19.19.3.05.11.06.23.02.35-.04.12-.13.24-.26.36-.13.12-.28.23-.46.33-.18.1-.38.16-.6.18-.21.02-.43.0-.65-.05-.22-.05-.44-.12-.66-.23-.22-.1-.43-.23-.64-.39-.21-.16-.41-.34-.6-.54s-.37-.42-.53-.65c-.16-.23-.3-.48-.43-.74-.12-.26-.23-.53-.32-.81-.09-.28-.15-.56-.19-.85-.04-.29-.04-.57-.01-.85.03-.28.1-.55.19-.81.1-.26.22-.5.37-.71.15-.21.32-.4.51-.56.2-.16.41-.3.65-.41.24-.11.49-.19.76-.23.27-.04.53-.05.79-.02.26.03.5.1.73.2.23.1.43.23.6.39.17.16.3.35.4.56.1.21.15.43.15.66.0.23-.05.45-.14.66-.09.21-.22.4-.38.56-.16.16-.35.3-.56.41-.21.11-.44.19-.68.24-.1.02-.19.03-.29.03-.1 0-.2-.02-.29-.05-.1-.03-.18-.06-.26-.11-.08-.05-.15-.1-.21-.16-.06-.06-.11-.13-.15-.21-.04-.08-.06-.16-.07-.25-.01-.09.01-.18.04-.26.04-.08.09-.16.15-.22.06-.06.13-.11.21-.15.08-.04.16-.06.25-.07.09-.01.18.01.26.04.08.03.16.08.22.14.03.03.05.05.06.07.01.02.03.04.04.06.01.02.02.04.03.06.01.02.01.04.01.06v.01c0 .02.01.03.01.03zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.73 0 3.36-.44 4.78-1.22l2.72 1.22-1.22-2.72C19.56 18.36 20 16.73 20 15c0-5.52-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
-      ></path>
-    </svg>
-);
-
+import { Loader2 } from 'lucide-react';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -34,18 +19,58 @@ export default function ContactPage() {
     subject: '',
     message: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { name, email, subject, message } = formData;
-    const whatsappMessage = `Hello, I have a query.\n\n*Name:* ${name}\n*Email:* ${email}\n*Subject:* ${subject}\n\n*Message:*\n${message}`;
-    const whatsappUrl = `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-    window.open(whatsappUrl, '_blank');
+    setIsSubmitting(true);
+
+    const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+
+    if (!scriptUrl) {
+      console.error("Google Script URL is not defined in .env.local");
+      toast({
+        title: "Configuration Error",
+        description: "The form is not configured correctly. Please contact support.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors', // Important: Apps Script web apps often require this
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      // Since mode is 'no-cors', we can't read the response. We optimistically assume success.
+      toast({
+        title: "Message Sent!",
+        description: "Thank you for contacting us. We'll get back to you shortly.",
+      });
+      setFormData({ name: '', email: '', subject: '', message: '' });
+
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Something went wrong",
+        description: "Could not send your message. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -83,9 +108,9 @@ export default function ContactPage() {
                 <Label htmlFor="message">Message</Label>
                 <Textarea id="message" name="message" placeholder="Your message..." rows={5} value={formData.message} onChange={handleChange} required />
               </div>
-              <Button type="submit" className="w-full mt-4 bg-green-600 hover:bg-green-700">
-                <WhatsAppIcon />
-                Send via WhatsApp
+              <Button type="submit" className="w-full mt-4" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </CardContent>
