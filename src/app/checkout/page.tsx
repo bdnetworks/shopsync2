@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
+import Link from 'next/link';
 
 const WhatsAppIcon = () => (
     <svg
@@ -44,7 +45,6 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>('insideDhaka');
   const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0].name);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // Initially set shipping option in context
@@ -57,6 +57,13 @@ export default function CheckoutPage() {
     }
   }, [isCartLoading, cartItems.length, router]);
   
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('submitted')) {
+      clearCart();
+    }
+  }, [clearCart]);
+
   const handleShippingChange = (value: ShippingOption) => {
     setSelectedShipping(value);
     setShippingOption(value);
@@ -65,27 +72,6 @@ export default function CheckoutPage() {
   const selectedPaymentMethodDetails = useMemo(() => {
     return siteConfig.checkout.paymentMethods.find(p => p.name === paymentMethod);
   }, [paymentMethod]);
-
-  const handlePlaceOrder = async () => {
-    setIsSubmitting(true);
-    // Simulate order processing
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    try {
-      router.push('/order-confirmation');
-      clearCart();
-    } catch (error) {
-      console.error("Failed to place order", error);
-      const errorMessage = (error as Error).message || "Failed to place order. Please try again.";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-        setIsSubmitting(false);
-    }
-  };
 
   const whatsappOrderLink = useMemo(() => {
     const orderItems = cartItems.map(item => `${item.name} (Qty: ${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}`).join('\n');
@@ -166,129 +152,142 @@ export default function CheckoutPage() {
 
   const isFormValid = name && email && address && paymentMethod;
 
+  const orderItemsText = cartItems.map(item => `${item.name} (Qty: ${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}`).join('\n');
+  const orderSummary = `Subtotal: ${siteConfig.currency}${subtotal.toFixed(2)}\nShipping: ${siteConfig.currency}${shippingFee.toFixed(2)}\nTotal: ${siteConfig.currency}${total.toFixed(2)}`;
+
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-4xl font-headline font-bold text-center mb-8">Checkout</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div className="space-y-8">
+      <form action={`https://formsubmit.co/${siteConfig.checkout.contact.email}`} method="POST">
+        {/* FormSubmit settings */}
+        <input type="hidden" name="_next" value={`${process.env.NEXT_PUBLIC_BASE_URL}/order-confirmation?submitted=true`} />
+        <input type="hidden" name="_subject" value={`New Order from ${name} - ${siteConfig.name}`} />
+        <input type="hidden" name="_captcha" value="false" />
+
+        {/* Order data */}
+        <input type="hidden" name="Order Items" value={orderItemsText} />
+        <input type="hidden" name="Order Summary" value={orderSummary} />
+
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="space-y-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-headline">Shipping Information</CardTitle>
+                  <CardDescription>Please provide your delivery details.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input id="name" name="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" type="email" name="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="address">Full Address</Label>
+                      <Input id="address" name="address" placeholder="123 Main St, Anytown" value={address} onChange={(e) => setAddress(e.target.value)} required />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                  <CardHeader>
+                      <CardTitle className="font-headline">Delivery Location</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <RadioGroup name="shipping_location" value={selectedShipping} onValueChange={(value) => handleShippingChange(value as ShippingOption)}>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="insideDhaka" id="insideDhaka" />
+                              <Label htmlFor="insideDhaka">In Dhaka city ({siteConfig.currency}{siteConfig.checkout.shippingFee.insideDhaka})</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="outsideDhaka" id="outsideDhaka" />
+                              <Label htmlFor="outsideDhaka">Out of Dhaka ({siteConfig.currency}{siteConfig.checkout.shippingFee.outsideDhaka})</Label>
+                          </div>
+                      </RadioGroup>
+                  </CardContent>
+              </Card>
+
+              <Card>
+                  <CardHeader>
+                      <CardTitle className="font-headline">Payment Method</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <RadioGroup name="payment_method" value={paymentMethod} onValueChange={setPaymentMethod}>
+                          {siteConfig.checkout.paymentMethods.map(method => (
+                              <div key={method.name} className="flex items-center space-x-2">
+                                  <RadioGroupItem value={method.name} id={method.name} />
+                                  <Label htmlFor={method.name}>{method.name}</Label>
+                              </div>
+                          ))}
+                      </RadioGroup>
+                  </CardContent>
+              </Card>
+              
+              {selectedPaymentMethodDetails && selectedPaymentMethodDetails.name !== 'CASH ON DELIVERY' && (
+                <Alert>
+                  <Terminal className="h-4 w-4" />
+                  <AlertTitle>Advance Payment Instruction</AlertTitle>
+                  <AlertDescription>
+                    <p className="mb-2">Please complete your payment quickly using the details below. We will confirm your order upon receiving the payment.</p>
+                    <p><strong>Method:</strong> {selectedPaymentMethodDetails.name}</p>
+                    <p><strong>Details:</strong> {selectedPaymentMethodDetails.details}</p>
+                  </AlerTDescription>
+                </Alert>
+              )}
+
+              <Card>
+                  <CardHeader>
+                      <CardTitle className="font-headline">Place Your Order</CardTitle>
+                      <CardDescription>Once your information is correct, you can place your order.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col sm:flex-row gap-4">
+                      <Button type="submit" size="lg" className="w-full" disabled={!isFormValid}>
+                          Place Order - {siteConfig.currency}{total.toFixed(2)}
+                      </Button>
+                      <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700" variant="secondary" disabled={!isFormValid}>
+                          <a href={whatsappOrderLink} target="_blank" rel="noopener noreferrer">
+                              <WhatsAppIcon />
+                            Order on WhatsApp
+                          </a>
+                      </Button>
+                  </CardContent>
+                  {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping and payment information to place an order.</p></CardContent>}
+              </Card>
+          </div>
+          <div className="lg:order-first">
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Shipping Information</CardTitle>
-                <CardDescription>Please provide your delivery details.</CardDescription>
+                <CardTitle className="font-headline">Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} disabled={isSubmitting} />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isSubmitting} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="address">Full Address</Label>
-                    <Input id="address" placeholder="123 Main St, Anytown" value={address} onChange={(e) => setAddress(e.target.value)} disabled={isSubmitting} />
+                {cartItems.map(item => (
+                  <div key={item.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-16 w-16 rounded-md overflow-hidden">
+                        <Image src={item.image.src} alt={item.image.alt} data-ai-hint={item.image.hint} fill className="object-cover" />
+                        <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{item.quantity}</span>
+                      </div>
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">{siteConfig.currency}{item.price.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <p className="font-medium">{siteConfig.currency}{(item.price * item.quantity).toFixed(2)}</p>
+                  </div>
+                ))}
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{siteConfig.currency}{subtotal.toFixed(2)}</span></div>
+                  <div className="flex justify-between text-muted-foreground"><span>Shipping Fee</span><span>{siteConfig.currency}{shippingFee.toFixed(2)}</span></div>
+                  <div className="flex justify-between font-bold text-lg"><span>Total</span><span>{siteConfig.currency}{total.toFixed(2)}</span></div>
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">Delivery Location</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <RadioGroup value={selectedShipping} onValueChange={(value) => handleShippingChange(value as ShippingOption)} disabled={isSubmitting}>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="insideDhaka" id="insideDhaka" />
-                            <Label htmlFor="insideDhaka">In Dhaka city ({siteConfig.currency}{siteConfig.checkout.shippingFee.insideDhaka})</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="outsideDhaka" id="outsideDhaka" />
-                            <Label htmlFor="outsideDhaka">Out of Dhaka ({siteConfig.currency}{siteConfig.checkout.shippingFee.outsideDhaka})</Label>
-                        </div>
-                    </RadioGroup>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">Payment Method</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} disabled={isSubmitting}>
-                        {siteConfig.checkout.paymentMethods.map(method => (
-                            <div key={method.name} className="flex items-center space-x-2">
-                                <RadioGroupItem value={method.name} id={method.name} />
-                                <Label htmlFor={method.name}>{method.name}</Label>
-                            </div>
-                        ))}
-                    </RadioGroup>
-                </CardContent>
-            </Card>
-            
-            {selectedPaymentMethodDetails && selectedPaymentMethodDetails.name !== 'CASH ON DELIVERY' && (
-              <Alert>
-                <Terminal className="h-4 w-4" />
-                <AlertTitle>Advance Payment Instruction</AlertTitle>
-                <AlertDescription>
-                  <p className="mb-2">Please complete your payment quickly using the details below. We will confirm your order upon receiving the payment.</p>
-                  <p><strong>Method:</strong> {selectedPaymentMethodDetails.name}</p>
-                  <p><strong>Details:</strong> {selectedPaymentMethodDetails.details}</p>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">Place Your Order</CardTitle>
-                    <CardDescription>Once your information is correct, you can place your order.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col sm:flex-row gap-4">
-                    <Button onClick={handlePlaceOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
-                        {isSubmitting ? 'Placing Order...' : `Place Order - ${siteConfig.currency}${total.toFixed(2)}`}
-                    </Button>
-                    <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700" variant="secondary" disabled={!isFormValid}>
-                        <a href={whatsappOrderLink} target="_blank" rel="noopener noreferrer">
-                            <WhatsAppIcon />
-                           Order on WhatsApp
-                        </a>
-                    </Button>
-                </CardContent>
-                 {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping and payment information to place an order.</p></CardContent>}
-            </Card>
+          </div>
         </div>
-        <div className="lg:order-first">
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-headline">Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {cartItems.map(item => (
-                <div key={item.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-16 w-16 rounded-md overflow-hidden">
-                       <Image src={item.image.src} alt={item.image.alt} data-ai-hint={item.image.hint} fill className="object-cover" />
-                       <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{item.quantity}</span>
-                    </div>
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">{siteConfig.currency}{item.price.toFixed(2)}</p>
-                    </div>
-                  </div>
-                  <p className="font-medium">{siteConfig.currency}{(item.price * item.quantity).toFixed(2)}</p>
-                </div>
-              ))}
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{siteConfig.currency}{subtotal.toFixed(2)}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Shipping Fee</span><span>{siteConfig.currency}{shippingFee.toFixed(2)}</span></div>
-                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>{siteConfig.currency}{total.toFixed(2)}</span></div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      </form>
     </div>
   );
 }
-
-    

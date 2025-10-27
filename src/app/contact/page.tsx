@@ -7,6 +7,8 @@ import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
 
 export default function ContactPage() {
+  const contactEmail = siteConfig.contactInfo.find(c => c.title === 'Email')?.value || 'hello@shopsync.com';
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center">
@@ -23,24 +25,29 @@ export default function ContactPage() {
             <CardDescription>Fill out the form and we'll get back to you as soon as possible.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4">
+            <form action={`https://formsubmit.co/${contactEmail}`} method="POST" className="space-y-4">
+               {/* FormSubmit settings */}
+               <input type="hidden" name="_next" value={`${process.env.NEXT_PUBLIC_BASE_URL}/contact?submitted=true`} />
+               <input type="hidden" name="_subject" value="New message from ShopSync contact form!" />
+               <input type="hidden" name="_captcha" value="false" />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
-                  <Input id="name" placeholder="Your Name" />
+                  <Input id="name" name="name" placeholder="Your Name" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="your@email.com" />
+                  <Input id="email" type="email" name="email" placeholder="your@email.com" required />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="subject">Subject</Label>
-                <Input id="subject" placeholder="Question about an order" />
+                <Input id="subject" name="subject" placeholder="Question about an order" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="message">Message</Label>
-                <Textarea id="message" placeholder="Your message..." rows={5} />
+                <Textarea id="message" name="message" placeholder="Your message..." rows={5} required />
               </div>
               <Button type="submit" className="w-full">Send Message</Button>
             </form>

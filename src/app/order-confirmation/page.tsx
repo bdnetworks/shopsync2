@@ -1,10 +1,23 @@
 
+'use client';
+
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCart } from '@/context/cart-context';
 import { CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function OrderConfirmationPage() {
+    const { clearCart } = useCart();
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('submitted')) {
+          clearCart();
+        }
+    }, [clearCart]);
+
     return (
         <div className="container mx-auto px-4 py-16 flex items-center justify-center">
             <Card className="w-full max-w-md text-center">
@@ -19,7 +32,7 @@ export default function OrderConfirmationPage() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground text-sm mb-6">
-                        (This is a demo. Your order has been cleared from the cart, but no real order was processed).
+                        An email with your order summary has been sent to the provided address.
                     </p>
                     <Button asChild className="w-full">
                         <Link href="/products">Continue Shopping</Link>
