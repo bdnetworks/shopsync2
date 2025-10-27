@@ -15,6 +15,8 @@ import { sendOrderEmail } from '@/lib/send-order-email';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
 
 export default function CheckoutPage() {
   const { cartItems, subtotal, total, clearCart, isCartLoading, shippingFee, setShippingOption } = useCart();
@@ -75,7 +77,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (isCartLoading) {
+  if (isCartLoading || (!isCartLoading && cartItems.length === 0)) {
     return (
         <div className="container mx-auto px-4 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -144,9 +146,6 @@ export default function CheckoutPage() {
     );
   }
 
-  if (cartItems.length === 0) {
-    return null;
-  }
 
   const isFormValid = name && email && address && paymentMethod;
 
@@ -209,6 +208,16 @@ export default function CheckoutPage() {
                     </RadioGroup>
                 </CardContent>
             </Card>
+            
+            {paymentMethod !== 'CASH ON DELIVERY' && (
+              <Alert>
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Advance Payment Required</AlertTitle>
+                <AlertDescription>
+                  You have selected {paymentMethod}. After placing the order, our team will contact you to confirm the payment.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <Card>
                 <CardHeader>
