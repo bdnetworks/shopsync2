@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -11,7 +12,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
-import { sendOrderEmail } from '@/lib/send-order-email';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
@@ -75,13 +75,26 @@ export default function CheckoutPage() {
 
       const deliveryLocation = selectedShipping === 'insideDhaka' ? 'Inside Dhaka' : 'Outside Dhaka';
 
-      await sendOrderEmail({
+      const orderDetails = {
         customerName: name,
         customerEmail: email,
         customerAddress: `${address} (${deliveryLocation})`,
         orderItems: `${orderItemsText}. Payment via: ${paymentMethod}`,
         orderTotal: total.toFixed(2),
+      };
+
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderDetails),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send order email');
+      }
 
       clearCart();
       router.push('/order-confirmation');
@@ -93,7 +106,8 @@ export default function CheckoutPage() {
         description: errorMessage,
         variant: "destructive",
       });
-      setIsSubmitting(false);
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
