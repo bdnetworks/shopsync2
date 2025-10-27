@@ -3,10 +3,6 @@
 
 import { siteConfig } from '@/config/site';
 import type { SendOrderInput } from '@/lib/types';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
 import nodemailer from 'nodemailer';
 
 export async function sendOrderEmail(input: SendOrderInput): Promise<void> {
@@ -20,7 +16,7 @@ export async function sendOrderEmail(input: SendOrderInput): Promise<void> {
   const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: parseInt(SMTP_PORT, 10),
-    secure: parseInt(SMTP_PORT, 10) === 465, // true for 465, false for other ports
+    secure: parseInt(SMTP_PORT, 10) === 465,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
@@ -50,8 +46,6 @@ export async function sendOrderEmail(input: SendOrderInput): Promise<void> {
     to: input.customerEmail,
     subject: `Your ${siteConfig.name} Order Confirmation`,
     html: htmlContent,
-    // You can add a BCC to receive a copy of the order email
-    // bcc: 'you@example.com'
   };
 
   try {
