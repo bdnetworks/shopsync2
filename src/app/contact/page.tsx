@@ -47,19 +47,23 @@ export default function ContactPage() {
     try {
       const response = await fetch(scriptUrl, {
         method: 'POST',
-        mode: 'no-cors', // Important: Apps Script web apps often require this
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
 
-      // Since mode is 'no-cors', we can't read the response. We optimistically assume success.
-      toast({
-        title: "Message Sent!",
-        description: "Thank you for contacting us. We'll get back to you shortly.",
-      });
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      const result = await response.json();
+
+      if (result.result === "success") {
+        toast({
+          title: "Message Sent!",
+          description: "Thank you for contacting us. We'll get back to you shortly.",
+        });
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        throw new Error(result.error || "Unknown error from Google Script");
+      }
 
     } catch (error) {
       console.error("Error submitting form:", error);
