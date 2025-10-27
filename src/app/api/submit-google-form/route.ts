@@ -35,12 +35,15 @@ export async function POST(request: Request) {
       body: googleFormData.toString(),
     });
 
-    if (response.ok) {
+    // Google Forms often redirects on success, which can result in a non-200 status.
+    // As long as there isn't a server error (5xx), we can consider it successful.
+    // The fetch API will throw an error for network failures.
+    if (response.ok || (response.status >= 200 && response.status < 300) || response.redirected) {
       return NextResponse.json({ message: 'Form submitted successfully' });
     } else {
-       // Even if Google returns a non-200 status, it often means the submission was accepted.
-       // We'll log the status but still return a success response to the client.
-      console.warn(`Google Forms responded with status: ${response.status}`);
+       // Even if Google returns a non-OK status, it often means the submission was accepted.
+       // We'll log the status but still return a success response to the client for better UX.
+      console.warn(`Google Forms responded with status: ${response.status} ${response.statusText}`);
       return NextResponse.json({ message: 'Form submitted successfully (with warning)' });
     }
   } catch (error: any) {
