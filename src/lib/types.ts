@@ -23,13 +23,3 @@ export interface Product {
 export interface CartItem extends Product {
   quantity: number;
 }
-
-export const SendOrderInputSchema = z.object({
-  customerName: z.string().describe("Customer's full name"),
-  customerEmail: z.string().describe("Customer's email address"),
-  customerAddress: z.string().describe("Customer's full shipping address"),
-  orderItems: z.string().describe("A comma-separated string of items in the order, plus payment method"),
-  orderTotal: z.string().describe("The total cost of the order"),
-});
-
-export type SendOrderInput = z.infer<typeof SendOrderInputSchema>;

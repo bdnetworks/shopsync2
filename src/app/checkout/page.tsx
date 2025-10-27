@@ -68,38 +68,14 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     setIsSubmitting(true);
+    // Simulate order processing
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     try {
-      const orderItemsText = cartItems
-        .map(item => `${item.name} (x${item.quantity})`)
-        .join(', ');
-
-      const deliveryLocation = selectedShipping === 'insideDhaka' ? 'Inside Dhaka' : 'Outside Dhaka';
-
-      const orderDetails = {
-        customerName: name,
-        customerEmail: email,
-        customerAddress: `${address} (${deliveryLocation})`,
-        orderItems: `${orderItemsText}. Payment via: ${paymentMethod}`,
-        orderTotal: total.toFixed(2),
-      };
-
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderDetails),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send order email');
-      }
-
       clearCart();
       router.push('/order-confirmation');
     } catch (error) {
-      console.error("Failed to send order email", error);
+      console.error("Failed to place order", error);
       const errorMessage = (error as Error).message || "Failed to place order. Please try again.";
       toast({
         title: "Error",
