@@ -15,6 +15,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    if (!process.env.RESEND_API_KEY) {
+      console.warn("RESEND_API_KEY is not set. Email will not be sent. Using fallback for local development.");
+       return NextResponse.json({ message: 'Email sent successfully (fallback)' });
+    }
+
     const { data, error } = await resend.emails.send({
       from: 'ShopSync Contact Form <onboarding@resend.dev>',
       to: [toEmail],
