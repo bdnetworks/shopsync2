@@ -1,55 +1,44 @@
-
 import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.ELASTIC_EMAIL_API_KEY;
+  const { name, email, subject, message } = await req.json();
 
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Elastic Email API key is not configured.' }, { status: 500 });
+  const gmailEmail = process.env.GMAIL_EMAIL;
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+
+  if (!gmailEmail || !gmailAppPassword) {
+    return NextResponse.json({ error: 'Gmail credentials are not configured in .env file.' }, { status: 500 });
   }
 
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: gmailEmail,
+      pass: gmailAppPassword,
+    },
+  });
+
+  const mailOptions = {
+    from: `"${name}" <${gmailEmail}>`, // Sender address
+    to: 'saakib.com@gmail.com', // List of receivers
+    replyTo: email,
+    subject: `Contact Form: ${subject}`, // Subject line
+    html: `
+        <h3>New Contact Form Submission</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+    `, // HTML body
+  };
+
   try {
-    const { name, email, subject, message } = await req.json();
-    
-    const emailBody = new URLSearchParams({
-        apiKey: apiKey,
-        subject: subject,
-        from: 'saakib.com@gmail.com', // This should be a verified email in your Elastic Email account
-        to: 'saakib.com@gmail.com',
-        bodyHtml: `
-            <h3>New Contact Form Submission</h3>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Message:</strong></p>
-            <p>${message}</p>
-        `,
-        isTransactional: 'true'
-    }).toString();
-
-    const response = await fetch('https://api.elasticemail.com/v2/email/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: emailBody,
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Elastic Email API Error:', errorText);
-        throw new Error('Failed to send email. API returned an error.');
-    }
-
-    const data = await response.json();
-
-    if (data.success !== true) {
-        throw new Error(data.error || 'Elastic Email failed to send the email.');
-    }
-
+    await transporter.sendMail(mailOptions);
     return NextResponse.json({ success: true, message: 'Email sent successfully!' });
-
   } catch (error: any) {
-    console.error('Error handling email request:', error);
-    return NextResponse.json({ error: error.message || 'An unknown error occurred.' }, { status: 500 });
+    console.error('Error sending email:', error);
+    return NextResponse.json({ error: 'Failed to send email.', details: error.message }, { status: 500 });
   }
 }
