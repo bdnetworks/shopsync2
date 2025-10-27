@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,16 +9,54 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
+import { useToast } from '@/hooks/use-toast';
 
 export default function ContactPage() {
-  const formId = "1FAIpQLSeMyWblnqUThfwEbXI6-QO3thxAMZjZmVJux2_S0YG5Sr2eRQ";
-  const formActionUrl = `https://docs.google.com/forms/d/e/${formId}/formResponse`;
-  
-  const entryIds = {
-    name: "entry.224376188",
-    email: "entry.1389401831",
-    subject: "entry.1715219048",
-    message: "entry.1263451416"
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Message Sent!",
+          description: "We've received your message and will get back to you soon.",
+        });
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send message.');
+      }
+    } catch (error: any) {
+      console.error('Submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: error.message || "There was a problem with your request.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,31 +75,27 @@ export default function ContactPage() {
             <CardDescription>Fill out the form and we'll get back to you as soon as possible.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form
-              action={formActionUrl}
-              method="POST"
-              target="_blank" 
-            >
+            <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
-                  <Input id="name" name={entryIds.name} placeholder="Your Name" required />
+                  <Input id="name" name="name" placeholder="Your Name" value={formData.name} onChange={handleChange} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" name={entryIds.email} placeholder="your@email.com" required />
+                  <Input id="email" type="email" name="email" placeholder="your@email.com" value={formData.email} onChange={handleChange} required />
                 </div>
               </div>
               <div className="space-y-2 mt-4">
                 <Label htmlFor="subject">Subject</Label>
-                <Input id="subject" name={entryIds.subject} placeholder="Question about an order" required />
+                <Input id="subject" name="subject" placeholder="Question about an order" value={formData.subject} onChange={handleChange} required />
               </div>
               <div className="space-y-2 mt-4">
                 <Label htmlFor="message">Message</Label>
-                <Textarea id="message" name={entryIds.message} placeholder="Your message..." rows={5} required />
+                <Textarea id="message" name="message" placeholder="Your message..." rows={5} value={formData.message} onChange={handleChange} required />
               </div>
-              <Button type="submit" className="w-full mt-4">
-                Send Message
+              <Button type="submit" className="w-full mt-4" disabled={isSubmitting}>
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </CardContent>
