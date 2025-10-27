@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,66 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
-import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal } from 'lucide-react';
 
 export default function ContactPage() {
-  const { toast } = useToast();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus(null);
-
-    // NOTE: The field name for message is "Massage" to match the user's Google Form Entry ID name.
-    const formData = {
-      name,
-      email,
-      subject,
-      "message": message,
-    };
-
-    try {
-      const response = await fetch('/api/submit-form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        setSubmitStatus('success');
-        toast({
-          title: "Message Sent!",
-          description: "Thank you for contacting us. We'll get back to you soon.",
-        });
-        // Clear form
-        setName('');
-        setEmail('');
-        setSubject('');
-        setMessage('');
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Something went wrong.');
-      }
-    } catch (error: any) {
-      setSubmitStatus('error');
-      toast({
-        variant: "destructive",
-        title: "Submission Failed",
-        description: error.message || "Could not send your message. Please try again later.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const formId = "1FAIpQLSeMyWblnqUThfwEbXI6-QO3thxAMZjZmVJux2_S0YG5Sr2eRQ";
+  const formActionUrl = `https://docs.google.com/forms/d/e/${formId}/formResponse`;
+  
+  const entryIds = {
+    name: "entry.224376188",
+    email: "entry.1389401831",
+    subject: "entry.1715219048",
+    message: "entry.1263451416"
   };
 
   return (
@@ -87,27 +36,31 @@ export default function ContactPage() {
             <CardDescription>Fill out the form and we'll get back to you as soon as possible.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              action={formActionUrl}
+              method="POST"
+              target="_blank" 
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
-                  <Input id="name" name="name" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} required />
+                  <Input id="name" name={entryIds.name} placeholder="Your Name" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" name="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input id="email" type="email" name={entryIds.email} placeholder="your@email.com" required />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 mt-4">
                 <Label htmlFor="subject">Subject</Label>
-                <Input id="subject" name="subject" placeholder="Question about an order" value={subject} onChange={e => setSubject(e.target.value)} required />
+                <Input id="subject" name={entryIds.subject} placeholder="Question about an order" required />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 mt-4">
                 <Label htmlFor="message">Message</Label>
-                <Textarea id="message" name="message" placeholder="Your message..." rows={5} value={message} onChange={e => setMessage(e.target.value)} required />
+                <Textarea id="message" name={entryIds.message} placeholder="Your message..." rows={5} required />
               </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+              <Button type="submit" className="w-full mt-4">
+                Send Message
               </Button>
             </form>
           </CardContent>
