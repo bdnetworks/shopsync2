@@ -5,14 +5,29 @@
         "outsideDhaka": 150
     },
     "paymentMethods": [
-        "CASH ON DELIVERY",
-        "Paypal",
-        "Bkash",
-        "Nagad",
-        "Card"
+        {
+            "name": "CASH ON DELIVERY",
+            "details": "Pay with cash upon delivery."
+        },
+        {
+            "name": "Paypal",
+            "details": "Please send payment to our PayPal email: yourpaypal@example.com"
+        },
+        {
+            "name": "Bkash",
+            "details": "Please send payment to our bKash number: 017xxxxxxxx"
+        },
+        {
+            "name": "Nagad",
+            "details": "Please send payment to our Nagad number: 018xxxxxxxx"
+        },
+        {
+            "name": "Card",
+            "details": "After placing the order, we will send you a secure link to complete the payment with your card."
+        }
     ],
     "contact": {
-        "whatsappNumber": "1234567890",
+        "whatsappNumber": "8801711466850",
         "email": "order@shopsync.com"
     }
 }

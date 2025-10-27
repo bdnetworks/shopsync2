@@ -2,8 +2,12 @@
 'use server';
 
 import { siteConfig } from '@/config/site';
-import nodemailer from 'nodemailer';
 import type { SendOrderInput } from '@/lib/types';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+import nodemailer from 'nodemailer';
 
 export async function sendOrderEmail(input: SendOrderInput): Promise<void> {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_SENDER_EMAIL } = process.env;

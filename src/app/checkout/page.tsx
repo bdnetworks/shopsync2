@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,22 @@ import type { ShippingOption } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 
+const WhatsAppIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-5 w-5"
+    >
+      <path
+        d="M16.75 13.96c.25.13.43.2.5.28.08.09.14.19.19.3.05.11.06.23.02.35-.04.12-.13.24-.26.36-.13.12-.28.23-.46.33-.18.1-.38.16-.6.18-.21.02-.43.0-.65-.05-.22-.05-.44-.12-.66-.23-.22-.1-.43-.23-.64-.39-.21-.16-.41-.34-.6-.54s-.37-.42-.53-.65c-.16-.23-.3-.48-.43-.74-.12-.26-.23-.53-.32-.81-.09-.28-.15-.56-.19-.85-.04-.29-.04-.57-.01-.85.03-.28.1-.55.19-.81.1-.26.22-.5.37-.71.15-.21.32-.4.51-.56.2-.16.41-.3.65-.41.24-.11.49-.19.76-.23.27-.04.53-.05.79-.02.26.03.5.1.73.2.23.1.43.23.6.39.17.16.3.35.4.56.1.21.15.43.15.66.0.23-.05.45-.14.66-.09.21-.22.4-.38.56-.16.16-.35.3-.56.41-.21.11-.44.19-.68.24-.1.02-.19.03-.29.03-.1 0-.2-.02-.29-.05-.1-.03-.18-.06-.26-.11-.08-.05-.15-.1-.21-.16-.06-.06-.11-.13-.15-.21-.04-.08-.06-.16-.07-.25-.01-.09.01-.18.04-.26.04-.08.09-.16.15-.22.06-.06.13-.11.21-.15.08-.04.16-.06.25-.07.09-.01.18.01.26.04.08.03.16.08.22.14.03.03.05.05.06.07.01.02.03.04.04.06.01.02.02.04.03.06.01.02.01.04.01.06v.01c0 .02.01.03.01.03zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.73 0 3.36-.44 4.78-1.22l2.72 1.22-1.22-2.72C19.56 18.36 20 16.73 20 15c0-5.52-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+      ></path>
+    </svg>
+);
+
+
 export default function CheckoutPage() {
   const { cartItems, subtotal, total, clearCart, isCartLoading, shippingFee, setShippingOption } = useCart();
   const router = useRouter();
@@ -27,7 +43,7 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>('insideDhaka');
-  const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0]);
+  const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0].name);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -45,6 +61,10 @@ export default function CheckoutPage() {
     setSelectedShipping(value);
     setShippingOption(value);
   }
+
+  const selectedPaymentMethodDetails = useMemo(() => {
+    return siteConfig.checkout.paymentMethods.find(p => p.name === paymentMethod);
+  }, [paymentMethod]);
 
   const handlePlaceOrder = async () => {
     setIsSubmitting(true);
@@ -76,6 +96,13 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
+  const whatsappOrderLink = useMemo(() => {
+    const orderItems = cartItems.map(item => `${item.name} (Qty: ${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}`).join('\n');
+    const message = `Hello, I'd like to place an order.\n\n*Name:* ${name}\n*Address:* ${address}\n\n*Items:*\n${orderItems}\n\n*Subtotal:* ${siteConfig.currency}${subtotal.toFixed(2)}\n*Shipping:* ${siteConfig.currency}${shippingFee.toFixed(2)}\n*Total:* ${siteConfig.currency}${total.toFixed(2)}\n\n*Payment Method:* ${paymentMethod}`;
+    return `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${encodeURIComponent(message)}`;
+  }, [name, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
+
 
   if (isCartLoading || (!isCartLoading && cartItems.length === 0)) {
     return (
@@ -200,21 +227,23 @@ export default function CheckoutPage() {
                 <CardContent>
                     <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} disabled={isSubmitting}>
                         {siteConfig.checkout.paymentMethods.map(method => (
-                            <div key={method} className="flex items-center space-x-2">
-                                <RadioGroupItem value={method} id={method} />
-                                <Label htmlFor={method}>{method}</Label>
+                            <div key={method.name} className="flex items-center space-x-2">
+                                <RadioGroupItem value={method.name} id={method.name} />
+                                <Label htmlFor={method.name}>{method.name}</Label>
                             </div>
                         ))}
                     </RadioGroup>
                 </CardContent>
             </Card>
             
-            {paymentMethod !== 'CASH ON DELIVERY' && (
+            {selectedPaymentMethodDetails && selectedPaymentMethodDetails.name !== 'CASH ON DELIVERY' && (
               <Alert>
                 <Terminal className="h-4 w-4" />
-                <AlertTitle>Advance Payment Required</AlertTitle>
+                <AlertTitle>Advance Payment Instruction</AlertTitle>
                 <AlertDescription>
-                  You have selected {paymentMethod}. After placing the order, our team will contact you to confirm the payment.
+                  <p className="mb-2">Please complete your payment quickly using the details below. We will confirm your order upon receiving the payment.</p>
+                  <p><strong>Method:</strong> {selectedPaymentMethodDetails.name}</p>
+                  <p><strong>Details:</strong> {selectedPaymentMethodDetails.details}</p>
                 </AlertDescription>
               </Alert>
             )}
@@ -224,9 +253,15 @@ export default function CheckoutPage() {
                     <CardTitle className="font-headline">Place Your Order</CardTitle>
                     <CardDescription>Once your information is correct, you can place your order.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex flex-col sm:flex-row gap-4">
                     <Button onClick={handlePlaceOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
                         {isSubmitting ? 'Placing Order...' : `Place Order - ${siteConfig.currency}${total.toFixed(2)}`}
+                    </Button>
+                    <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700" variant="secondary" disabled={!isFormValid}>
+                        <a href={whatsappOrderLink} target="_blank" rel="noopener noreferrer">
+                            <WhatsAppIcon />
+                           Order on WhatsApp
+                        </a>
                     </Button>
                 </CardContent>
                  {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping and payment information to place an order.</p></CardContent>}

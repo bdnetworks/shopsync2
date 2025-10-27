@@ -11,12 +11,17 @@ import checkout from './checkout.json';
 import type { ProductCategory } from "@/lib/types";
 
 // Type assertion for checkout config
+interface PaymentMethod {
+    name: string;
+    details: string;
+}
+
 interface CheckoutConfig {
     shippingFee: {
         insideDhaka: number;
         outsideDhaka: number;
     };
-    paymentMethods: string[];
+    paymentMethods: PaymentMethod[];
     contact: {
         whatsappNumber: string;
         email: string;
