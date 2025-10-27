@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
 
 export default function ContactPage() {
-  const contactEmail = siteConfig.contactInfo.find(c => c.title === 'Email')?.value || 'hello@shopsync.com';
+  const contactEmail = siteConfig.checkout.contact.email;
 
   return (
     <div className="container mx-auto px-4 py-16">
