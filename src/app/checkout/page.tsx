@@ -72,8 +72,8 @@ export default function CheckoutPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     try {
-      clearCart();
       router.push('/order-confirmation');
+      clearCart();
     } catch (error) {
       console.error("Failed to place order", error);
       const errorMessage = (error as Error).message || "Failed to place order. Please try again.";
@@ -290,3 +290,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
