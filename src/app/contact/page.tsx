@@ -20,43 +20,35 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const scriptURL = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
-
-    if (!scriptURL) {
-      toast({
-        title: "Configuration Error",
-        description: "Google Script URL is not configured. Please contact support.",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-      return;
-    }
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
 
     try {
-      // We submit the form directly to the Google Apps Script URL.
-      // This response will likely be opaque (CORS issue), so we can't read its body.
-      // However, the request will go through and the script will execute.
-      // We will optimistically assume success if no network error is thrown.
-      await fetch(scriptURL, {
+      const response = await fetch('/api/send-email', {
         method: 'POST',
-        body: formData,
-        mode: 'no-cors', // Important: This prevents CORS errors in the browser.
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
 
-      // Since we can't read the response in 'no-cors' mode, we optimistically show success.
-      toast({
-        title: "Message Sent!",
-        description: "Thank you for contacting us. We'll get back to you shortly.",
-      });
-      form.reset();
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Message Sent!",
+          description: "Thank you for contacting us. We'll get back to you shortly.",
+        });
+        (e.target as HTMLFormElement).reset();
+      } else {
+        throw new Error(result.error || 'Something went wrong');
+      }
 
     } catch (error: any) {
       console.error("Error submitting form:", error);
       toast({
         title: "Something went wrong",
-        description: "Could not send your message. Please try again later.",
+        description: error.message || "Could not send your message. Please try again later.",
         variant: "destructive",
       });
     } finally {
