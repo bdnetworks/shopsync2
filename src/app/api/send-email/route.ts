@@ -1,24 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { siteConfig } from '@/config/site';
 
 export async function POST(req: NextRequest) {
   const { name, email, subject, message } = await req.json();
 
   const apiKey = process.env.ELASTIC_EMAIL_API_KEY;
-  const adminEmail = "saakib.com@gmail.com";
+  const adminEmail = "saakib.com@gmail.com"; 
 
   if (!apiKey) {
-    return NextResponse.json({ error: 'Elastic Email API Key is not configured.' }, { status: 500 });
+    console.error('Elastic Email API Key is not configured.');
+    return NextResponse.json({ error: 'Email service is not configured.' }, { status: 500 });
   }
 
   const formData = new URLSearchParams();
   formData.append('apikey', apiKey);
-  formData.append('subject', `Contact Form: ${subject}`);
-  formData.append('from', adminEmail); // This should be a verified sender email in your Elastic Email account
-  formData.append('fromName', name);
-  formData.append('replyTo', email);
+  formData.append('subject', `New Contact Form: ${subject}`);
+  formData.append('from', adminEmail); // This MUST be a verified sender in your Elastic Email account.
+  formData.append('fromName', siteConfig.name);
   formData.append('to', adminEmail);
+  formData.append('replyTo', email); // Set customer's email as reply-to
   formData.append('bodyHtml', `
-    <h3>New Contact Form Submission</h3>
+    <h3>New Contact Form Submission from ${siteConfig.name}</h3>
     <p><strong>Name:</strong> ${name}</p>
     <p><strong>Email:</strong> ${email}</p>
     <p><strong>Subject:</strong> ${subject}</p>
