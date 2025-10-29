@@ -33,7 +33,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="py-6">
+      <section className="pt-6 pb-2.5">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-6">Top Categories</h2>
           <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
@@ -52,7 +52,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="py-6 bg-muted/30">
+      <section className="pt-2.5 pb-6 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Collections</h2>
