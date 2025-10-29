@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Logo from '@/components/logo';
 import { siteConfig } from '@/config/site';
-import { getIcon } from '@/lib/icons';
+import { getIcon } from '@/lib/icons.tsx';
 
 export default function Footer() {
   return (
@@ -19,7 +19,7 @@ export default function Footer() {
               {siteConfig.socialLinks.map((social) => {
                 const Icon = getIcon(social.icon);
                 return (
-                  <Link key={social.name} href={social.href} className="text-gray-400 hover:text-white">
+                  <Link key={social.name} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
                     {Icon && <Icon className="h-5 w-5" />}
                     <span className="sr-only">{social.name}</span>
                   </Link>

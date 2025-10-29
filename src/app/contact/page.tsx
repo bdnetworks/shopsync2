@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { siteConfig } from "@/config/site";
-import { getIcon } from "@/lib/icons";
+import { getIcon } from "@/lib/icons.tsx";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 

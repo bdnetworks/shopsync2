@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config/site";
-import { getIcon } from "@/lib/icons";
+import { getIcon } from "@/lib/icons.tsx";
 
 export default function Logo() {
   const Icon = getIcon(siteConfig.logoIcon);

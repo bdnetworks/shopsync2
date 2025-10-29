@@ -4,6 +4,7 @@
         { "name": "Facebook", "icon": "Facebook", "href": "#" },
         { "name": "Twitter", "icon": "Twitter", "href": "#" },
         { "name": "Youtube", "icon": "Youtube", "href": "#" },
-        { "name": "Instagram", "icon": "Instagram", "href": "#" }
+        { "name": "Instagram", "icon": "Instagram", "href": "#" },
+        { "name": "WhatsApp", "icon": "WhatsApp", "href": "https://wa.me/8801711466850?text=Hello%2C%20I%20have%20a%20question%20about%20products." }
     ]
 }

@@ -7,7 +7,7 @@ import { getProducts } from '@/lib/products';
 import ProductCard from '@/components/product-card';
 import { siteConfig } from '@/config/site';
 import { Card } from '@/components/ui/card';
-import { getIcon } from '@/lib/icons';
+import { getIcon } from '@/lib/icons.tsx';
 
 export default async function Home() {
   const allProducts = await getProducts();
