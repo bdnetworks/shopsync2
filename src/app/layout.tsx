@@ -9,6 +9,7 @@ import { CartProvider } from '@/context/cart-context';
 import { WishlistProvider } from '@/context/wishlist-context';
 import { siteConfig } from '@/config/site';
 import Link from 'next/link';
+import FloatingWhatsAppButton from '@/components/layout/floating-whatsapp-button';
 
 const fontPlayfair = Playfair_Display({
   subsets: ['latin'],
@@ -46,6 +47,7 @@ export default function RootLayout({
               <Header />
               <main className="flex-1">{children}</main>
               <Footer />
+              <FloatingWhatsAppButton />
             </div>
             <Toaster />
           </WishlistProvider>

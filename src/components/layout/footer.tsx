@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Logo from '@/components/logo';
 import { siteConfig } from '@/config/site';
-import { getIcon } from '@/lib/icons.tsx';
+import { getIcon } from '@/lib/icons';
 
 export default function Footer() {
   return (
