@@ -46,6 +46,8 @@ export default function CheckoutPage() {
     return siteConfig.checkout.paymentMethods.find(p => p.name === paymentMethod);
   }, [paymentMethod]);
 
+  const isFormValid = name && email && mobile && address && paymentMethod;
+
   const mailtoOrderLink = useMemo(() => {
     if (!isFormValid) return '#';
     const adminEmail = siteConfig.checkout.contact.email;
@@ -75,29 +77,24 @@ Total: ${siteConfig.currency}${total.toFixed(2)}
 Payment Method: ${paymentMethod}
     `;
     return `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.trim())}`;
-  }, [name, email, mobile, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
+  }, [isFormValid, name, email, mobile, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
 
 
   const handleOrderViaEmail = () => {
     if (!isFormValid) return;
     
-    // Create an anchor element programmatically to trigger the mail client directly
     const link = document.createElement('a');
     link.href = mailtoOrderLink;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    // We can't know for sure if they sent the email,
-    // but we can clear the cart to signify the process is "done" on our end.
     setTimeout(() => {
         clearCart();
         router.push('/');
     }, 1000);
   };
   
-  const isFormValid = name && email && mobile && address && paymentMethod;
-
   if (isCartLoading) {
     return (
         <div className="container mx-auto px-4 py-12">
