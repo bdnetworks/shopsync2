@@ -1,35 +1,68 @@
 
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRef } from 'react';
+import Autoplay from "embla-carousel-autoplay";
 
 import { Button } from '@/components/ui/button';
 import { getProducts } from '@/lib/products';
 import ProductCard from '@/components/product-card';
 import { siteConfig } from '@/config/site';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { getIcon } from '@/lib/icons.tsx';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import { Product } from '@/lib/types';
+import { useState, useEffect } from 'react';
 
-export default async function Home() {
-  const allProducts = await getProducts();
+export default function Home() {
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const plugin = useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: true })
+  );
+
+  useEffect(() => {
+    async function loadProducts() {
+        const products = await getProducts();
+        setAllProducts(products);
+    }
+    loadProducts();
+  }, []);
+
   const collectionsProducts = allProducts.slice(0, 12);
-  const heroBanner = siteConfig.heroBanners[0];
 
   return (
     <div className="flex flex-col bg-background">
       <section className="py-4 md:py-6">
         <div className="container mx-auto px-4">
-            {heroBanner && (
-              <div className="relative w-full h-[30vh] md:h-[40vh] rounded-lg overflow-hidden">
-                  <Image
-                      src={heroBanner.imageUrl}
-                      alt={heroBanner.description}
-                      data-ai-hint={heroBanner.imageHint}
-                      fill
-                      className="object-cover"
-                      priority
-                  />
-              </div>
-            )}
+            <Carousel
+              plugins={[plugin.current]}
+              className="w-full"
+              onMouseEnter={plugin.current.stop}
+              onMouseLeave={plugin.current.reset}
+            >
+              <CarouselContent>
+                {siteConfig.heroBanners.map((banner, index) => (
+                  <CarouselItem key={index}>
+                    <div className="relative w-full h-[30vh] md:h-[40vh] rounded-lg overflow-hidden">
+                        <Image
+                            src={banner.imageUrl}
+                            alt={banner.description}
+                            data-ai-hint={banner.imageHint}
+                            fill
+                            className="object-cover"
+                            priority={index === 0}
+                        />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
         </div>
       </section>
 
@@ -38,7 +71,7 @@ export default async function Home() {
           <h2 className="text-2xl font-bold text-center mb-6">Top Categories</h2>
           <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
             {siteConfig.topCategories.map((category) => {
-              const Icon = getIcon(category.icon);
+              const Icon = getIcon(category.name);
               return (
                 <Link href={'/products'} key={category.name}>
                   <Card className="flex flex-col items-center justify-center p-2 md:p-4 hover:shadow-lg transition-shadow aspect-square">
