@@ -42,10 +42,6 @@ export default function CheckoutPage() {
     setShippingOption(value);
   }
 
-  const selectedPaymentMethodDetails = useMemo(() => {
-    return siteConfig.checkout.paymentMethods.find(p => p.name === paymentMethod);
-  }, [paymentMethod]);
-
   const isFormValid = name && email && mobile && address && paymentMethod;
 
   const gmailComposeLink = useMemo(() => {
@@ -92,7 +88,7 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
     
     setTimeout(() => {
         clearCart();
-        router.push('/');
+        router.push('/order-confirmation');
     }, 1000);
   };
   

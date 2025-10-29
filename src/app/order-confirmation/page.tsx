@@ -1,16 +1,33 @@
 
 'use client';
 
-// This page is not currently used in the checkout flow,
-// but it exists to prevent a build error.
-// The checkout process now uses a mailto: link.
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle } from "lucide-react";
+import Link from "next/link";
+
 export default function OrderConfirmationPage() {
   return (
-    <div className="container mx-auto px-4 py-16 text-center">
-      <h1 className="text-4xl font-headline font-bold">Order Status</h1>
-      <p className="mt-4 text-lg text-muted-foreground">
-        If you have been redirected here, please check your email or contact support.
-      </p>
+    <div className="container mx-auto px-4 py-16 flex items-center justify-center">
+      <Card className="max-w-lg w-full text-center shadow-lg">
+        <CardHeader>
+          <div className="mx-auto bg-green-100 rounded-full h-16 w-16 flex items-center justify-center">
+            <CheckCircle className="h-10 w-10 text-green-600" />
+          </div>
+          <CardTitle className="text-3xl font-headline font-bold mt-4">Thank You For Your Order!</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            Your order details have been sent for processing. We will contact you shortly to confirm the delivery.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            If you have sent the order via email, please make sure you have clicked the "Send" button in your email client.
+          </p>
+          <Button asChild className="mt-6">
+            <Link href="/products">Continue Shopping</Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
