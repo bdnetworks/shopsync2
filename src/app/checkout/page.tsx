@@ -51,35 +51,32 @@ export default function CheckoutPage() {
   const gmailComposeLink = useMemo(() => {
     if (!isFormValid) return '#';
 
-    const to = siteConfig.checkout.contact.email;
-    const subject = `New Order from ${siteConfig.name}`;
-    const orderItems = cartItems.map(item => `${item.name} (Qty: ${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}`).join('\n');
+    const adminEmail = siteConfig.checkout.contact.email;
+    const subject = `Purchase Info from ${siteConfig.name}`;
+    
+    const orderItems = cartItems.map(item => 
+      `${item.name}\n${siteConfig.currency}${item.price.toFixed(2)} x ${item.quantity}\n-------------------`
+    ).join('\n');
     
     const body = `
-Hello, I'd like to place an order.
+Hi, I am interested in placing an order.
 
-Customer Details:
------------------
-Name: ${name}
-Email: ${email}
-Mobile: ${mobile}
-Address: ${address}
-
-Order Details:
---------------
 ${orderItems}
 
-Summary:
---------
-Subtotal: ${siteConfig.currency}${subtotal.toFixed(2)}
-Shipping: ${siteConfig.currency}${shippingFee.toFixed(2)}
-Total: ${siteConfig.currency}${total.toFixed(2)}
+*Name* : ${name} (${mobile})
+*Email* : ${email}
+*Payment Method* : ${paymentMethod}
+*Shipping Address* : ${address}
+-------------------
+*Subtotal* : ${siteConfig.currency}${subtotal.toFixed(2)}
+*Shipping Fee* : ${siteConfig.currency}${shippingFee.toFixed(2)}
+*Total* : ${siteConfig.currency}${total.toFixed(2)}
 
-Payment Method: ${paymentMethod}
+via. ${typeof window !== 'undefined' ? window.location.origin : ''}
     `.trim();
 
     const params = new URLSearchParams({
-      to: to,
+      to: adminEmail,
       su: subject,
       body: body
     });
