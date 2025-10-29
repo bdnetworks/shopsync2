@@ -287,5 +287,3 @@ Payment Method: ${paymentMethod}
     </div>
   );
 }
-
-    
