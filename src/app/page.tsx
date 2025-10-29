@@ -33,7 +33,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="py-8">
+      <section className="py-6">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-6">Top Categories</h2>
           <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
@@ -52,7 +52,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="py-8 bg-muted/30">
+      <section className="py-6 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Collections</h2>
@@ -72,7 +72,7 @@ export default async function Home() {
         const categoryProducts = allProducts.filter(p => p.category === category).slice(0, 6);
         if (categoryProducts.length === 0) return null;
         return (
-            <section key={category} className="py-8 bg-background">
+            <section key={category} className="py-6 bg-background">
                 <div className="container mx-auto px-4">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-bold">{`Featured ${category}`}</h2>
@@ -91,7 +91,7 @@ export default async function Home() {
       })}
 
 
-      <section className="py-12">
+      <section className="py-8">
         <div className="container mx-auto px-4">
             <h2 className="text-2xl font-bold mb-8 text-center">Top Brands</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 md:gap-8 items-center justify-items-center">
