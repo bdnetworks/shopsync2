@@ -15,10 +15,17 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Mail, Terminal } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+const WhatsAppIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path><path d="M14.05 2.9A15.9 15.9 0 0 0 4.3 8.84a15.9 15.9 0 0 0 5.66 11.25 15.93 15.93 0 0 0 12.18-1.07"></path></svg>
+);
+
 
 export default function CheckoutPage() {
   const { cartItems, subtotal, total, isCartLoading, shippingFee, setShippingOption, clearCart } = useCart();
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -44,17 +51,12 @@ export default function CheckoutPage() {
 
   const isFormValid = name && email && mobile && address && paymentMethod;
 
-  const gmailComposeLink = useMemo(() => {
-    if (!isFormValid) return '#';
-
-    const adminEmail = siteConfig.checkout.contact.email;
-    const subject = `Purchase Info from ${siteConfig.name}`;
-    
+  const orderBodyText = useMemo(() => {
     const orderItems = cartItems.map(item => 
       `${item.name}\n${siteConfig.currency}${item.price.toFixed(2)} x ${item.quantity}\n-------------------`
     ).join('\n');
     
-    const body = `
+    return `
 Hi, I am interested in placing an order.
 
 ${orderItems}
@@ -70,27 +72,47 @@ ${orderItems}
 
 via. ${typeof window !== 'undefined' ? window.location.origin : ''}
     `.trim();
+  }, [cartItems, name, mobile, email, paymentMethod, address, subtotal, shippingFee, total]);
 
+  const gmailComposeLink = useMemo(() => {
+    if (!isFormValid) return '#';
+    const adminEmail = siteConfig.checkout.contact.email;
+    const subject = `Purchase Info from ${siteConfig.name}`;
+    
     const params = new URLSearchParams({
       to: adminEmail,
       su: subject,
-      body: body
+      body: orderBodyText
     });
 
+    if (isMobile) {
+      return `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(orderBodyText)}`;
+    }
+
     return `https://mail.google.com/mail/?view=cm&fs=1&${params.toString()}`;
-  }, [isFormValid, name, email, mobile, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
+  }, [isFormValid, orderBodyText, isMobile]);
 
+  const whatsappOrderLink = useMemo(() => {
+    if (!isFormValid) return '#';
+    const whatsappNumber = siteConfig.checkout.contact.whatsappNumber;
+    const encodedText = encodeURIComponent(orderBodyText);
+    return `https://wa.me/${whatsappNumber}?text=${encodedText}`;
+  }, [isFormValid, orderBodyText]);
 
-  const handleOrderViaEmail = () => {
-    if (!isFormValid || gmailComposeLink === '#') return;
+  const handlePlaceOrder = (url: string) => {
+    if (!isFormValid || url === '#') return;
     
-    window.open(gmailComposeLink, '_blank');
+    window.open(url, '_blank');
     
     setTimeout(() => {
         clearCart();
         router.push('/order-confirmation');
     }, 1000);
   };
+  
+  const selectedPaymentMethodDetails = useMemo(() => {
+      return siteConfig.checkout.paymentMethods.find(method => method.name === paymentMethod)
+  }, [paymentMethod]);
   
   if (isCartLoading) {
     return (
@@ -246,12 +268,16 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
               <Card>
                   <CardHeader>
                       <CardTitle className="font-headline">Place Your Order</CardTitle>
-                      <CardDescription>Click the button to open a pre-filled Gmail compose window to place your order.</CardDescription>
+                      <CardDescription>Choose your preferred method to place the order. Your cart total is {siteConfig.currency}{total.toFixed(2)}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                      <Button onClick={handleOrderViaEmail} size="lg" className="w-full" disabled={!isFormValid}>
+                  <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Button onClick={() => handlePlaceOrder(whatsappOrderLink)} size="lg" className="w-full bg-green-500 hover:bg-green-600 text-white" disabled={!isFormValid}>
+                          <WhatsAppIcon />
+                        Send order
+                      </Button>
+                      <Button onClick={() => handlePlaceOrder(gmailComposeLink)} size="lg" className="w-full bg-red-500 hover:bg-red-600 text-white" disabled={!isFormValid}>
                           <Mail />
-                        Place Order via Email - {siteConfig.currency}{total.toFixed(2)}
+                        via Email
                       </Button>
                   </CardContent>
                   {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
