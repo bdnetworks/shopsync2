@@ -12,6 +12,24 @@
             "description": "Banner advertising free online home delivery with an image of a delivery person.",
             "imageUrl": "https://images.unsplash.com/photo-1594411440399-973405c935e4?w=800&q=80",
             "imageHint": "online delivery"
+        },
+        {
+            "id": "hero-banner-3",
+            "description": "A vibrant display of fresh groceries.",
+            "imageUrl": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80",
+            "imageHint": "fresh groceries"
+        },
+        {
+            "id": "hero-banner-4",
+            "description": "Modern furniture in a stylish living room setting.",
+            "imageUrl": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80",
+            "imageHint": "modern furniture"
+        },
+        {
+            "id": "hero-banner-5",
+            "description": "A collection of trendy fashion accessories.",
+            "imageUrl": "https://images.unsplash.com/photo-1588117269595-de39b75b119b?w=800&q=80",
+            "imageHint": "fashion accessories"
         }
     ]
 }

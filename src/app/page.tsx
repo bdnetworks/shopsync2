@@ -23,7 +23,7 @@ import { useState, useEffect } from 'react';
 export default function Home() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const plugin = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true })
+    Autoplay({ delay: 2000, stopOnInteraction: true })
   );
 
   useEffect(() => {
