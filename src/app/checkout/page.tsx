@@ -47,6 +47,7 @@ export default function CheckoutPage() {
   }, [paymentMethod]);
 
   const mailtoOrderLink = useMemo(() => {
+    if (!isFormValid) return '#';
     const adminEmail = siteConfig.checkout.contact.email;
     const subject = `New Order from ${siteConfig.name}`;
     const orderItems = cartItems.map(item => `${item.name} (Qty: ${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}`).join('\n');
@@ -78,7 +79,15 @@ Payment Method: ${paymentMethod}
 
 
   const handleOrderViaEmail = () => {
-    window.location.href = mailtoOrderLink;
+    if (!isFormValid) return;
+    
+    // Create an anchor element programmatically to trigger the mail client directly
+    const link = document.createElement('a');
+    link.href = mailtoOrderLink;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
     // We can't know for sure if they sent the email,
     // but we can clear the cart to signify the process is "done" on our end.
     setTimeout(() => {
@@ -86,6 +95,8 @@ Payment Method: ${paymentMethod}
         router.push('/');
     }, 1000);
   };
+  
+  const isFormValid = name && email && mobile && address && paymentMethod;
 
   if (isCartLoading) {
     return (
@@ -160,7 +171,6 @@ Payment Method: ${paymentMethod}
     );
   }
 
-  const isFormValid = name && email && mobile && address && paymentMethod;
   
   return (
     <div className="container mx-auto px-4 py-12">
