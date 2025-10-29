@@ -48,9 +48,10 @@ export default function CheckoutPage() {
 
   const isFormValid = name && email && mobile && address && paymentMethod;
 
-  const mailtoOrderLink = useMemo(() => {
+  const gmailComposeLink = useMemo(() => {
     if (!isFormValid) return '#';
-    const adminEmail = siteConfig.checkout.contact.email;
+
+    const to = siteConfig.checkout.contact.email;
     const subject = `New Order from ${siteConfig.name}`;
     const orderItems = cartItems.map(item => `${item.name} (Qty: ${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}`).join('\n');
     
@@ -75,19 +76,22 @@ Shipping: ${siteConfig.currency}${shippingFee.toFixed(2)}
 Total: ${siteConfig.currency}${total.toFixed(2)}
 
 Payment Method: ${paymentMethod}
-    `;
-    return `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.trim())}`;
+    `.trim();
+
+    const params = new URLSearchParams({
+      to: to,
+      su: subject,
+      body: body
+    });
+
+    return `https://mail.google.com/mail/?view=cm&fs=1&${params.toString()}`;
   }, [isFormValid, name, email, mobile, address, cartItems, subtotal, shippingFee, total, paymentMethod]);
 
 
   const handleOrderViaEmail = () => {
-    if (!isFormValid) return;
+    if (!isFormValid || gmailComposeLink === '#') return;
     
-    const link = document.createElement('a');
-    link.href = mailtoOrderLink;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.open(gmailComposeLink, '_blank');
     
     setTimeout(() => {
         clearCart();
@@ -249,7 +253,7 @@ Payment Method: ${paymentMethod}
               <Card>
                   <CardHeader>
                       <CardTitle className="font-headline">Place Your Order</CardTitle>
-                      <CardDescription>Click the button to open your email client with the order details pre-filled.</CardDescription>
+                      <CardDescription>Click the button to open a pre-filled Gmail compose window to place your order.</CardDescription>
                   </CardHeader>
                   <CardContent>
                       <Button onClick={handleOrderViaEmail} size="lg" className="w-full" disabled={!isFormValid}>
