@@ -11,7 +11,6 @@ import { getProducts } from '@/lib/products';
 import ProductCard from '@/components/product-card';
 import { siteConfig } from '@/config/site';
 import { Card, CardContent } from '@/components/ui/card';
-import { getIcon } from '@/lib/icons.tsx';
 import {
   Carousel,
   CarouselContent,
@@ -70,17 +69,21 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-6">Top Categories</h2>
           <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
-            {siteConfig.topCategories.map((category) => {
-              const Icon = getIcon(category.name);
-              return (
-                <Link href={'/products'} key={category.name}>
-                  <Card className="flex flex-col items-center justify-center p-2 md:p-4 hover:shadow-lg transition-shadow aspect-square">
-                    {Icon && <Icon className="h-6 w-6 md:h-8 md:w-8 text-primary" />}
-                    <p className="mt-2 text-xs md:text-sm text-center font-medium">{category.name}</p>
+            {siteConfig.topCategories.map((category) => (
+                <Link href={'/products'} key={category.name} className="flex flex-col items-center gap-2 text-center group">
+                  <Card className="flex items-center justify-center p-1 w-full aspect-square rounded-full overflow-hidden group-hover:shadow-lg transition-shadow">
+                    <Image 
+                      src={category.imageUrl} 
+                      alt={category.name} 
+                      data-ai-hint={category.imageHint}
+                      width={60} 
+                      height={60} 
+                      className="object-cover"
+                    />
                   </Card>
+                  <p className="text-xs md:text-sm font-medium group-hover:text-primary transition-colors">{category.name}</p>
                 </Link>
-              )
-            })}
+            ))}
           </div>
         </div>
       </section>
@@ -101,21 +104,21 @@ export default function Home() {
         </div>
       </section>
 
-      {siteConfig.productCategories.map(category => {
-        const categoryProducts = allProducts.filter(p => p.category === category).slice(0, 6);
+      {siteConfig.featuredSections.map(section => {
+        const categoryProducts = allProducts.filter(p => p.category === section.category).slice(0, section.productCount);
         if (categoryProducts.length === 0) return null;
         return (
-            <section key={category} className="py-6 bg-background">
+            <section key={section.title} className="py-6 bg-background">
                 <div className="container mx-auto px-4">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold">{`Featured ${category}`}</h2>
+                        <h2 className="text-2xl font-bold">{section.title}</h2>
                         <Button asChild variant="outline">
-                            <Link href={`/products?category=${category}`}>View All</Link>
+                            <Link href={`/products?category=${section.category}`}>View All</Link>
                         </Button>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {categoryProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                          <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
                 </div>

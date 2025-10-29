@@ -28,6 +28,12 @@ interface CheckoutConfig {
     };
 }
 
+interface FeaturedSection {
+    title: string;
+    category: ProductCategory;
+    productCount: number;
+}
+
 export const siteConfig = {
     ...site,
     navLinks: nav.navLinks,
@@ -42,6 +48,7 @@ export const siteConfig = {
      * You also need to make sure the category and its corresponding sheet URL are present in `src/config/categories.json`.
     */
     productCategories: product.productCategories as ProductCategory[],
+    featuredSections: home.featuredSections as FeaturedSection[],
     topBrands: home.topBrands,
     checkout: checkout as CheckoutConfig
 }
