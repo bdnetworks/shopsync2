@@ -16,9 +16,11 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
 import { siteConfig } from '@/config/site';
+import { useWishlist } from '@/context/wishlist-context';
 
 export default function Header() {
   const { itemCount } = useCart();
+  const { wishlistCount } = useWishlist();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -38,9 +40,16 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative hidden md:flex">
-              <Heart className="h-5 w-5" />
-            </Button>
+            <Link href="/wishlist" aria-label="Open wishlist" className="hidden md:flex">
+              <Button variant="ghost" size="icon" className="relative">
+                <Heart className="h-5 w-5" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Button variant="ghost" size="icon" className="relative hidden md:flex">
               <User className="h-5 w-5" />
             </Button>
