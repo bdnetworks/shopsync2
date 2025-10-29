@@ -34,14 +34,12 @@ export default function ProductCard({ product }: ProductCardProps) {
             className="object-cover"
           />
         </div>
-        <CardContent className="flex flex-1 flex-col justify-between p-4 space-y-2">
-           <div>
-            <p className="text-sm text-muted-foreground">{product.category}</p>
-            <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors h-10 overflow-hidden">
-              {product.name}
-            </h3>
-          </div>
-          <div className="flex justify-between items-center">
+        <CardContent className="p-4">
+          <p className="text-sm text-muted-foreground">{product.category}</p>
+          <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors h-10 overflow-hidden">
+            {product.name}
+          </h3>
+          <div className="flex justify-between items-center mt-2">
             <p className="text-lg font-bold text-primary">
               {siteConfig.currency}{product.price.toFixed(2)}
             </p>
