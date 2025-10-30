@@ -39,7 +39,7 @@ export default function Header() {
   const topBarLinks = [
       { href: "tel:16810", label: "16810", icon: Phone },
       { href: "mailto:info@ryans.com", label: "info@ryans.com", icon: Mail },
-      { href: "#", label: "Customer Service", icon: User },
+      { href: "/contact", label: "Contact", icon: User },
       { href: "#", label: "Offer", icon: Tag },
       { href: "#", label: "New Arrival", icon: Shirt },
       { href: "#", label: "Store", icon: Store },
@@ -67,9 +67,11 @@ export default function Header() {
               )}
           </Button>
       </Link>
-      <Button variant="ghost" size="icon" className="relative hidden md:flex text-white hover:text-primary">
-        <User className="h-6 w-6" />
-      </Button>
+       <Link href="/contact" aria-label="Contact page" className="relative hidden md:flex">
+          <Button variant="ghost" size="icon" className="text-white hover:text-primary">
+            <User className="h-6 w-6" />
+          </Button>
+       </Link>
       
       <div className="md:hidden">
         <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
@@ -78,7 +80,7 @@ export default function Header() {
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="bg-[#0f172a] text-white border-l-gray-800">
+          <SheetContent side="right" className="bg-[#0d2253] text-white border-l-gray-800">
             <SheetHeader>
               <Link href="/" className="flex items-center gap-2 mb-8" onClick={() => setMenuOpen(false)}>
                 <Logo />
@@ -107,7 +109,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="w-full bg-[#0f172a] text-white">
+      <header className="w-full bg-[#0d2253] text-white">
         <div className="border-b border-gray-700">
           <div className="container hidden h-10 max-w-screen-2xl items-center justify-end gap-6 text-sm md:flex">
               {topBarLinks.map(link => {
@@ -122,7 +124,7 @@ export default function Header() {
           </div>
         </div>
         
-        <div className="bg-[#0f172a] border-b border-gray-700">
+        <div className="bg-[#0d2253] border-b border-gray-700">
             <div className="container flex h-20 max-w-screen-2xl items-center justify-between">
                 <Link href="/" className="flex items-center gap-2">
                   <Logo />
@@ -140,7 +142,7 @@ export default function Header() {
             </div>
         </div>
 
-        <nav className="hidden md:flex bg-[#0f172a]">
+        <nav className="hidden md:flex bg-[#0d2253]">
           <div className="container flex items-center gap-6 text-sm font-medium h-12 max-w-screen-2xl">
             {siteConfig.navLinks.map((link) => (
               <Link
@@ -160,7 +162,7 @@ export default function Header() {
 
       {/* Sticky Header */}
       <div className={cn(
-        "fixed top-0 left-0 right-0 z-50 bg-[#0f172a] border-b border-gray-700 transition-transform duration-300 ease-in-out",
+        "fixed top-0 left-0 right-0 z-50 bg-[#0d2253] border-b border-gray-700 transition-transform duration-300 ease-in-out",
         isScrolled ? "translate-y-0" : "-translate-y-full"
       )}>
         <div className="container flex h-16 max-w-screen-2xl items-center justify-between">

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,51 +10,70 @@ import { Textarea } from "@/components/ui/textarea";
 import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons.tsx";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Mail } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import Link from 'next/link';
+
+const WhatsAppIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+);
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  
+  const socialWhatsapp = siteConfig.socialLinks.find(link => link.name === 'WhatsApp');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const isFormValid = name && email && subject && message;
 
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+  const contactBodyText = useMemo(() => {
+    return `
+Hi, I have a question.
 
-    try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "Message Sent!",
-          description: "Thank you for contacting us. We'll get back to you shortly.",
-        });
-        (e.target as HTMLFormElement).reset();
-      } else {
-        throw new Error(result.error || 'Something went wrong');
-      }
-
-    } catch (error: any) {
-      console.error("Error submitting form:", error);
-      toast({
-        title: "Something went wrong",
-        description: error.message || "Could not send your message. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+*Name* : ${name}
+*Email* : ${email}
+*Subject* : ${subject}
+-------------------
+*Message* : 
+${message}
+-------------------
+via. ${typeof window !== 'undefined' ? window.location.origin : ''}
+    `.trim();
+  }, [name, email, subject, message]);
+  
+  const gmailComposeLink = useMemo(() => {
+    if (!isFormValid) return '#';
+    const adminEmail = siteConfig.checkout.contact.email;
+    const emailSubject = `Contact Form: ${subject}`;
+    
+    // For mobile, use mailto: to open the default email app
+    if (isMobile) {
+      return `mailto:${adminEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(contactBodyText)}`;
     }
-  };
+    
+    // For desktop, use the full Gmail compose URL
+    const params = new URLSearchParams({
+      to: adminEmail,
+      su: emailSubject,
+      body: contactBodyText,
+      fs: '1',
+      view: 'cm'
+    });
+    return `https://mail.google.com/mail/?${params.toString()}`;
+  }, [isFormValid, contactBodyText, isMobile, subject]);
+
+  const whatsappContactLink = useMemo(() => {
+    if (!isFormValid) return '#';
+    const whatsappNumber = siteConfig.checkout.contact.whatsappNumber;
+    const encodedText = encodeURIComponent(contactBodyText);
+    return `https://wa.me/${whatsappNumber}?text=${encodedText}`;
+  }, [isFormValid, contactBodyText]);
+
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -69,32 +88,44 @@ export default function ContactPage() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">Send us a Message</CardTitle>
-            <CardDescription>Fill out the form and we'll get back to you as soon as possible.</CardDescription>
+            <CardDescription>Fill out the form and choose your contact method.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={e => e.preventDefault()}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
-                  <Input id="name" name="name" placeholder="Your Name" required />
+                  <Input id="name" name="name" placeholder="Your Name" required value={name} onChange={e => setName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" name="email" placeholder="your@email.com" required />
+                  <Input id="email" type="email" name="email" placeholder="your@email.com" required value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
               </div>
               <div className="space-y-2 mt-4">
                 <Label htmlFor="subject">Subject</Label>
-                <Input id="subject" name="subject" placeholder="Question about an order" required />
+                <Input id="subject" name="subject" placeholder="Question about an order" required value={subject} onChange={e => setSubject(e.target.value)} />
               </div>
               <div className="space-y-2 mt-4">
                 <Label htmlFor="message">Message</Label>
-                <Textarea id="message" name="message" placeholder="Your message..." rows={5} required />
+                <Textarea id="message" name="message" placeholder="Your message..." rows={5} required value={message} onChange={e => setMessage(e.target.value)} />
               </div>
-              <Button type="submit" className="w-full mt-4" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSubmitting ? 'Sending...' : 'Send Message'}
-              </Button>
+              
+               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Button asChild size="lg" className="w-full bg-green-500 hover:bg-green-600 text-white" disabled={!isFormValid}>
+                      <Link href={whatsappContactLink} target="_blank">
+                        <WhatsAppIcon />
+                        via WhatsApp
+                      </Link>
+                  </Button>
+                  <Button asChild size="lg" className="w-full bg-red-500 hover:bg-red-600 text-white" disabled={!isFormValid}>
+                      <Link href={gmailComposeLink} target="_blank">
+                        <Mail />
+                        via Email
+                      </Link>
+                  </Button>
+              </div>
+              {!isFormValid && <p className="text-sm text-center text-destructive mt-4">Please fill out all fields to send a message.</p>}
             </form>
           </CardContent>
         </Card>
