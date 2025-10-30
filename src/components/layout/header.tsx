@@ -47,31 +47,56 @@ export default function Header() {
 
   const RightIcons = () => (
     <div className="flex items-center gap-2">
-      <Link href="/wishlist" aria-label="Open wishlist" className="hidden md:flex">
-        <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-          <Heart className="h-6 w-6" />
-          {wishlistCount > 0 && (
-            <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-              {wishlistCount}
-            </span>
-          )}
-        </Button>
-      </Link>
-       <Link href="/cart" aria-label="Open shopping cart">
+      <div className="hidden md:flex items-center gap-2">
+        <Link href="/wishlist" aria-label="Open wishlist">
           <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-              <ShoppingCart className="h-6 w-6" />
-              {itemCount > 0 && (
+            <Heart className="h-6 w-6" />
+            {wishlistCount > 0 && (
               <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                  {itemCount}
+                {wishlistCount}
               </span>
-              )}
+            )}
           </Button>
-      </Link>
-       <Link href="/contact" aria-label="Contact page" className="relative hidden md:flex">
+        </Link>
+        <Link href="/cart" aria-label="Open shopping cart">
+          <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+            <ShoppingCart className="h-6 w-6" />
+            {itemCount > 0 && (
+              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                {itemCount}
+              </span>
+            )}
+          </Button>
+        </Link>
+        <Link href="/contact" aria-label="Contact page" className="relative">
           <Button variant="ghost" size="icon" className="text-white hover:text-primary">
             <User className="h-6 w-6" />
           </Button>
-       </Link>
+        </Link>
+      </div>
+
+      <div className="flex md:hidden items-center gap-2">
+        <Link href="/wishlist" aria-label="Open wishlist">
+          <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+            <Heart className="h-6 w-6" />
+            {wishlistCount > 0 && (
+              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                {wishlistCount}
+              </span>
+            )}
+          </Button>
+        </Link>
+        <Link href="/cart" aria-label="Open shopping cart">
+          <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+            <ShoppingCart className="h-6 w-6" />
+            {itemCount > 0 && (
+              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                {itemCount}
+              </span>
+            )}
+          </Button>
+        </Link>
+      </div>
       
       <div className="md:hidden">
         <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
@@ -136,7 +161,7 @@ export default function Header() {
                         <Search className="h-5 w-5"/>
                     </Button>
                 </div>
-                <div className="hidden md:flex">
+                <div className="flex">
                   <RightIcons />
                 </div>
             </div>
