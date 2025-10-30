@@ -49,77 +49,81 @@ export default function Header() {
             })}
         </div>
       </div>
-      <div className="container flex h-20 max-w-screen-2xl items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Logo />
-          </Link>
+      
+      <div className="sticky top-0 z-50 bg-[#0f172a] border-b border-gray-700">
+          <div className="container flex h-20 max-w-screen-2xl items-center justify-between">
+              <Link href="/" className="flex items-center gap-2">
+                <Logo />
+              </Link>
 
-          <div className="hidden lg:flex flex-1 max-w-xl mx-4">
-              <Input placeholder="Enter Your Keyword..." className="bg-white text-black rounded-r-none focus:ring-primary border-0 h-11"/>
-              <Button className="rounded-l-none bg-primary hover:bg-primary/90 h-11">
-                  <Search className="h-5 w-5"/>
-              </Button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link href="/wishlist" aria-label="Open wishlist" className="hidden md:flex">
-              <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-                <Heart className="h-6 w-6" />
-                {wishlistCount > 0 && (
-                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                    {wishlistCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
-             <Link href="/cart" aria-label="Open shopping cart">
-                <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-                    <ShoppingCart className="h-6 w-6" />
-                    {itemCount > 0 && (
-                    <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                        {itemCount}
-                    </span>
-                    )}
-                </Button>
-            </Link>
-            <Button variant="ghost" size="icon" className="relative hidden md:flex text-white hover:text-primary">
-              <User className="h-6 w-6" />
-            </Button>
-            
-            <div className="md:hidden">
-              <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-white hover:text-primary">
-                    <Menu className="h-5 w-5" />
+              <div className="hidden lg:flex flex-1 max-w-xl mx-4">
+                  <Input placeholder="Enter Your Keyword..." className="bg-white text-black rounded-r-none focus:ring-primary border-0 h-11"/>
+                  <Button className="rounded-l-none bg-primary hover:bg-primary/90 h-11">
+                      <Search className="h-5 w-5"/>
                   </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="bg-[#0f172a] text-white border-l-gray-800">
-                  <SheetHeader>
-                    <Link href="/" className="flex items-center gap-2 mb-8" onClick={() => setMenuOpen(false)}>
-                      <Logo />
-                    </Link>
-                  </SheetHeader>
-                  <div className="flex flex-col gap-4">
-                    {siteConfig.navLinks.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        onClick={() => setMenuOpen(false)}
-                        className={cn(
-                          "text-lg font-medium transition-colors hover:text-primary",
-                          pathname === link.href ? "text-primary" : ""
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link href="/wishlist" aria-label="Open wishlist" className="hidden md:flex">
+                  <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+                    <Heart className="h-6 w-6" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+                 <Link href="/cart" aria-label="Open shopping cart">
+                    <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+                        <ShoppingCart className="h-6 w-6" />
+                        {itemCount > 0 && (
+                        <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                            {itemCount}
+                        </span>
                         )}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+                    </Button>
+                </Link>
+                <Button variant="ghost" size="icon" className="relative hidden md:flex text-white hover:text-primary">
+                  <User className="h-6 w-6" />
+                </Button>
+                
+                <div className="md:hidden">
+                  <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-white hover:text-primary">
+                        <Menu className="h-5 w-5" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="bg-[#0f172a] text-white border-l-gray-800">
+                      <SheetHeader>
+                        <Link href="/" className="flex items-center gap-2 mb-8" onClick={() => setMenuOpen(false)}>
+                          <Logo />
+                        </Link>
+                      </SheetHeader>
+                      <div className="flex flex-col gap-4">
+                        {siteConfig.navLinks.map((link) => (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            onClick={() => setMenuOpen(false)}
+                            className={cn(
+                              "text-lg font-medium transition-colors hover:text-primary",
+                              pathname === link.href ? "text-primary" : ""
+                            )}
+                          >
+                            {link.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              </div>
           </div>
-        </div>
-      <nav className="hidden md:flex bg-[#0f172a] border-t border-gray-700">
+      </div>
+
+      <nav className="hidden md:flex bg-[#0f172a]">
         <div className="container flex items-center gap-6 text-sm font-medium h-12 max-w-screen-2xl">
           {siteConfig.navLinks.map((link) => (
             <Link
