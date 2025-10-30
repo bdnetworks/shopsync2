@@ -8,8 +8,8 @@ export default function Footer() {
   return (
     <footer className="bg-[#0d2253] text-white">
       <div className="container mx-auto px-4 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="md:col-span-2 lg:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="md:col-span-4 lg:col-span-1">
              <Link href="/" className="flex items-center gap-2 mb-4">
               <Logo />
             </Link>
@@ -28,20 +28,24 @@ export default function Footer() {
               })}
             </div>
           </div>
-          {siteConfig.footerLinks.map((section) => (
-            <div key={section.title}>
-                <h3 className="font-headline font-semibold text-white">{section.title}</h3>
-                <ul className="mt-4 space-y-2">
-                    {section.links.map((link) => (
-                        <li key={link.name}>
-                            <Link href={link.href} className="text-sm text-gray-400 hover:text-white">
-                                {link.name}
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
+          <div className="md:col-span-4 lg:col-span-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
+              {siteConfig.footerLinks.map((section) => (
+                <div key={section.title}>
+                    <h3 className="font-headline font-semibold text-white">{section.title}</h3>
+                    <ul className="mt-4 space-y-2">
+                        {section.links.map((link) => (
+                            <li key={link.name}>
+                                <Link href={link.href} className="text-sm text-gray-400 hover:text-white">
+                                    {link.name}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
         <div className="mt-8 border-t border-gray-800 pt-8 text-center text-sm text-gray-500">
           <p>&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved. | Developer <Link href="https://facebook.com/bdthemex" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">BDthemeX</Link></p>
