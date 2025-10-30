@@ -46,7 +46,7 @@ export default function Header() {
   ]
 
   const RightIcons = () => (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-1 items-center justify-end gap-2">
       <div className="hidden md:flex items-center gap-2">
         <Link href="/wishlist" aria-label="Open wishlist">
           <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
@@ -161,7 +161,7 @@ export default function Header() {
                         <Search className="h-5 w-5"/>
                     </Button>
                 </div>
-                <div className="flex">
+                <div className="flex flex-1 justify-end">
                   <RightIcons />
                 </div>
             </div>
@@ -194,7 +194,9 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-2">
             <Logo />
           </Link>
-          <RightIcons />
+          <div className="flex flex-1 justify-end">
+            <RightIcons />
+          </div>
         </div>
       </div>
     </>
