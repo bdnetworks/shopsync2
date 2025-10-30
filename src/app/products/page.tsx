@@ -9,7 +9,7 @@ import { Product, ProductCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { siteConfig } from '@/config/site';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
@@ -95,8 +95,18 @@ function ProductsComponent() {
   return (
     <div className="container mx-auto px-2 py-2">
         <Card>
-            <CardHeader className="flex-row items-center justify-end p-2">
-                <Popover>
+             <CardHeader className="p-2 flex flex-row items-center justify-between">
+                 <div className="overflow-x-auto">
+                    <div className="flex items-center space-x-2">
+                         <Button variant={activeTab === 'All' ? 'default' : 'outline'} onClick={() => setActiveTab('All')}>All</Button>
+                        {siteConfig.productCategories.map(category => (
+                          <Button key={category} variant={activeTab === category ? 'default' : 'outline'} onClick={() => setActiveTab(category)}>
+                              {category}
+                          </Button>
+                        ))}
+                    </div>
+                </div>
+                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="outline"><Filter className="h-4 w-4 mr-2" /> Filters</Button>
                     </PopoverTrigger>
@@ -138,18 +148,6 @@ function ProductsComponent() {
                         </div>
                     </PopoverContent>
                 </Popover>
-            </CardHeader>
-             <CardHeader className="border-t p-2">
-                 <div className="overflow-x-auto">
-                    <div className="flex items-center space-x-2">
-                         <Button variant={activeTab === 'All' ? 'default' : 'outline'} onClick={() => setActiveTab('All')}>All</Button>
-                        {siteConfig.productCategories.map(category => (
-                          <Button key={category} variant={activeTab === category ? 'default' : 'outline'} onClick={() => setActiveTab(category)}>
-                              {category}
-                          </Button>
-                        ))}
-                    </div>
-                </div>
             </CardHeader>
             <CardContent className="p-2">
                 {loading ? (
