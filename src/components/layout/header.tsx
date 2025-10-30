@@ -160,9 +160,7 @@ export default function Header() {
                         <Search className="h-5 w-5"/>
                     </Button>
                 </div>
-                <div className="flex flex-1 justify-end">
-                  <RightIcons />
-                </div>
+                <RightIcons />
             </div>
         </div>
 
@@ -193,9 +191,7 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-2">
             <Logo />
           </Link>
-          <div className="flex flex-1 justify-end">
-            <RightIcons />
-          </div>
+          <RightIcons />
         </div>
       </div>
     </>
