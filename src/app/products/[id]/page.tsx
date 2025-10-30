@@ -6,9 +6,9 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getProductById } from '@/lib/products';
+import { getProductById, getProducts } from '@/lib/products';
 import { useCart } from '@/context/cart-context';
-import { ShoppingCart, CheckCircle, Heart, Share2 } from 'lucide-react';
+import { ShoppingCart, CheckCircle, Heart, Share2, Minus, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/lib/types';
 import { siteConfig } from '@/config/site';
@@ -17,21 +17,35 @@ import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DisqusComments from '@/components/disqus-comments';
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import ProductCard from '@/components/product-card';
+import { Input } from '@/components/ui/input';
 
 function ProductDetail({ params }: { params: { id: string } }) {
     const { addToCart } = useCart();
     const { isWishlisted, toggleWishlist } = useWishlist();
     const [product, setProduct] = useState<Product | null | undefined>(null);
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+    const [quantity, setQuantity] = useState(1);
     const { toast } = useToast();
 
     useEffect(() => {
         const findProduct = async () => {
             const foundProduct = await getProductById(params.id);
             setProduct(foundProduct);
+
+            if (foundProduct) {
+                const allProducts = await getProducts();
+                const related = allProducts
+                    .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
+                    .slice(0, 4);
+                setRelatedProducts(related);
+            }
         }
         findProduct();
     }, [params.id]);
-    
+
     const handleShare = async () => {
         if (navigator.share && product) {
             try {
@@ -74,6 +88,10 @@ function ProductDetail({ params }: { params: { id: string } }) {
     }
     
     const isInWishlist = isWishlisted(product.id);
+    
+    const handleAddToCart = () => {
+        addToCart(product, quantity);
+    }
 
     return (
         <div className="container mx-auto px-4 py-12">
@@ -94,30 +112,82 @@ function ProductDetail({ params }: { params: { id: string } }) {
                         </CardContent>
                     </Card>
                 </div>
-                <div className="flex flex-col justify-center">
+                <div className="flex flex-col">
                     <h1 className="text-3xl lg:text-4xl font-headline font-bold mb-4">{product.name}</h1>
                     
-                    <div className="flex items-center justify-between mb-8 p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center justify-between mb-4 p-4 bg-muted/50 rounded-lg">
                         <span className="text-3xl font-bold text-primary">{siteConfig.currency}{product.price.toFixed(2)}</span>
                         <div className="flex items-center gap-2 text-sm font-medium text-green-600">
                             <CheckCircle className="h-5 w-5" />
                             <span>In Stock</span>
                         </div>
                     </div>
+
+                    <div className="space-y-6">
+                        <div>
+                            <Label className="text-sm font-medium">Color</Label>
+                            <RadioGroup defaultValue="green" className="flex items-center gap-2 mt-2">
+                                <RadioGroupItem value="green" id="color-green" className="h-8 w-8 border-green-500 bg-green-500 text-white" />
+                                <RadioGroupItem value="gray" id="color-gray" className="h-8 w-8 border-gray-400 bg-gray-400 text-white" />
+                                <RadioGroupItem value="white" id="color-white" className="h-8 w-8 border-gray-200 bg-white text-black" />
+                                <RadioGroupItem value="cyan" id="color-cyan" className="h-8 w-8 border-cyan-400 bg-cyan-400 text-white" />
+                            </RadioGroup>
+                        </div>
+
+                         <div>
+                            <Label className="text-sm font-medium">Size</Label>
+                            <div className="flex items-center gap-2 mt-2">
+                                {['S', 'M', 'L', 'XL'].map(size => (
+                                    <Button key={size} variant="outline" size="sm" className="w-10 h-10">{size}</Button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <Label className="text-sm font-medium">Quantity</Label>
+                             <div className="flex items-center gap-2 mt-2">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-10 w-10"
+                                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                >
+                                    <Minus className="h-4 w-4" />
+                                </Button>
+                                <Input
+                                    type="number"
+                                    value={quantity}
+                                    onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                                    className="h-10 w-20 text-center text-lg font-bold"
+                                    min="1"
+                                />
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-10 w-10"
+                                    onClick={() => setQuantity(q => q + 1)}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
-                        <Button size="lg" onClick={() => addToCart(product)}>
+                    <div className="mt-8 grid grid-cols-1 gap-4">
+                        <Button size="lg" onClick={handleAddToCart}>
                             <ShoppingCart className="mr-2 h-5 w-5" />
                             Add to Cart
                         </Button>
-                        <Button size="lg" variant="outline" onClick={() => toggleWishlist(product)}>
-                            <Heart className={cn("mr-2 h-5 w-5", isInWishlist && "fill-current text-red-500")} />
-                            {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
-                        </Button>
-                         <Button size="lg" variant="outline" onClick={handleShare} className="col-span-2">
-                            <Share2 className="mr-2 h-5 w-5" />
-                            Share
-                        </Button>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Button size="lg" variant="outline" onClick={() => toggleWishlist(product)}>
+                                <Heart className={cn("mr-2 h-5 w-5", isInWishlist && "fill-current text-red-500")} />
+                                {isInWishlist ? 'In Wishlist' : 'Wishlist'}
+                            </Button>
+                            <Button size="lg" variant="outline" onClick={handleShare}>
+                                <Share2 className="mr-2 h-5 w-5" />
+                                Share
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="mt-8 space-y-2 text-sm text-muted-foreground">
@@ -144,6 +214,17 @@ function ProductDetail({ params }: { params: { id: string } }) {
                     </TabsContent>
                 </Tabs>
             </div>
+            
+            {relatedProducts.length > 0 && (
+                <div className="mt-16">
+                    <h2 className="text-2xl font-bold text-center mb-8">Related Products</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {relatedProducts.map(relatedProduct => (
+                            <ProductCard key={relatedProduct.id} product={relatedProduct} />
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
