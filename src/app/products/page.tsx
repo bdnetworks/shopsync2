@@ -78,7 +78,7 @@ function ProductsComponent() {
   }, [activeTab, allProducts, sortOption, priceRange]);
   
   const ProductGridSkeleton = () => (
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
           {[...Array(10)].map((_, i) => (
               <div key={i} className="flex flex-col space-y-3">
                   <Skeleton className="h-[225px] w-full rounded-xl" />
@@ -93,9 +93,9 @@ function ProductsComponent() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-4">
+    <div className="container mx-auto px-2 py-2">
         <Card>
-            <CardHeader className="flex-row items-center justify-end p-4">
+            <CardHeader className="flex-row items-center justify-end p-2">
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="outline"><Filter className="h-4 w-4 mr-2" /> Filters</Button>
@@ -139,7 +139,7 @@ function ProductsComponent() {
                     </PopoverContent>
                 </Popover>
             </CardHeader>
-             <CardHeader className="border-t p-4">
+             <CardHeader className="border-t p-2">
                  <div className="overflow-x-auto">
                     <div className="flex items-center space-x-2">
                          <Button variant={activeTab === 'All' ? 'default' : 'outline'} onClick={() => setActiveTab('All')}>All</Button>
@@ -151,11 +151,11 @@ function ProductsComponent() {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="p-4">
+            <CardContent className="p-2">
                 {loading ? (
                     <ProductGridSkeleton />
                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                         {filteredAndSortedProducts.map(product => (
                             <ProductCard key={product.id} product={product} />
                         ))}
@@ -183,8 +183,8 @@ export default function ProductsPage() {
 
 function ProductDetailSkeleton() {
     return (
-        <div className="container mx-auto px-4 py-12">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
+        <div className="container mx-auto px-2 py-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                 {[...Array(12)].map((_, i) => (
                     <div key={i} className="flex flex-col space-y-3">
                         <Skeleton className="h-[225px] w-full rounded-xl" />
