@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -98,15 +99,15 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <nav className="hidden md:flex bg-background border-b">
+      <nav className="hidden md:flex bg-primary border-b">
         <div className="container flex items-center gap-6 text-sm font-medium h-12 max-w-screen-2xl">
           {siteConfig.navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "transition-colors hover:text-foreground/80",
-                pathname === link.href ? "text-foreground font-semibold" : "text-foreground/60"
+                "transition-colors hover:text-primary-foreground/80",
+                pathname === link.href ? "text-primary-foreground font-semibold" : "text-primary-foreground/60"
               )}
             >
               {link.label}
