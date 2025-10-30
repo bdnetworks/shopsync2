@@ -123,15 +123,15 @@ export default function Header() {
           </div>
       </div>
 
-      <nav className="hidden md:flex bg-primary">
+      <nav className="hidden md:flex bg-[#0f172a]">
         <div className="container flex items-center gap-6 text-sm font-medium h-12 max-w-screen-2xl">
           {siteConfig.navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "transition-colors hover:text-primary-foreground",
-                pathname === link.href ? "text-primary-foreground font-semibold" : "text-primary-foreground/80"
+                "transition-colors hover:text-primary",
+                pathname === link.href ? "text-primary font-semibold" : "text-white/80"
               )}
             >
               {link.label}
