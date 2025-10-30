@@ -75,59 +75,58 @@ export default function Header() {
         </Link>
       </div>
 
-      <div className="flex md:hidden items-center gap-2">
-        <Link href="/wishlist" aria-label="Open wishlist">
-          <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-            <Heart className="h-6 w-6" />
-            {wishlistCount > 0 && (
-              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                {wishlistCount}
-              </span>
-            )}
-          </Button>
-        </Link>
-        <Link href="/cart" aria-label="Open shopping cart">
-          <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-            <ShoppingCart className="h-6 w-6" />
-            {itemCount > 0 && (
-              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                {itemCount}
-              </span>
-            )}
-          </Button>
-        </Link>
-      </div>
-      
-      <div className="md:hidden">
-        <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-white hover:text-primary">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="bg-[#0d2253] text-white border-l-gray-800">
-            <SheetHeader>
-              <Link href="/" className="flex items-center gap-2 mb-8" onClick={() => setMenuOpen(false)}>
-                <Logo />
-              </Link>
-            </SheetHeader>
-            <div className="flex flex-col gap-4">
-              {siteConfig.navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className={cn(
-                    "text-lg font-medium transition-colors hover:text-primary",
-                    pathname === link.href ? "text-primary" : ""
-                  )}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </SheetContent>
-        </Sheet>
+      <div className="flex flex-1 justify-end md:hidden">
+        <div className="flex items-center gap-2">
+            <Link href="/wishlist" aria-label="Open wishlist">
+              <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+                <Heart className="h-6 w-6" />
+                {wishlistCount > 0 && (
+                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+            <Link href="/cart" aria-label="Open shopping cart">
+              <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+                <ShoppingCart className="h-6 w-6" />
+                {itemCount > 0 && (
+                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+            <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white hover:text-primary">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-[#0d2253] text-white border-l-gray-800">
+                <SheetHeader>
+                  <Link href="/" className="flex items-center gap-2 mb-8" onClick={() => setMenuOpen(false)}>
+                    <Logo />
+                  </Link>
+                </SheetHeader>
+                <div className="flex flex-col gap-4">
+                  {siteConfig.navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className={cn(
+                        "text-lg font-medium transition-colors hover:text-primary",
+                        pathname === link.href ? "text-primary" : ""
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+        </div>
       </div>
     </div>
   );
