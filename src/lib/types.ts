@@ -18,6 +18,8 @@ export interface Product {
     alt: string;
     hint: string;
   };
+  colors?: string[];
+  sizes?: string[];
 }
 
 export interface CartItem extends Product {

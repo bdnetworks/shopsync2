@@ -124,24 +124,34 @@ function ProductDetail({ params }: { params: { id: string } }) {
                     </div>
 
                     <div className="space-y-6">
-                        <div>
-                            <Label className="text-sm font-medium">Color</Label>
-                            <RadioGroup defaultValue="green" className="flex items-center gap-2 mt-2">
-                                <RadioGroupItem value="green" id="color-green" className="h-8 w-8 border-green-500 bg-green-500 text-white" />
-                                <RadioGroupItem value="gray" id="color-gray" className="h-8 w-8 border-gray-400 bg-gray-400 text-white" />
-                                <RadioGroupItem value="white" id="color-white" className="h-8 w-8 border-gray-200 bg-white text-black" />
-                                <RadioGroupItem value="cyan" id="color-cyan" className="h-8 w-8 border-cyan-400 bg-cyan-400 text-white" />
-                            </RadioGroup>
-                        </div>
-
-                         <div>
-                            <Label className="text-sm font-medium">Size</Label>
-                            <div className="flex items-center gap-2 mt-2">
-                                {['S', 'M', 'L', 'XL'].map(size => (
-                                    <Button key={size} variant="outline" size="sm" className="w-10 h-10">{size}</Button>
-                                ))}
+                        {product.colors && product.colors.length > 0 && (
+                            <div>
+                                <Label className="text-sm font-medium">Color</Label>
+                                <RadioGroup defaultValue={product.colors[0]} className="flex items-center gap-2 mt-2">
+                                    {product.colors.map(color => (
+                                        <RadioGroupItem 
+                                            key={color} 
+                                            value={color} 
+                                            id={`color-${color}`}
+                                            className="h-8 w-8 border-2"
+                                            style={{ backgroundColor: color.toLowerCase(), borderColor: color.toLowerCase() }}
+                                        />
+                                    ))}
+                                </RadioGroup>
                             </div>
-                        </div>
+                        )}
+
+                        {product.sizes && product.sizes.length > 0 && (
+                            <div>
+                                <Label className="text-sm font-medium">Size</Label>
+                                <div className="flex items-center gap-2 mt-2">
+                                    {product.sizes.map(size => (
+                                        <Button key={size} variant="outline" size="sm" className="w-10 h-10">{size}</Button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
 
                         <div>
                             <Label className="text-sm font-medium">Quantity</Label>
@@ -192,7 +202,7 @@ function ProductDetail({ params }: { params: { id: string } }) {
 
                     <div className="mt-8 space-y-2 text-sm text-muted-foreground">
                         <p><span className="font-semibold text-foreground">Category:</span> {product.category}</p>
-                        <p><span className="font-semibold text-foreground">Unit:</span> {product.unit}</p>
+                        {product.unit && <p><span className="font-semibold text-foreground">Unit:</span> {product.unit}</p>}
                     </div>
                 </div>
             </div>

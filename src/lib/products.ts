@@ -66,7 +66,7 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
         const lines = parseCSV(csv);
         
         return lines.map(values => {
-             const [id, name, description, price, category, unit, imageUrl, imageAlt, imageHint] = values;
+             const [id, name, description, price, category, unit, imageUrl, imageAlt, imageHint, colors, sizes] = values;
              
              const product: Product = {
                 id: id?.trim(),
@@ -80,7 +80,9 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
                     src: imageUrl?.trim(),
                     alt: imageAlt?.trim(),
                     hint: imageHint?.trim(),
-                }
+                },
+                colors: colors?.trim() ? colors.split(',').map(c => c.trim()) : undefined,
+                sizes: sizes?.trim() ? sizes.split(',').map(s => s.trim()) : undefined,
             };
 
             // Basic validation
@@ -123,4 +125,3 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
     const products = await getProducts();
     return products.find(p => p.id === id);
 }
-
