@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, ShoppingCart, Search, Heart, User } from 'lucide-react';
+import { Menu, ShoppingCart, Search, Heart, User, Phone, Mail, Tag, Shirt, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import { useCart } from '@/context/cart-context';
@@ -25,50 +25,71 @@ export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
 
+  const topBarLinks = [
+      { href: "tel:16810", label: "16810", icon: Phone },
+      { href: "mailto:info@ryans.com", label: "info@ryans.com", icon: Mail },
+      { href: "#", label: "Customer Service", icon: User },
+      { href: "#", label: "Offer", icon: Tag },
+      { href: "#", label: "New Arrival", icon: Shirt },
+      { href: "#", label: "Store", icon: Store },
+  ]
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background supports-[backdrop-filter]:bg-background/60">
-      <div className="bg-[#0f172a] text-white">
-        <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
+    <header className="w-full bg-[#0f172a] text-white">
+      <div className="border-b border-gray-700">
+        <div className="container flex h-10 max-w-screen-2xl items-center justify-end gap-6 text-sm">
+            {topBarLinks.map(link => {
+                const Icon = link.icon;
+                return (
+                    <Link key={link.label} href={link.href} className="flex items-center gap-2 hover:text-primary transition-colors">
+                        <Icon className="h-4 w-4" />
+                        <span>{link.label}</span>
+                    </Link>
+                )
+            })}
+        </div>
+      </div>
+      <div className="container flex h-20 max-w-screen-2xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Logo />
           </Link>
 
           <div className="hidden lg:flex flex-1 max-w-xl mx-4">
-              <Input placeholder="Enter your keyword" className="bg-white text-black rounded-r-none focus:ring-primary"/>
-              <Button className="rounded-l-none bg-primary hover:bg-primary/90">
+              <Input placeholder="Enter Your Keyword..." className="bg-white text-black rounded-r-none focus:ring-primary border-0 h-11"/>
+              <Button className="rounded-l-none bg-primary hover:bg-primary/90 h-11">
                   <Search className="h-5 w-5"/>
               </Button>
           </div>
 
           <div className="flex items-center gap-2">
             <Link href="/wishlist" aria-label="Open wishlist" className="hidden md:flex">
-              <Button variant="ghost" size="icon" className="relative">
-                <Heart className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+                <Heart className="h-6 w-6" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
                     {wishlistCount}
                   </span>
                 )}
               </Button>
             </Link>
-            <Button variant="ghost" size="icon" className="relative hidden md:flex">
-              <User className="h-5 w-5" />
-            </Button>
-            <Link href="/cart" aria-label="Open shopping cart">
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    {itemCount}
-                  </span>
-                )}
-              </Button>
+             <Link href="/cart" aria-label="Open shopping cart">
+                <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+                    <ShoppingCart className="h-6 w-6" />
+                    {itemCount > 0 && (
+                    <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                        {itemCount}
+                    </span>
+                    )}
+                </Button>
             </Link>
+            <Button variant="ghost" size="icon" className="relative hidden md:flex text-white hover:text-primary">
+              <User className="h-6 w-6" />
+            </Button>
             
             <div className="md:hidden">
               <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="text-white hover:text-primary">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -98,16 +119,15 @@ export default function Header() {
             </div>
           </div>
         </div>
-      </div>
-      <nav className="hidden md:flex bg-primary border-b">
+      <nav className="hidden md:flex bg-[#0f172a] border-t border-gray-700">
         <div className="container flex items-center gap-6 text-sm font-medium h-12 max-w-screen-2xl">
           {siteConfig.navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "transition-colors hover:text-primary-foreground/80",
-                pathname === link.href ? "text-primary-foreground font-semibold" : "text-primary-foreground/60"
+                "transition-colors hover:text-primary",
+                pathname === link.href ? "text-primary font-semibold" : "text-white/80"
               )}
             >
               {link.label}
