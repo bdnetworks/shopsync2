@@ -93,9 +93,9 @@ function ProductsComponent() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-4">
         <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-row items-center justify-between p-4">
                 <CardTitle className="font-headline text-xl">Products</CardTitle>
                 <Popover>
                     <PopoverTrigger asChild>
@@ -140,7 +140,7 @@ function ProductsComponent() {
                     </PopoverContent>
                 </Popover>
             </CardHeader>
-             <CardHeader className="border-t">
+             <CardHeader className="border-t p-4">
                  <div className="overflow-x-auto">
                     <div className="flex items-center space-x-2">
                          <Button variant={activeTab === 'All' ? 'default' : 'outline'} onClick={() => setActiveTab('All')}>All</Button>
@@ -152,7 +152,7 @@ function ProductsComponent() {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4">
                 {loading ? (
                     <ProductGridSkeleton />
                 ) : (
