@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Filter } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
 function ProductsComponent() {
@@ -94,47 +94,53 @@ function ProductsComponent() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-        <h1 className="text-4xl font-headline font-bold mb-6">Products</h1>
-
-        <Card className="mb-6">
-            <CardHeader>
-                <CardTitle className="font-headline text-xl flex items-center gap-2"><Filter className="h-5 w-5" /> Filters</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label>Sort by</Label>
-                        <Select value={sortOption} onValueChange={setSortOption}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Default" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="default">Default</SelectItem>
-                                <SelectItem value="price-asc">Lowest Price</SelectItem>
-                                <SelectItem value="price-desc">Highest Price</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Price Range</Label>
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>{siteConfig.currency}{priceRange[0]}</span>
-                            <span>{siteConfig.currency}{priceRange[1]}</span>
-                        </div>
-                        <Slider
-                            min={0}
-                            max={maxPrice}
-                            step={10}
-                            value={priceRange}
-                            onValueChange={(value) => setPriceRange(value)}
-                        />
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-
         <Card>
-            <CardHeader>
+            <CardHeader className="flex-row items-center justify-between">
+                <CardTitle className="font-headline text-xl">Products</CardTitle>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline"><Filter className="h-4 w-4 mr-2" /> Filters</Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                        <div className="grid gap-4">
+                            <div className="space-y-2">
+                                <h4 className="font-medium leading-none">Filters</h4>
+                                <p className="text-sm text-muted-foreground">
+                                    Refine your product search.
+                                </p>
+                            </div>
+                             <div className="space-y-2">
+                                <Label>Sort by</Label>
+                                <Select value={sortOption} onValueChange={setSortOption}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Default" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="default">Default</SelectItem>
+                                        <SelectItem value="price-asc">Lowest Price</SelectItem>
+                                        <SelectItem value="price-desc">Highest Price</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Price Range</Label>
+                                <div className="flex justify-between text-sm text-muted-foreground">
+                                    <span>{siteConfig.currency}{priceRange[0]}</span>
+                                    <span>{siteConfig.currency}{priceRange[1]}</span>
+                                </div>
+                                <Slider
+                                    min={0}
+                                    max={maxPrice}
+                                    step={10}
+                                    value={priceRange}
+                                    onValueChange={(value) => setPriceRange(value)}
+                                />
+                            </div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+            </CardHeader>
+             <CardHeader className="border-t">
                  <div className="overflow-x-auto">
                     <div className="flex items-center space-x-2">
                          <Button variant={activeTab === 'All' ? 'default' : 'outline'} onClick={() => setActiveTab('All')}>All</Button>
