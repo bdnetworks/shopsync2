@@ -105,12 +105,12 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
   const handlePlaceOrder = (url: string) => {
     if (!isFormValid || url === '#') return;
     
+    // Open the communication channel in a new tab
     window.open(url, '_blank');
     
-    setTimeout(() => {
-        clearCart();
-        router.push('/order-confirmation');
-    }, 1000);
+    // Immediately clear the cart and navigate to the confirmation page
+    clearCart();
+    router.push('/order-confirmation');
   };
   
   const selectedPaymentMethodDetails = useMemo(() => {
