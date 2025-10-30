@@ -12,7 +12,7 @@ import {
   SheetHeader,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
@@ -23,7 +23,18 @@ export default function Header() {
   const { itemCount } = useCart();
   const { wishlistCount } = useWishlist();
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 80);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const topBarLinks = [
       { href: "tel:16810", label: "16810", icon: Phone },
@@ -34,111 +45,131 @@ export default function Header() {
       { href: "#", label: "Store", icon: Store },
   ]
 
-  return (
-    <header className="w-full bg-[#0f172a] text-white">
-      <div className="border-b border-gray-700">
-        <div className="container hidden h-10 max-w-screen-2xl items-center justify-end gap-6 text-sm md:flex">
-            {topBarLinks.map(link => {
-                const Icon = link.icon;
-                return (
-                    <Link key={link.label} href={link.href} className="flex items-center gap-2 hover:text-primary transition-colors">
-                        <Icon className="h-4 w-4" />
-                        <span>{link.label}</span>
-                    </Link>
-                )
-            })}
-        </div>
-      </div>
+  const RightIcons = () => (
+    <div className="flex items-center gap-2">
+      <Link href="/wishlist" aria-label="Open wishlist" className="hidden md:flex">
+        <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+          <Heart className="h-6 w-6" />
+          {wishlistCount > 0 && (
+            <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+              {wishlistCount}
+            </span>
+          )}
+        </Button>
+      </Link>
+       <Link href="/cart" aria-label="Open shopping cart">
+          <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
+              <ShoppingCart className="h-6 w-6" />
+              {itemCount > 0 && (
+              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                  {itemCount}
+              </span>
+              )}
+          </Button>
+      </Link>
+      <Button variant="ghost" size="icon" className="relative hidden md:flex text-white hover:text-primary">
+        <User className="h-6 w-6" />
+      </Button>
       
-      <div className="sticky top-0 z-50 bg-[#0f172a] border-b border-gray-700">
-          <div className="container flex h-20 max-w-screen-2xl items-center justify-between">
-              <Link href="/" className="flex items-center gap-2">
+      <div className="md:hidden">
+        <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="text-white hover:text-primary">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="bg-[#0f172a] text-white border-l-gray-800">
+            <SheetHeader>
+              <Link href="/" className="flex items-center gap-2 mb-8" onClick={() => setMenuOpen(false)}>
                 <Logo />
               </Link>
-
-              <div className="hidden lg:flex flex-1 max-w-xl mx-4">
-                  <Input placeholder="Enter Your Keyword..." className="bg-white text-black rounded-r-none focus:ring-primary border-0 h-11"/>
-                  <Button className="rounded-l-none bg-primary hover:bg-primary/90 h-11">
-                      <Search className="h-5 w-5"/>
-                  </Button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Link href="/wishlist" aria-label="Open wishlist" className="hidden md:flex">
-                  <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-                    <Heart className="h-6 w-6" />
-                    {wishlistCount > 0 && (
-                      <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                        {wishlistCount}
-                      </span>
-                    )}
-                  </Button>
+            </SheetHeader>
+            <div className="flex flex-col gap-4">
+              {siteConfig.navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={cn(
+                    "text-lg font-medium transition-colors hover:text-primary",
+                    pathname === link.href ? "text-primary" : ""
+                  )}
+                >
+                  {link.label}
                 </Link>
-                 <Link href="/cart" aria-label="Open shopping cart">
-                    <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-                        <ShoppingCart className="h-6 w-6" />
-                        {itemCount > 0 && (
-                        <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                            {itemCount}
-                        </span>
-                        )}
-                    </Button>
-                </Link>
-                <Button variant="ghost" size="icon" className="relative hidden md:flex text-white hover:text-primary">
-                  <User className="h-6 w-6" />
-                </Button>
-                
-                <div className="md:hidden">
-                  <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
-                    <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-white hover:text-primary">
-                        <Menu className="h-5 w-5" />
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="bg-[#0f172a] text-white border-l-gray-800">
-                      <SheetHeader>
-                        <Link href="/" className="flex items-center gap-2 mb-8" onClick={() => setMenuOpen(false)}>
-                          <Logo />
-                        </Link>
-                      </SheetHeader>
-                      <div className="flex flex-col gap-4">
-                        {siteConfig.navLinks.map((link) => (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            onClick={() => setMenuOpen(false)}
-                            className={cn(
-                              "text-lg font-medium transition-colors hover:text-primary",
-                              pathname === link.href ? "text-primary" : ""
-                            )}
-                          >
-                            {link.label}
-                          </Link>
-                        ))}
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                </div>
-              </div>
-          </div>
+              ))}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
+    </div>
+  );
 
-      <nav className="hidden md:flex bg-[#0f172a]">
-        <div className="container flex items-center gap-6 text-sm font-medium h-12 max-w-screen-2xl">
-          {siteConfig.navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "transition-colors hover:text-primary",
-                pathname === link.href ? "text-primary font-semibold" : "text-white/80"
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+  return (
+    <>
+      <header className="w-full bg-[#0f172a] text-white">
+        <div className="border-b border-gray-700">
+          <div className="container hidden h-10 max-w-screen-2xl items-center justify-end gap-6 text-sm md:flex">
+              {topBarLinks.map(link => {
+                  const Icon = link.icon;
+                  return (
+                      <Link key={link.label} href={link.href} className="flex items-center gap-2 hover:text-primary transition-colors">
+                          <Icon className="h-4 w-4" />
+                          <span>{link.label}</span>
+                      </Link>
+                  )
+              })}
+          </div>
         </div>
-      </nav>
-    </header>
+        
+        <div className="bg-[#0f172a] border-b border-gray-700">
+            <div className="container flex h-20 max-w-screen-2xl items-center justify-between">
+                <Link href="/" className="flex items-center gap-2">
+                  <Logo />
+                </Link>
+
+                <div className="hidden lg:flex flex-1 max-w-xl mx-4">
+                    <Input placeholder="Enter Your Keyword..." className="bg-white text-black rounded-r-none focus:ring-primary border-0 h-11"/>
+                    <Button className="rounded-l-none bg-primary hover:bg-primary/90 h-11">
+                        <Search className="h-5 w-5"/>
+                    </Button>
+                </div>
+                <div className="hidden md:flex">
+                  <RightIcons />
+                </div>
+            </div>
+        </div>
+
+        <nav className="hidden md:flex bg-[#0f172a]">
+          <div className="container flex items-center gap-6 text-sm font-medium h-12 max-w-screen-2xl">
+            {siteConfig.navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "transition-colors hover:text-primary",
+                  pathname === link.href ? "text-primary font-semibold" : "text-white/80"
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      </header>
+
+      {/* Sticky Header */}
+      <div className={cn(
+        "fixed top-0 left-0 right-0 z-50 bg-[#0f172a] border-b border-gray-700 transition-transform duration-300 ease-in-out",
+        isScrolled ? "translate-y-0" : "-translate-y-full"
+      )}>
+        <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <Logo />
+          </Link>
+          <RightIcons />
+        </div>
+      </div>
+    </>
   );
 }
