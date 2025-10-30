@@ -95,8 +95,7 @@ function ProductsComponent() {
   return (
     <div className="container mx-auto px-4 py-4">
         <Card>
-            <CardHeader className="flex-row items-center justify-between p-4">
-                <CardTitle className="font-headline text-xl">Products</CardTitle>
+            <CardHeader className="flex-row items-center justify-end p-4">
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="outline"><Filter className="h-4 w-4 mr-2" /> Filters</Button>
