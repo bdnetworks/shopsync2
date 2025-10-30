@@ -14,6 +14,8 @@ import { Product } from '@/lib/types';
 import { siteConfig } from '@/config/site';
 import { useWishlist } from '@/context/wishlist-context';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DisqusComments from '@/components/disqus-comments';
 
 function ProductDetail({ params }: { params: { id: string } }) {
     const { addToCart } = useCart();
@@ -43,7 +45,7 @@ function ProductDetail({ params }: { params: { id: string } }) {
         <div className="container mx-auto px-4 py-12">
             <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
                 <div>
-                    <Card>
+                    <Card className="group">
                         <CardContent className="p-4">
                             <div className="aspect-square relative w-full rounded-lg overflow-hidden">
                                 <Image
@@ -51,7 +53,7 @@ function ProductDetail({ params }: { params: { id: string } }) {
                                     alt={product.image.alt}
                                     data-ai-hint={product.image.hint}
                                     fill
-                                    className="object-contain"
+                                    className="object-contain transition-transform duration-500 group-hover:scale-125"
                                     priority
                                 />
                             </div>
@@ -60,7 +62,6 @@ function ProductDetail({ params }: { params: { id: string } }) {
                 </div>
                 <div className="flex flex-col justify-center">
                     <h1 className="text-3xl lg:text-4xl font-headline font-bold mb-4">{product.name}</h1>
-                    <p className="text-muted-foreground mb-6 text-lg">{product.description}</p>
                     
                     <div className="flex items-center justify-between mb-8 p-4 bg-muted/50 rounded-lg">
                         <span className="text-3xl font-bold text-primary">{siteConfig.currency}{product.price.toFixed(2)}</span>
@@ -86,6 +87,24 @@ function ProductDetail({ params }: { params: { id: string } }) {
                         <p><span className="font-semibold text-foreground">Unit:</span> {product.unit}</p>
                     </div>
                 </div>
+            </div>
+            <div className="mt-12">
+                <Tabs defaultValue="description" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="description">Description</TabsTrigger>
+                        <TabsTrigger value="reviews">Reviews & Comments</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="description" className="mt-4 p-4 border rounded-md">
+                         <p className="text-muted-foreground text-lg leading-relaxed">{product.description}</p>
+                    </TabsContent>
+                    <TabsContent value="reviews" className="mt-4 p-4 border rounded-md">
+                        <DisqusComments 
+                            shortname="bdthemex" 
+                            identifier={product.id}
+                            title={product.name}
+                        />
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     );
