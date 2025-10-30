@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getProductById } from '@/lib/products';
 import { useCart } from '@/context/cart-context';
-import { ShoppingCart, CheckCircle, Heart } from 'lucide-react';
+import { ShoppingCart, CheckCircle, Heart, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/lib/types';
 import { siteConfig } from '@/config/site';
@@ -16,11 +16,13 @@ import { useWishlist } from '@/context/wishlist-context';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DisqusComments from '@/components/disqus-comments';
+import { useToast } from '@/hooks/use-toast';
 
 function ProductDetail({ params }: { params: { id: string } }) {
     const { addToCart } = useCart();
     const { isWishlisted, toggleWishlist } = useWishlist();
     const [product, setProduct] = useState<Product | null | undefined>(null);
+    const { toast } = useToast();
 
     useEffect(() => {
         const findProduct = async () => {
@@ -29,6 +31,38 @@ function ProductDetail({ params }: { params: { id: string } }) {
         }
         findProduct();
     }, [params.id]);
+    
+    const handleShare = async () => {
+        if (navigator.share && product) {
+            try {
+                await navigator.share({
+                    title: product.name,
+                    text: `Check out this product: ${product.name}`,
+                    url: window.location.href,
+                });
+            } catch (error) {
+                toast({
+                    title: 'Could not share',
+                    description: 'There was an error trying to share this product.',
+                    variant: 'destructive',
+                });
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                toast({
+                    title: 'Link Copied!',
+                    description: 'Product link copied to your clipboard.',
+                });
+            } catch (error) {
+                toast({
+                    title: 'Could not copy link',
+                    description: 'There was an error trying to copy the product link.',
+                    variant: 'destructive',
+                });
+            }
+        }
+    };
 
 
     if (product === undefined) {
@@ -53,7 +87,7 @@ function ProductDetail({ params }: { params: { id: string } }) {
                                     alt={product.image.alt}
                                     data-ai-hint={product.image.hint}
                                     fill
-                                    className="object-contain transition-transform duration-500 group-hover:scale-125"
+                                    className="object-contain transition-transform duration-500 group-hover:scale-110"
                                     priority
                                 />
                             </div>
@@ -71,14 +105,18 @@ function ProductDetail({ params }: { params: { id: string } }) {
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                        <Button size="lg" onClick={() => addToCart(product)} className="flex-1">
+                    <div className="grid grid-cols-2 gap-4">
+                        <Button size="lg" onClick={() => addToCart(product)}>
                             <ShoppingCart className="mr-2 h-5 w-5" />
                             Add to Cart
                         </Button>
                         <Button size="lg" variant="outline" onClick={() => toggleWishlist(product)}>
                             <Heart className={cn("mr-2 h-5 w-5", isInWishlist && "fill-current text-red-500")} />
-                            {isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                            {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
+                        </Button>
+                         <Button size="lg" variant="outline" onClick={handleShare} className="col-span-2">
+                            <Share2 className="mr-2 h-5 w-5" />
+                            Share
                         </Button>
                     </div>
 
@@ -138,9 +176,10 @@ function ProductDetailSkeleton() {
                         <Skeleton className="h-10 w-1/3" />
                         <Skeleton className="h-6 w-1/4" />
                     </div>
-                    <div className="flex gap-4">
-                      <Skeleton className="h-12 w-1/2" />
-                      <Skeleton className="h-12 w-1/2" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full col-span-2" />
                     </div>
                 </div>
             </div>
