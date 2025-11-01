@@ -70,7 +70,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-center mb-6">Top Categories</h2>
           <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
             {siteConfig.topCategories.map((category) => (
-                <Link href={'/products'} key={category.name} className="flex flex-col items-center gap-2 text-center group">
+                <Link href={`/products?category=${category.name}`} key={category.name} className="flex flex-col items-center gap-2 text-center group">
                   <Card className="flex items-center justify-center p-1 w-full aspect-square rounded-full overflow-hidden group-hover:shadow-lg transition-shadow">
                     <Image 
                       src={category.imageUrl} 
