@@ -78,11 +78,6 @@ export default function Header() {
 
         {/* Mobile Icons */}
         <div className="flex items-center justify-end gap-2 md:hidden">
-            <Link href="/contact" aria-label="Contact page">
-              <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
-                <User className="h-6 w-6" />
-              </Button>
-            </Link>
             <Link href="/wishlist" aria-label="Open wishlist">
               <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
                 <Heart className="h-6 w-6" />
@@ -202,3 +197,5 @@ export default function Header() {
     </>
   );
 }
+
+    

@@ -93,7 +93,7 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
       view: 'cm'
     });
     return `https://mail.google.com/mail/?${params.toString()}`;
-  }, [isFormValid, orderBodyText, isMobile, cartItems.length]);
+  }, [isFormValid, orderBodyText, isMobile, cartItems.length, subject]);
 
   const whatsappOrderLink = useMemo(() => {
     if (!isFormValid) return '#';
@@ -108,9 +108,13 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
     // Open the communication channel in a new tab
     window.open(url, '_blank');
     
-    // Immediately clear the cart and navigate to the confirmation page
+    // Immediately clear the cart
     clearCart();
-    router.push('/order-confirmation');
+
+    // Redirect to the confirmation page after a short delay
+    setTimeout(() => {
+        router.push('/order-confirmation');
+    }, 2000); // 2 seconds delay
   };
   
   const selectedPaymentMethodDetails = useMemo(() => {
@@ -320,3 +324,5 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
     </div>
   );
 }
+
+    
