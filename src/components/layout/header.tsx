@@ -40,7 +40,7 @@ export default function Header() {
       { href: "tel:16810", label: "16810", icon: Phone },
       { href: "mailto:info@ryans.com", label: "info@ryans.com", icon: Mail },
       { href: "/contact", label: "Contact", icon: User },
-      { href: "#", label: "Offer", icon: Tag },
+      { href: "/offer", label: "Offer", icon: Tag },
       { href: "#", label: "New Arrival", icon: Shirt },
       { href: "#", label: "Store", icon: Store },
   ]
@@ -197,5 +197,3 @@ export default function Header() {
     </>
   );
 }
-
-    

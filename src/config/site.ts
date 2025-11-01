@@ -8,6 +8,7 @@ import home from './home-page.json';
 import product from './product-page.json';
 import site from './site.json';
 import checkout from './checkout.json';
+import offers from './offers.json';
 import type { ProductCategory } from "@/lib/types";
 
 // Type assertion for checkout config
@@ -59,5 +60,6 @@ export const siteConfig = {
     productCategories: product.productCategories as ProductCategory[],
     featuredSections: home.featuredSections as FeaturedSection[],
     topBrands: home.topBrands,
-    checkout: checkout as CheckoutConfig
+    checkout: checkout as CheckoutConfig,
+    offers: offers.offers,
 }
