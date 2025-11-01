@@ -25,6 +25,7 @@ const fontPTSans = PT_Sans({
 export const metadata: Metadata = {
   title: 'ShopSync - Modern E-commerce',
   description: 'Syncing you with the best products from across the web.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -34,6 +35,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+       <head>
+        <meta name="theme-color" content="#e11d48" />
+      </head>
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',
