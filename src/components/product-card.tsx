@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
-import { ShoppingCart, Heart, Eye } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { siteConfig } from '@/config/site';
 import { useWishlist } from '@/context/wishlist-context';
@@ -52,7 +52,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             fill
             className="object-cover"
           />
-          <div className="absolute top-2 right-2 flex flex-col gap-2">
+          <div className="absolute top-2 right-2">
             <Button 
               size="icon" 
               className={cn(
@@ -64,16 +64,6 @@ export default function ProductCard({ product }: ProductCardProps) {
               <Heart className={cn("h-4 w-4", isInWishlist && "fill-current")} />
               <span className="sr-only">Add to Wishlist</span>
             </Button>
-            {hasOptions && (
-              <Button 
-                size="icon" 
-                className="h-8 w-8 rounded-full bg-background/80 hover:bg-background text-foreground"
-                onClick={handleCartClick}
-              >
-                <Eye className="h-4 w-4" />
-                <span className="sr-only">Quick View</span>
-              </Button>
-            )}
           </div>
         </div>
         <CardContent className="p-4 flex flex-col flex-1">
@@ -81,16 +71,14 @@ export default function ProductCard({ product }: ProductCardProps) {
           <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors h-10 overflow-hidden">
             {product.name}
           </h3>
-          <div className="mt-2 flex justify-between items-center">
-            <p className="text-lg font-bold text-primary">
+          <div className="mt-auto pt-2">
+            <p className="text-lg font-bold text-primary mb-2">
               {siteConfig.currency}{product.price.toFixed(2)}
             </p>
-            {!hasOptions && (
-              <Button onClick={handleCartClick} size="icon" className="h-9 w-9">
-                <ShoppingCart className="h-4 w-4" />
-                <span className="sr-only">Add to Cart</span>
-              </Button>
-            )}
+            <Button onClick={handleCartClick} className="w-full">
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Add to Cart
+            </Button>
           </div>
         </CardContent>
       </Card>
