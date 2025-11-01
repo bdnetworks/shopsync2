@@ -50,11 +50,15 @@ export default function CheckoutPage() {
   }
 
   const isFormValid = name && email && mobile && address && paymentMethod;
-
+  
   const orderBodyText = useMemo(() => {
-    const orderItems = cartItems.map(item => 
-      `${item.name}\n${siteConfig.currency}${item.price.toFixed(2)} x ${item.quantity}\n-------------------`
-    ).join('\n');
+    const orderItems = cartItems.map(item => {
+      let itemDetails = `${item.name}`;
+      if (item.selectedColor || item.selectedSize) {
+        itemDetails += ` (${item.selectedColor ? `Color: ${item.selectedColor}` : ''}${item.selectedColor && item.selectedSize ? ', ' : ''}${item.selectedSize ? `Size: ${item.selectedSize}` : ''})`;
+      }
+      return `${itemDetails}\n${siteConfig.currency}${item.price.toFixed(2)} x ${item.quantity}\n-------------------`;
+    }).join('\n');
     
     return `
 Hi, I am interested in placing an order.
@@ -79,12 +83,10 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
     if (!isFormValid) return '#';
     const adminEmail = siteConfig.checkout.contact.email;
     
-    // For mobile, use mailto: to open the default email app
     if (isMobile) {
       return `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(orderBodyText)}`;
     }
     
-    // For desktop, use the full Gmail compose URL
     const params = new URLSearchParams({
       to: adminEmail,
       su: subject,
@@ -105,16 +107,13 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
   const handlePlaceOrder = (url: string) => {
     if (!isFormValid || url === '#') return;
     
-    // Open the communication channel in a new tab
     window.open(url, '_blank');
     
-    // Immediately clear the cart
     clearCart();
 
-    // Redirect to the confirmation page after a short delay
     setTimeout(() => {
         router.push('/order-confirmation');
-    }, 2000); // 2 seconds delay
+    }, 2000);
   };
   
   const selectedPaymentMethodDetails = useMemo(() => {
@@ -306,6 +305,13 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
                       <div>
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-muted-foreground">{siteConfig.currency}{item.price.toFixed(2)}</p>
+                        {(item.selectedColor || item.selectedSize) && (
+                            <p className="text-sm text-muted-foreground">
+                                {item.selectedColor && `Color: ${item.selectedColor}`}
+                                {item.selectedColor && item.selectedSize && ", "}
+                                {item.selectedSize && `Size: ${item.selectedSize}`}
+                            </p>
+                        )}
                       </div>
                     </div>
                     <p className="font-medium">{siteConfig.currency}{(item.price * item.quantity).toFixed(2)}</p>
@@ -324,5 +330,3 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
     </div>
   );
 }
-
-    

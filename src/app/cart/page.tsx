@@ -60,6 +60,13 @@ export default function CartPage() {
                           <div>
                             <p className="font-medium">{item.name}</p>
                             <p className="text-sm text-muted-foreground">{siteConfig.currency}{item.price.toFixed(2)}</p>
+                             {(item.selectedColor || item.selectedSize) && (
+                                <p className="text-sm text-muted-foreground">
+                                    {item.selectedColor && `Color: ${item.selectedColor}`}
+                                    {item.selectedColor && item.selectedSize && ", "}
+                                    {item.selectedSize && `Size: ${item.selectedSize}`}
+                                </p>
+                            )}
                           </div>
                         </div>
                       </TableCell>

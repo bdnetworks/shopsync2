@@ -28,6 +28,8 @@ function ProductDetail({ params }: { params: { id: string } }) {
     const [product, setProduct] = useState<Product | null | undefined>(null);
     const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const [quantity, setQuantity] = useState(1);
+    const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
+    const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -36,6 +38,13 @@ function ProductDetail({ params }: { params: { id: string } }) {
             setProduct(foundProduct);
 
             if (foundProduct) {
+                if (foundProduct.colors && foundProduct.colors.length > 0) {
+                    setSelectedColor(foundProduct.colors[0]);
+                }
+                if (foundProduct.sizes && foundProduct.sizes.length > 0) {
+                    setSelectedSize(foundProduct.sizes[0]);
+                }
+
                 const allProducts = await getProducts();
                 const related = allProducts
                     .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
@@ -45,6 +54,17 @@ function ProductDetail({ params }: { params: { id: string } }) {
         }
         findProduct();
     }, [params.id]);
+    
+    useEffect(() => {
+        if (product) {
+            if (product.colors && product.colors.length > 0 && !selectedColor) {
+                setSelectedColor(product.colors[0]);
+            }
+            if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+                setSelectedSize(product.sizes[0]);
+            }
+        }
+    }, [product, selectedColor, selectedSize]);
 
     const handleShare = async () => {
         if (navigator.share && product) {
@@ -90,7 +110,15 @@ function ProductDetail({ params }: { params: { id: string } }) {
     const isInWishlist = isWishlisted(product.id);
     
     const handleAddToCart = () => {
-        addToCart(product, quantity);
+        if (product.colors && product.colors.length > 0 && !selectedColor) {
+            toast({ title: "Please select a color", variant: 'destructive' });
+            return;
+        }
+        if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+            toast({ title: "Please select a size", variant: 'destructive' });
+            return;
+        }
+        addToCart(product, quantity, selectedColor, selectedSize);
     }
 
     return (
@@ -127,7 +155,7 @@ function ProductDetail({ params }: { params: { id: string } }) {
                         {product.colors && product.colors.length > 0 && (
                             <div>
                                 <Label className="text-sm font-medium">Color</Label>
-                                <RadioGroup defaultValue={product.colors[0]} className="flex items-center gap-2 mt-2">
+                                <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="flex items-center gap-2 mt-2">
                                     {product.colors.map(color => (
                                         <RadioGroupItem 
                                             key={color} 
@@ -146,7 +174,15 @@ function ProductDetail({ params }: { params: { id: string } }) {
                                 <Label className="text-sm font-medium">Size</Label>
                                 <div className="flex items-center gap-2 mt-2">
                                     {product.sizes.map(size => (
-                                        <Button key={size} variant="outline" size="sm" className="w-10 h-10">{size}</Button>
+                                        <Button 
+                                            key={size} 
+                                            variant={selectedSize === size ? 'default' : 'outline'} 
+                                            size="sm" 
+                                            className="w-10 h-10"
+                                            onClick={() => setSelectedSize(size)}
+                                        >
+                                            {size}
+                                        </Button>
                                     ))}
                                 </div>
                             </div>
