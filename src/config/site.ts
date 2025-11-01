@@ -34,8 +34,17 @@ interface FeaturedSection {
     productCount: number;
 }
 
+// Add logoType and logoImageUrl to the site config type
+interface SiteConfig {
+    name: string;
+    description: string;
+    currency: string;
+    logoType: 'text' | 'image';
+    logoImageUrl: string;
+}
+
 export const siteConfig = {
-    ...site,
+    ...(site as SiteConfig),
     navLinks: nav.navLinks,
     socialLinks: socials.socialLinks,
     footerLinks: footer.footerLinks,
