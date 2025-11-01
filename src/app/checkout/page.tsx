@@ -74,10 +74,10 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
     `.trim();
   }, [cartItems, name, mobile, email, paymentMethod, address, subtotal, shippingFee, total]);
 
+  const subject = `New Order from ${siteConfig.name}`;
   const gmailComposeLink = useMemo(() => {
     if (!isFormValid) return '#';
     const adminEmail = siteConfig.checkout.contact.email;
-    const subject = `New Order from ${siteConfig.name}`;
     
     // For mobile, use mailto: to open the default email app
     if (isMobile) {
@@ -93,7 +93,7 @@ via. ${typeof window !== 'undefined' ? window.location.origin : ''}
       view: 'cm'
     });
     return `https://mail.google.com/mail/?${params.toString()}`;
-  }, [isFormValid, orderBodyText, isMobile, cartItems.length, subject]);
+  }, [isFormValid, orderBodyText, isMobile, subject]);
 
   const whatsappOrderLink = useMemo(() => {
     if (!isFormValid) return '#';
