@@ -51,7 +51,7 @@ export default function QuickViewModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && closeQuickView()}>
-      <DialogContent className="sm:max-w-3xl p-0">
+      <DialogContent className="sm:max-w-md p-0">
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="p-4 md:p-6">
             <div className="aspect-square relative w-full rounded-lg overflow-hidden">
