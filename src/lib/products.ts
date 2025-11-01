@@ -109,7 +109,18 @@ async function initializeProducts(): Promise<Product[]> {
     
     try {
         const productArrays = await Promise.all(fetchPromises);
-        return productArrays.flat();
+        const allProducts = productArrays.flat();
+        
+        // Deduplicate products based on their ID
+        const uniqueProducts = new Map<string, Product>();
+        for (const product of allProducts) {
+            if (!uniqueProducts.has(product.id)) {
+                uniqueProducts.set(product.id, product);
+            }
+        }
+        
+        return Array.from(uniqueProducts.values());
+
     } catch (error) {
         console.error("Failed to initialize products from Google Sheets.", error);
         return [];
