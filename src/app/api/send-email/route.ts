@@ -7,9 +7,9 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.ELASTIC_EMAIL_API_KEY;
   const adminEmail = "saakib.com@gmail.com"; 
 
-  if (!apiKey) {
+  if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
     console.error('Elastic Email API Key is not configured.');
-    return NextResponse.json({ error: 'Email service is not configured.' }, { status: 500 });
+    return NextResponse.json({ error: 'Email service is not configured. Please set up ELASTIC_EMAIL_API_KEY in your environment variables.' }, { status: 500 });
   }
 
   const formData = new URLSearchParams();

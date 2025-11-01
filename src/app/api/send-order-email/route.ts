@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { siteConfig } from '@/config/site';
+import type { CartItem } from '@/lib/types';
 
 interface OrderDetails {
     orderId: string;
@@ -9,13 +10,7 @@ interface OrderDetails {
         mobile: string;
         address: string;
     };
-    items: {
-        id: string;
-        name: string;
-        quantity: number;
-        price: number;
-        image: { src: string; alt: string; };
-    }[];
+    items: CartItem[];
     summary: {
         subtotal: number;
         shippingFee: number;
@@ -43,8 +38,8 @@ async function sendElasticEmail({
     // Using the admin email as the verified sender.
     const fromEmail = "saakib.com@gmail.com"; 
 
-    if (!apiKey) {
-        throw new Error('Elastic Email API Key is not configured.');
+    if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+        throw new Error('Email service is not configured. Please set up ELASTIC_EMAIL_API_KEY in your environment variables.');
     }
 
     const formData = new URLSearchParams();
@@ -79,6 +74,7 @@ function generateCustomerEmail(details: OrderDetails): string {
             <td style="padding: 10px; border-bottom: 1px solid #ddd;">
                 <img src="${item.image.src}" alt="${item.image.alt}" width="50" style="vertical-align: middle; margin-right: 10px;"/>
                 ${item.name} (x${item.quantity})
+                ${(item.selectedColor || item.selectedSize) ? `<br/><small style='color:#555'>${item.selectedColor ? `Color: ${item.selectedColor}` : ''}${item.selectedColor && item.selectedSize ? ', ' : ''}${item.selectedSize ? `Size: ${item.selectedSize}` : ''}</small>` : ''}
             </td>
             <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}</td>
         </tr>
@@ -131,7 +127,10 @@ function generateCustomerEmail(details: OrderDetails): string {
 
 function generateAdminEmail(details: OrderDetails): string {
     const itemsHtml = details.items.map(item => `
-       <li style="margin-bottom: 10px;">${item.name} (ID: ${item.id}) - Qty: ${item.quantity} - Price: ${siteConfig.currency}${item.price.toFixed(2)}</li>
+       <li style="margin-bottom: 10px;">
+        ${item.name} (ID: ${item.id}) - Qty: ${item.quantity} - Price: ${siteConfig.currency}${item.price.toFixed(2)}
+        ${(item.selectedColor || item.selectedSize) ? `<br/><small style='color:#555'>${item.selectedColor ? `Color: ${item.selectedColor}` : ''}${item.selectedColor && item.selectedSize ? ', ' : ''}${item.selectedSize ? `Size: ${item.selectedSize}` : ''}</small>` : ''}
+       </li>
     `).join('');
 
     return `
@@ -158,6 +157,7 @@ function generateAdminEmail(details: OrderDetails): string {
                 <li><strong>Shipping Fee:</strong> ${siteConfig.currency}${details.summary.shippingFee.toFixed(2)}</li>
                 <li><strong>Total:</strong> ${siteConfig.currency}${details.summary.total.toFixed(2)}</li>
                 <li><strong>Payment Method:</strong> ${details.summary.paymentMethod}</li>
+                 ${details.summary.paymentDetails && details.summary.paymentMethod !== 'CASH ON DELIVERY' ? `<li><strong>Payment Instructions:</strong> ${details.summary.paymentDetails}</li>` : ''}
             </ul>
         </div>
     `;
