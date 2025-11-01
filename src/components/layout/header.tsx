@@ -49,6 +49,11 @@ export default function Header() {
     <div className="flex flex-1 items-center justify-end">
         {/* Desktop Icons */}
         <div className="hidden md:flex items-center gap-2">
+            <Link href="/contact" aria-label="Contact page" className="relative">
+              <Button variant="ghost" size="icon" className="text-white hover:text-primary">
+                <User className="h-6 w-6" />
+              </Button>
+            </Link>
             <Link href="/wishlist" aria-label="Open wishlist">
               <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
                 <Heart className="h-6 w-6" />
@@ -67,11 +72,6 @@ export default function Header() {
                     {itemCount}
                   </span>
                 )}
-              </Button>
-            </Link>
-            <Link href="/contact" aria-label="Contact page" className="relative">
-              <Button variant="ghost" size="icon" className="text-white hover:text-primary">
-                <User className="h-6 w-6" />
               </Button>
             </Link>
         </div>
