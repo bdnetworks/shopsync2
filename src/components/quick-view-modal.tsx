@@ -51,9 +51,9 @@ export default function QuickViewModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && closeQuickView()}>
-      <DialogContent className="sm:max-w-[800px] p-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6">
+      <DialogContent className="sm:max-w-3xl p-0">
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          <div className="p-4 md:p-6">
             <div className="aspect-square relative w-full rounded-lg overflow-hidden">
               <Image
                 src={product.image.src}
@@ -64,21 +64,21 @@ export default function QuickViewModal() {
               />
             </div>
           </div>
-          <div className="p-6 flex flex-col">
-            <h2 className="text-2xl font-bold font-headline mb-2">{product.name}</h2>
-            <p className="text-2xl font-bold text-primary mb-4">{siteConfig.currency}{product.price.toFixed(2)}</p>
+          <div className="p-4 md:p-6 flex flex-col">
+            <h2 className="text-xl font-bold font-headline mb-2">{product.name}</h2>
+            <p className="text-xl font-bold text-primary mb-4">{siteConfig.currency}{product.price.toFixed(2)}</p>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               {product.colors && product.colors.length > 0 && (
                 <div>
                   <Label className="text-sm font-medium">Color</Label>
-                  <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="flex items-center gap-2 mt-2">
+                  <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="flex items-center gap-2 mt-1">
                     {product.colors.map(color => (
                       <RadioGroupItem
                         key={color}
                         value={color}
                         id={`quick-view-color-${color}`}
-                        className="h-8 w-8 border-2"
+                        className="h-7 w-7 border-2"
                         style={{ backgroundColor: color.toLowerCase(), borderColor: color.toLowerCase() }}
                       />
                     ))}
@@ -89,13 +89,13 @@ export default function QuickViewModal() {
               {product.sizes && product.sizes.length > 0 && (
                 <div>
                   <Label className="text-sm font-medium">Size</Label>
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2 mt-1">
                     {product.sizes.map(size => (
                       <Button
                         key={size}
                         variant={selectedSize === size ? 'default' : 'outline'}
                         size="sm"
-                        className="w-10 h-10"
+                        className="w-9 h-9"
                         onClick={() => setSelectedSize(size)}
                       >
                         {size}
@@ -107,11 +107,11 @@ export default function QuickViewModal() {
 
               <div>
                 <Label className="text-sm font-medium">Quantity</Label>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-1">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10"
+                    className="h-9 w-9"
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   >
                     <Minus className="h-4 w-4" />
@@ -120,13 +120,13 @@ export default function QuickViewModal() {
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                    className="h-10 w-20 text-center text-lg font-bold"
+                    className="h-9 w-16 text-center text-md font-bold"
                     min="1"
                   />
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10"
+                    className="h-9 w-9"
                     onClick={() => setQuantity(q => q + 1)}
                   >
                     <Plus className="h-4 w-4" />
@@ -135,9 +135,9 @@ export default function QuickViewModal() {
               </div>
             </div>
 
-            <div className="mt-auto pt-6">
+            <div className="mt-auto pt-4">
               <Button size="lg" className="w-full" onClick={handleAddToCart}>
-                <ShoppingCart className="mr-2 h-5 w-5" />
+                <ShoppingCart className="mr-2 h-4 w-4" />
                 Add to Cart
               </Button>
             </div>
