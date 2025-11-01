@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Playfair_Display, PT_Sans } from 'next/font/google';
@@ -10,6 +11,8 @@ import { WishlistProvider } from '@/context/wishlist-context';
 import { siteConfig } from '@/config/site';
 import Link from 'next/link';
 import FloatingWhatsAppButton from '@/components/layout/floating-whatsapp-button';
+import { QuickViewProvider } from '@/context/quick-view-context';
+import QuickViewModal from '@/components/quick-view-modal';
 
 const fontPlayfair = Playfair_Display({
   subsets: ['latin'],
@@ -37,6 +40,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
        <head>
         <meta name="theme-color" content="#e11d48" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body
         className={cn(
@@ -47,13 +51,16 @@ export default function RootLayout({
       >
         <CartProvider>
           <WishlistProvider>
-            <div className="relative flex min-h-dvh flex-col bg-background">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <FloatingWhatsAppButton />
-            </div>
-            <Toaster />
+            <QuickViewProvider>
+              <div className="relative flex min-h-dvh flex-col bg-background">
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+                <FloatingWhatsAppButton />
+              </div>
+              <QuickViewModal />
+              <Toaster />
+            </QuickViewProvider>
           </WishlistProvider>
         </CartProvider>
       </body>
