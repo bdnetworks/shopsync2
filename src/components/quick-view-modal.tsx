@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent }from "@/components/ui/dialog"
 import { useQuickView } from '@/context/quick-view-context';
 import { useCart } from '@/context/cart-context';
 import Image from 'next/image';
@@ -14,10 +14,13 @@ import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types';
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-export default function QuickViewModal() {
-  const { product, isOpen, closeQuickView } = useQuickView();
+
+function QuickViewContent({ product }: { product: Product }) {
   const { addToCart } = useCart();
+  const { closeQuickView } = useQuickView();
   const { toast } = useToast();
 
   const [quantity, setQuantity] = useState(1);
@@ -32,10 +35,10 @@ export default function QuickViewModal() {
     }
   }, [product]);
 
-  if (!product) {
+   if (!product) {
     return null;
   }
-  
+
   const handleAddToCart = () => {
     if (product.colors && product.colors.length > 0 && !selectedColor) {
         toast({ title: "Please select a color", variant: 'destructive' });
@@ -50,10 +53,8 @@ export default function QuickViewModal() {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && closeQuickView()}>
-      <DialogContent className="sm:max-w-md p-0">
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="p-4 md:p-6">
+     <div className="grid grid-cols-1 md:grid-cols-2 p-4 gap-4">
+          <div className="p-0 md:p-2">
             <div className="aspect-square relative w-full rounded-lg overflow-hidden">
               <Image
                 src={product.image.src}
@@ -64,7 +65,7 @@ export default function QuickViewModal() {
               />
             </div>
           </div>
-          <div className="p-4 md:p-6 flex flex-col">
+          <div className="p-0 md:p-2 flex flex-col">
             <h2 className="text-xl font-bold font-headline mb-2">{product.name}</h2>
             <p className="text-xl font-bold text-primary mb-4">{siteConfig.currency}{product.price.toFixed(2)}</p>
             
@@ -143,6 +144,32 @@ export default function QuickViewModal() {
             </div>
           </div>
         </div>
+  );
+}
+
+
+export default function QuickViewModal() {
+  const { product, isOpen, closeQuickView } = useQuickView();
+  const isMobile = useIsMobile();
+
+  if (!product) {
+    return null;
+  }
+  
+  if (isMobile) {
+    return (
+        <Drawer open={isOpen} onOpenChange={(open) => !open && closeQuickView()}>
+            <DrawerContent>
+                 <QuickViewContent product={product} />
+            </DrawerContent>
+        </Drawer>
+    );
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && closeQuickView()}>
+      <DialogContent className="sm:max-w-2xl p-0">
+       <QuickViewContent product={product} />
       </DialogContent>
     </Dialog>
   );
