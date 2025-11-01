@@ -77,7 +77,7 @@ export default function Header() {
         </div>
 
         {/* Mobile Icons */}
-        <div className="flex flex-1 items-center justify-end gap-2 md:hidden">
+        <div className="flex items-center justify-end gap-2 md:hidden">
             <Link href="/contact" aria-label="Contact page">
               <Button variant="ghost" size="icon" className="relative text-white hover:text-primary">
                 <User className="h-6 w-6" />
