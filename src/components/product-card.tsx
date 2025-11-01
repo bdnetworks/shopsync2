@@ -71,13 +71,13 @@ export default function ProductCard({ product }: ProductCardProps) {
           <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors h-10 overflow-hidden">
             {product.name}
           </h3>
-          <div className="mt-auto pt-2">
-            <p className="text-lg font-bold text-primary mb-2">
+          <div className="mt-auto pt-2 flex justify-between items-center">
+            <p className="text-lg font-bold text-primary">
               {siteConfig.currency}{product.price.toFixed(2)}
             </p>
-            <Button onClick={handleCartClick} className="w-full">
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
+            <Button onClick={handleCartClick} size="icon" className="h-9 w-9">
+              <ShoppingCart className="h-4 w-4" />
+              <span className="sr-only">Add to Cart</span>
             </Button>
           </div>
         </CardContent>
