@@ -14,7 +14,7 @@ import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types';
-import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 
@@ -53,8 +53,8 @@ function QuickViewContent({ product }: { product: Product }) {
   };
 
   return (
-     <div className="grid grid-cols-1 md:grid-cols-2 p-4 gap-4">
-          <div className="p-0 md:p-2">
+     <div className="grid grid-cols-[100px_1fr] md:grid-cols-2 p-4 gap-4">
+          <div className="p-0">
             <div className="aspect-square relative w-full rounded-lg overflow-hidden">
               <Image
                 src={product.image.src}
@@ -65,21 +65,21 @@ function QuickViewContent({ product }: { product: Product }) {
               />
             </div>
           </div>
-          <div className="p-0 md:p-2 flex flex-col">
-            <h2 className="text-xl font-bold font-headline mb-2">{product.name}</h2>
-            <p className="text-xl font-bold text-primary mb-4">{siteConfig.currency}{product.price.toFixed(2)}</p>
+          <div className="p-0 flex flex-col">
+            <h2 className="text-lg font-bold font-headline mb-1 leading-tight">{product.name}</h2>
+            <p className="text-lg font-bold text-primary mb-2">{siteConfig.currency}{product.price.toFixed(2)}</p>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               {product.colors && product.colors.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium">Color</Label>
+                  <Label className="text-xs font-medium">Color</Label>
                   <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="flex items-center gap-2 mt-1">
                     {product.colors.map(color => (
                       <RadioGroupItem
                         key={color}
                         value={color}
                         id={`quick-view-color-${color}`}
-                        className="h-7 w-7 border-2"
+                        className="h-6 w-6 border-2"
                         style={{ backgroundColor: color.toLowerCase(), borderColor: color.toLowerCase() }}
                       />
                     ))}
@@ -89,14 +89,14 @@ function QuickViewContent({ product }: { product: Product }) {
 
               {product.sizes && product.sizes.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium">Size</Label>
+                  <Label className="text-xs font-medium">Size</Label>
                   <div className="flex items-center gap-2 mt-1">
                     {product.sizes.map(size => (
                       <Button
                         key={size}
                         variant={selectedSize === size ? 'default' : 'outline'}
                         size="sm"
-                        className="w-9 h-9"
+                        className="w-8 h-8 text-xs"
                         onClick={() => setSelectedSize(size)}
                       >
                         {size}
@@ -107,12 +107,12 @@ function QuickViewContent({ product }: { product: Product }) {
               )}
 
               <div>
-                <Label className="text-sm font-medium">Quantity</Label>
+                <Label className="text-xs font-medium">Quantity</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-9 w-9"
+                    className="h-8 w-8"
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   >
                     <Minus className="h-4 w-4" />
@@ -121,13 +121,13 @@ function QuickViewContent({ product }: { product: Product }) {
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                    className="h-9 w-16 text-center text-md font-bold"
+                    className="h-8 w-12 text-center text-md font-bold"
                     min="1"
                   />
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-9 w-9"
+                    className="h-8 w-8"
                     onClick={() => setQuantity(q => q + 1)}
                   >
                     <Plus className="h-4 w-4" />
@@ -136,8 +136,8 @@ function QuickViewContent({ product }: { product: Product }) {
               </div>
             </div>
 
-            <div className="mt-auto pt-4">
-              <Button size="lg" className="w-full" onClick={handleAddToCart}>
+            <div className="mt-auto pt-3">
+              <Button size="default" className="w-full h-9" onClick={handleAddToCart}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Add to Cart
               </Button>
@@ -168,7 +168,7 @@ export default function QuickViewModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && closeQuickView()}>
-      <DialogContent className="sm:max-w-2xl p-0">
+      <DialogContent className="sm:max-w-md p-0">
        <QuickViewContent product={product} />
       </DialogContent>
     </Dialog>
