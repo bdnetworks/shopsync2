@@ -22,6 +22,16 @@
         "title": "Latest Bags",
         "category": "Bags",
         "productCount": 6
+      },
+      {
+        "title": "New Footwear Collection",
+        "category": "Footwear",
+        "productCount": 6
+      },
+      {
+        "title": "Top Accessories",
+        "category": "Accessories",
+        "productCount": 6
       }
     ],
     "topBrands": [
