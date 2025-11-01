@@ -8,7 +8,6 @@ import { useCart } from '@/context/cart-context';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Input } from './ui/input';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import { siteConfig } from '@/config/site';
@@ -16,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 function QuickViewContent({ product }: { product: Product }) {
@@ -73,17 +73,21 @@ function QuickViewContent({ product }: { product: Product }) {
               {product.colors && product.colors.length > 0 && (
                 <div>
                   <Label className="text-xs font-medium">Color</Label>
-                  <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="flex items-center gap-2 mt-1">
-                    {product.colors.map(color => (
-                      <RadioGroupItem
-                        key={color}
-                        value={color}
-                        id={`quick-view-color-${color}`}
-                        className="h-6 w-6 border-2"
-                        style={{ backgroundColor: color.toLowerCase(), borderColor: color.toLowerCase() }}
-                      />
-                    ))}
-                  </RadioGroup>
+                   <Select value={selectedColor} onValueChange={setSelectedColor}>
+                        <SelectTrigger className="w-full h-8 mt-1">
+                            <SelectValue placeholder="Select a color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {product.colors.map(color => (
+                                <SelectItem key={color} value={color}>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-4 w-4 rounded-full" style={{ backgroundColor: color.toLowerCase() }}/>
+                                        {color}
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
               )}
 
