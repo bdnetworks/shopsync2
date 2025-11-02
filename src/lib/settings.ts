@@ -2,6 +2,50 @@
 import categoriesConfig from '@/config/categories.json';
 import type { SiteSettings } from './types';
 
+function parseCSV(csv: string): string[][] {
+    const lines: string[][] = [];
+    if (!csv) return lines;
+
+    const csvNormalized = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const rows = csvNormalized.split('\n');
+
+    for (const row of rows) {
+        if (!row.trim()) continue;
+
+        const line: string[] = [];
+        let field = '';
+        let inQuotedField = false;
+
+        for (let i = 0; i < row.length; i++) {
+            const char = row[i];
+            if (inQuotedField) {
+                if (char === '"') {
+                    if (i + 1 < row.length && row[i + 1] === '"') {
+                        field += '"';
+                        i++;
+                    } else {
+                        inQuotedField = false;
+                    }
+                } else {
+                    field += char;
+                }
+            } else {
+                if (char === '"') {
+                    inQuotedField = true;
+                } else if (char === ',') {
+                    line.push(field);
+                    field = '';
+                } else {
+                    field += char;
+                }
+            }
+        }
+        line.push(field);
+        lines.push(line);
+    }
+    return lines;
+}
+
 async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
     if (!sheetUrl) return [];
     try {
@@ -12,24 +56,20 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
         }
         const csv = await response.text();
         
-        const lines = csv.split(/\r\n|\n/).filter(line => line.trim() !== '');
+        const lines = parseCSV(csv);
         if (lines.length < 2) return [];
 
-        const headers = lines[0].split(',').map(h => h.trim());
+        const headers = lines[0].map(h => h.trim());
         const dataRows = lines.slice(1);
 
-        return dataRows.map(line => {
-            // This regex handles commas inside quoted fields
-            const values = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
-            
+        return dataRows.map(values => {
             const rowObject: { [key: string]: string } = {};
             headers.forEach((header, index) => {
                  const value = (values[index] || '').trim();
-                // Remove quotes from the beginning and end of the string
                 rowObject[header] = value.replace(/^"|"$/g, '');
             });
             return rowObject;
-        }).filter(row => row.key && row.value); // Ensure only rows with key and value are processed
+        }).filter(row => row && typeof row === 'object' && ('key' in row) && ('value' in row) && row.key);
 
     } catch (error) {
         console.error(`Error in fetchAndParseSheet for ${sheetUrl}:`, error);

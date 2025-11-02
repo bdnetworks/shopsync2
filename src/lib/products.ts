@@ -5,57 +5,50 @@ import categoriesConfig from '@/config/categories.json';
 // A more robust CSV parser that handles quoted fields.
 function parseCSV(csv: string): string[][] {
     const lines: string[][] = [];
-    let currentLine: string[] = [];
-    let currentField = '';
-    let inQuotedField = false;
+    if (!csv) return lines;
 
-    for (let i = 0; i < csv.length; i++) {
-        const char = csv[i];
+    // Normalize line endings
+    const csvNormalized = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const rows = csvNormalized.split('\n');
 
-        if (inQuotedField) {
-            if (char === '"') {
-                if (i + 1 < csv.length && csv[i + 1] === '"') {
-                    // Escaped quote
-                    currentField += '"';
-                    i++; // Skip next quote
+    for (const row of rows) {
+        if (!row.trim()) continue; // Skip empty lines
+
+        const line: string[] = [];
+        let field = '';
+        let inQuotedField = false;
+
+        for (let i = 0; i < row.length; i++) {
+            const char = row[i];
+
+            if (inQuotedField) {
+                if (char === '"') {
+                    if (i + 1 < row.length && row[i + 1] === '"') {
+                        // Escaped quote
+                        field += '"';
+                        i++; // Skip next quote
+                    } else {
+                        inQuotedField = false;
+                    }
                 } else {
-                    inQuotedField = false;
+                    field += char;
                 }
             } else {
-                currentField += char;
-            }
-        } else {
-            if (char === '"') {
-                inQuotedField = true;
-            } else if (char === ',') {
-                currentLine.push(currentField);
-                currentField = '';
-            } else if (char === '\n' || char === '\r') {
-                // End of line
-                if (i > 0 && csv[i - 1] !== '\n' && csv[i - 1] !== '\r') {
-                   currentLine.push(currentField);
-                   currentField = '';
-                   if (currentLine.length > 0 || currentField) {
-                     lines.push(currentLine);
-                   }
-                   currentLine = [];
+                if (char === '"') {
+                    inQuotedField = true;
+                } else if (char === ',') {
+                    line.push(field);
+                    field = '';
+                } else {
+                    field += char;
                 }
-                if (char === '\r' && i + 1 < csv.length && csv[i + 1] === '\n') {
-                    i++; // Handle CRLF
-                }
-            } else {
-                currentField += char;
             }
         }
-    }
-    // Add the last field and line
-    currentLine.push(currentField);
-    if (currentLine.length > 0 || currentField) {
-        lines.push(currentLine);
+        line.push(field);
+        lines.push(line);
     }
     
-    // Filter out empty lines that might be parsed
-    return lines.filter(line => line.length > 1 || (line.length === 1 && line[0] !== ''));
+    return lines;
 }
 
 
