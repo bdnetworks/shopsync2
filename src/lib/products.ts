@@ -65,28 +65,33 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
         
         const lines = parseCSV(csv);
         
-        return lines.map(values => {
-             const [id, name, description, price, category, unit, imageUrl, imageAlt, imageHint, colors, sizes] = values;
+        return lines.map((values, index) => {
+             // Columns: Name, Category, Price, Description, Size, Color, Tag, Brand, Stock, Availability, Thumbnail, Image1, Image2
+             const [name, category, price, description, size, color, tag, brand, stock, availability, thumbnail, image1, image2] = values;
              
              const product: Product = {
-                id: id?.trim(),
+                id: `product_${index + 1}`, // Generate a unique ID
                 name: name?.trim(),
                 description: description?.trim(),
                 price: parseFloat(price?.trim()),
                 category: category?.trim() as any,
-                unit: unit?.trim(),
                 image: {
-                    id: id?.trim() || `img_${Math.random()}`,
-                    src: imageUrl?.trim(),
-                    alt: imageAlt?.trim(),
-                    hint: imageHint?.trim(),
+                    id: `img_${index + 1}`,
+                    src: thumbnail?.trim(),
+                    alt: name?.trim(),
+                    hint: tag?.trim() || category?.trim(),
                 },
-                colors: colors?.trim() ? colors.split(',').map(c => c.trim()) : undefined,
-                sizes: sizes?.trim() ? sizes.split(',').map(s => s.trim()) : undefined,
+                gallery: [image1?.trim(), image2?.trim()].filter(Boolean) as string[],
+                colors: color?.trim() ? color.split(',').map(c => c.trim()) : undefined,
+                sizes: size?.trim() ? size.split(',').map(s => s.trim()) : undefined,
+                brand: brand?.trim(),
+                tags: tag?.trim() ? tag.split(',').map(t => t.trim()) : undefined,
+                stock: parseInt(stock?.trim()) || 0,
+                availability: availability?.trim(),
             };
 
             // Basic validation
-            if (product.id && product.name && product.image.src && !isNaN(product.price)) {
+            if (product.name && product.image.src && !isNaN(product.price)) {
                  try {
                     new URL(product.image.src); // Validate URL
                     return product;

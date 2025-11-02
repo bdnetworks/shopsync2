@@ -1,7 +1,7 @@
 
 import { z } from 'zod';
 
-export type ProductCategory = 'Apparel' | 'Bags' | 'Footwear' | 'Accessories';
+export type ProductCategory = 'Apparel' | 'Bags' | 'Footwear' | 'Accessories' | 'Products';
 
 export type ShippingOption = 'insideDhaka' | 'outsideDhaka';
 
@@ -11,15 +11,20 @@ export interface Product {
   description: string;
   price: number;
   category: ProductCategory;
-  unit?: string;
   image: {
     id: string;
     src: string;
     alt: string;
     hint: string;
   };
+  gallery?: string[];
   colors?: string[];
   sizes?: string[];
+  brand?: string;
+  tags?: string[];
+  stock?: number;
+  availability?: string;
+  unit?: string; // Kept for compatibility if needed
 }
 
 export interface CartItem extends Product {
