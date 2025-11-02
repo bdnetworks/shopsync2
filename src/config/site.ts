@@ -111,8 +111,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         offers: offers.offers,
         checkout: {
             shippingFee: {
-                insideDhaka: !isNaN(insideDhaka) ? insideDhaka : checkout.shippingFee.insideDhaka,
-                outsideDhaka: !isNaN(outsideDhaka) ? outsideDhaka : checkout.shippingFee.outsideDhaka,
+                insideDhaka: !isNaN(insideDhaka) && insideDhaka > 0 ? insideDhaka : checkout.shippingFee.insideDhaka,
+                outsideDhaka: !isNaN(outsideDhaka) && outsideDhaka > 0 ? outsideDhaka : checkout.shippingFee.outsideDhaka,
             },
             paymentMethods: checkout.paymentMethods,
             contact: {
