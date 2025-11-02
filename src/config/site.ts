@@ -17,6 +17,9 @@ export type MergedSiteConfig = {
     name: string;
     description: string;
     currency: string;
+    phone: string;
+    email: string;
+    address: string;
     logoImageUrl?: string;
     logoType: 'text' | 'image';
     navLinks: { href: string; label: string; }[];
@@ -32,7 +35,6 @@ export type MergedSiteConfig = {
     checkout: {
       shippingFee: { insideDhaka: number; outsideDhaka: number; };
       paymentMethods: typeof checkout.paymentMethods;
-      contact: typeof checkout.contact;
     };
     [key: string]: any; // Allow other properties from dynamic settings
 }
@@ -75,6 +77,9 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     ]);
     
     const [insideDhaka, outsideDhaka] = (dynamicSettings.deliveryFee || '0,0').split(',').map(Number);
+    const siteEmail = dynamicSettings.email || contact.contactInfo.find(c => c.title === 'Email')?.value || '';
+    const sitePhone = dynamicSettings.phone || contact.contactInfo.find(c => c.title === 'Phone')?.value || '';
+    const siteAddress = dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '';
 
 
     // Start with default values from JSON files
@@ -83,6 +88,9 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         name: dynamicSettings.name || 'ShopSync',
         description: dynamicSettings.description || 'Syncing you with the best products from across the web.',
         currency: dynamicSettings.currencysymbol || '$',
+        email: siteEmail,
+        phone: sitePhone,
+        address: siteAddress,
         logoType: dynamicSettings.logo ? 'image' : 'text',
         logoImageUrl: dynamicSettings.logo || undefined,
         navLinks: parseMenu(dynamicSettings.headermenu),
@@ -100,9 +108,9 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         }),
         footerLinks: footer.footerLinks,
         contactInfo: [
-            { title: "Email", value: dynamicSettings.email || contact.contactInfo.find(c => c.title === 'Email')?.value || '', icon: "Mail" },
-            { title: "Phone", value: dynamicSettings.phone || contact.contactInfo.find(c => c.title === 'Phone')?.value || '', icon: "Phone" },
-            { title: "Office", value: dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '', icon: "MapPin" }
+            { title: "Email", value: siteEmail, icon: "Mail" },
+            { title: "Phone", value: sitePhone, icon: "Phone" },
+            { title: "Office", value: siteAddress, icon: "MapPin" }
         ],
         heroBanners: parseSlider(dynamicSettings.Slider).length > 0 ? parseSlider(dynamicSettings.Slider) : banners.heroBanners,
         topCategories: topCategories,
@@ -115,12 +123,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
                 insideDhaka: !isNaN(insideDhaka) && insideDhaka > 0 ? insideDhaka : checkout.shippingFee.insideDhaka,
                 outsideDhaka: !isNaN(outsideDhaka) && outsideDhaka > 0 ? outsideDhaka : checkout.shippingFee.outsideDhaka,
             },
-            paymentMethods: checkout.paymentMethods,
-            contact: {
-                ...checkout.contact,
-                whatsappNumber: dynamicSettings.phone || checkout.contact.whatsappNumber,
-                email: dynamicSettings.email || checkout.contact.email,
-            }
+            paymentMethods: checkout.paymentMethods
         },
         ...dynamicSettings // Spread the rest of the dynamic settings
     };

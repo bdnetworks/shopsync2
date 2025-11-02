@@ -11,6 +11,7 @@ import { getSiteConfig, type MergedSiteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons.tsx";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ContactPage() {
   const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
@@ -82,6 +83,9 @@ export default function ContactPage() {
   if (!siteConfig) {
       return <div>Loading...</div> // Or a skeleton loader
   }
+  
+  const whatsAppUrl = `https://wa.me/${siteConfig.phone.replace(/\D/g, '')}?text=Hello%2C%20I%20have%20a%20question.`;
+  const WhatsAppIcon = getIcon('WhatsApp');
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -136,23 +140,38 @@ export default function ContactPage() {
           </CardContent>
         </Card>
         
-        <div className="space-y-8">
+        <div className="space-y-6">
             <h2 className="font-headline text-2xl font-semibold">Our Information</h2>
-            {siteConfig.contactInfo.map(info => {
-              const Icon = getIcon(info.icon);
-              if (!info.value) return null;
-              return (
-                <div key={info.title} className="flex items-start gap-4">
-                    <div className="bg-primary/10 text-primary p-3 rounded-full">
-                        {Icon && <Icon className="h-6 w-6" />}
-                    </div>
-                    <div>
-                        <h3 className="font-semibold">{info.title}</h3>
-                        <p className="text-muted-foreground">{info.value}</p>
-                    </div>
+            <div className="space-y-4">
+              {siteConfig.contactInfo.map(info => {
+                const Icon = getIcon(info.icon);
+                if (!info.value) return null;
+                return (
+                  <div key={info.title} className="flex items-start gap-4">
+                      <div className="bg-primary/10 text-primary p-3 rounded-lg">
+                          {Icon && <Icon className="h-5 w-5" />}
+                      </div>
+                      <div>
+                          <h3 className="font-semibold text-lg">{info.title}</h3>
+                          <p className="text-muted-foreground">{info.value}</p>
+                      </div>
+                  </div>
+                )
+              })}
+            </div>
+             <Card className="bg-muted/50">
+              <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                    <h3 className="font-headline text-lg font-semibold">Have an Urgent Query?</h3>
+                    <p className="text-muted-foreground text-sm">Get an instant response from our team.</p>
                 </div>
-              )
-            })}
+                <Button asChild>
+                    <Link href={whatsAppUrl} target="_blank" rel="noopener noreferrer">
+                       {WhatsAppIcon && <WhatsAppIcon className="h-5 w-5 mr-2"/>} Chat on WhatsApp
+                    </Link>
+                </Button>
+              </CardContent>
+            </Card>
         </div>
       </div>
     </div>
