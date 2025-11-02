@@ -76,21 +76,35 @@ export default function CheckoutPage() {
     };
 
     try {
-        const response = await fetch('/api/send-order-email', {
+        // First, send the email
+        const emailResponse = await fetch('/api/send-order-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderDetails)
         });
 
-        const result = await response.json();
+        const emailResult = await emailResponse.json();
 
-        if (!response.ok) {
-            throw new Error(result.details || 'Failed to send order email.');
+        if (!emailResponse.ok) {
+            throw new Error(emailResult.details || 'Failed to send order email.');
         }
+
+        // Then, add the order to Google Sheet
+        const sheetResponse = await fetch('/api/add-to-sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderDetails)
+        });
+
+        const sheetResult = await sheetResponse.json();
         
+        if (!sheetResponse.ok || sheetResult.status !== 'success') {
+             throw new Error(sheetResult.message || 'Failed to add order to Google Sheet.');
+        }
+
         toast({
             title: "Order Placed Successfully!",
-            description: "We've sent a confirmation email with your order details."
+            description: "We've sent a confirmation email and your order has been recorded."
         });
 
         clearCart();
