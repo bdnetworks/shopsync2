@@ -61,7 +61,7 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
         });
 
         // Check for essential columns
-        const requiredColumns = ['Name', 'Price', 'Thumbnail'];
+        const requiredColumns = ['id', 'name', 'price', 'imageUrl'];
         for (const col of requiredColumns) {
             if (headerMap[col] === undefined) {
                 console.error(`Missing required column in Google Sheet: ${col}`);
@@ -72,44 +72,39 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
         return dataRows.map((values) => {
             if (values.length < headers.length) return null; // Skip malformed rows
             
-            const name = values[headerMap['Name']];
-            const price = parseFloat(values[headerMap['Price']]);
-            const thumbnail = values[headerMap['Thumbnail']];
+            const id = values[headerMap['id']];
+            const name = values[headerMap['name']];
+            const price = parseFloat(values[headerMap['price']]);
+            const imageUrl = values[headerMap['imageUrl']];
 
-            // Basic validation: name, price and a valid thumbnail URL are required
-            if (!name || isNaN(price) || !thumbnail) {
+            // Basic validation: id, name, price and a valid imageUrl are required
+            if (!id || !name || isNaN(price) || !imageUrl) {
                 return null;
             }
              try {
-                new URL(thumbnail); // Validate URL
+                new URL(imageUrl); // Validate URL
             } catch (e) {
-                console.warn(`Invalid thumbnail URL for product '${name}': ${thumbnail}`);
-                return null; // Skip products with invalid thumbnail URLs
+                console.warn(`Invalid imageUrl for product '${name}': ${imageUrl}`);
+                return null; // Skip products with invalid image URLs
             }
 
-            const category = values[headerMap['Category']] || 'Products';
-            const brand = values[headerMap['Brand']];
-            const productId = `${name.replace(/\s+/g, '-').toLowerCase()}-${(brand || category || 'item').replace(/\s+/g, '-').toLowerCase()}`;
+            const category = values[headerMap['category']] || 'Products';
 
              const product: Product = {
-                id: productId,
+                id: id,
                 name: name,
-                description: values[headerMap['Description']] || '',
+                description: values[headerMap['description']] || '',
                 price: price,
                 category: (category as any),
+                unit: values[headerMap['unit']],
                 image: {
-                    id: `${productId}-img`,
-                    src: thumbnail,
-                    alt: name,
-                    hint: values[headerMap['Tag']] || category,
+                    id: `${id}-img`,
+                    src: imageUrl,
+                    alt: values[headerMap['imageAlt']] || name,
+                    hint: values[headerMap['imageHint']] || category,
                 },
-                gallery: [values[headerMap['Image1']], values[headerMap['Image2']]].filter(Boolean),
-                colors: values[headerMap['Color']] ? values[headerMap['Color']].split(',').map(c => c.trim()) : undefined,
-                sizes: values[headerMap['Size']] ? values[headerMap['Size']].split(',').map(s => s.trim()) : undefined,
-                brand: brand,
-                tags: values[headerMap['Tag']] ? values[headerMap['Tag']].split(',').map(t => t.trim()) : undefined,
-                stock: parseInt(values[headerMap['Stock']], 10) || 0,
-                availability: values[headerMap['Availability']],
+                colors: values[headerMap['colors']] ? values[headerMap['colors']].split(',').map(c => c.trim()) : undefined,
+                sizes: values[headerMap['sizes']] ? values[headerMap['sizes']].split(',').map(s => s.trim()) : undefined,
             };
 
             return product;
@@ -125,6 +120,9 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
 let productsCache: Product[] | null = null;
 
 async function initializeProducts(): Promise<Product[]> {
+    // Invalidate cache for every request in this context to ensure fresh data
+    productsCache = null;
+
     if (productsCache) {
         return productsCache;
     }
