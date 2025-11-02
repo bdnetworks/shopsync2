@@ -117,16 +117,7 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
 }
 
 
-let productsCache: Product[] | null = null;
-
 async function initializeProducts(): Promise<Product[]> {
-    // Invalidate cache for every request in this context to ensure fresh data
-    productsCache = null;
-
-    if (productsCache) {
-        return productsCache;
-    }
-
     const fetchPromises = categories.map(category => fetchAndParseSheet(category.sheetUrl));
     
     try {
@@ -136,7 +127,6 @@ async function initializeProducts(): Promise<Product[]> {
         // Simple deduplication based on a generated ID
         const uniqueProducts = Array.from(new Map(allProducts.map(p => [p.id, p])).values());
         
-        productsCache = uniqueProducts;
         return uniqueProducts;
 
     } catch (error) {
