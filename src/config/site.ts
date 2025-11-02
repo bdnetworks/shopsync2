@@ -1,6 +1,7 @@
 
 import { getSiteSettings } from '@/lib/settings';
-import type { SiteSettings, ProductCategory } from "@/lib/types";
+import type { SiteSettings, ProductCategory, TopCategory } from "@/lib/types";
+import { getFeaturedSections, getTopCategories } from '@/lib/products';
 
 // Import static JSON files
 import socials from './socials.json';
@@ -24,7 +25,7 @@ export type MergedSiteConfig = {
     footerLinks: typeof footer.footerLinks;
     contactInfo: { title: string; value: string; icon: string; }[];
     heroBanners: { id: string; imageUrl: string; description: string; imageHint: string; }[];
-    topCategories: typeof home.topCategories;
+    topCategories: TopCategory[];
     productCategories: ProductCategory[];
     topBrands: typeof home.topBrands;
     offers: typeof offers.offers;
@@ -66,6 +67,11 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             imageHint: 'banner image'
         }));
     };
+    
+    const [featuredSections, topCategories] = await Promise.all([
+        getFeaturedSections(),
+        getTopCategories()
+    ]);
 
     // Start with default values from JSON files
     const config: MergedSiteConfig = {
@@ -79,10 +85,11 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         topBarLinks: parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})),
         socialLinks: socials.socialLinks.map(link => {
             const socialKey = link.name.toLowerCase();
-            if (dynamicSettings[socialKey]) {
-                const url = socialKey === 'whatsapp' 
-                    ? `https://wa.me/${(dynamicSettings[socialKey] as string).replace(/\D/g, '')}`
-                    : `https://${socialKey}.com/${dynamicSettings[socialKey]}`;
+            const socialValue = dynamicSettings[socialKey] as string | undefined;
+            if (socialValue) {
+                 const url = socialKey === 'whatsapp' 
+                    ? `https://wa.me/${socialValue.replace(/\D/g, '')}`
+                    : socialValue.startsWith('http') ? socialValue : `https://${socialKey}.com/${socialValue}`;
                 return { ...link, href: url };
             }
             return link;
@@ -94,7 +101,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             { title: "Office", value: dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '', icon: "MapPin" }
         ],
         heroBanners: parseSlider(dynamicSettings.Slider),
-        topCategories: home.topCategories,
+        topCategories: topCategories,
+        featuredSections: featuredSections,
         productCategories: product.productCategories as ProductCategory[],
         topBrands: home.topBrands,
         offers: offers.offers,

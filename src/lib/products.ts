@@ -1,5 +1,5 @@
 
-import type { Product, ProductCategory, FeaturedSection } from './types';
+import type { Product, ProductCategory, FeaturedSection, TopCategory } from './types';
 import categoriesConfig from '@/config/categories.json';
 
 // A more robust CSV parser that handles quoted fields.
@@ -150,8 +150,26 @@ export const getFeaturedSections = async (): Promise<FeaturedSection[]> => {
         const productCount = parseInt(row.productCount, 10);
         return {
             title: row.title || 'Featured',
-            categories: row.categories ? row.categories.split(',').map(c => c.trim()) : [],
+            categories: row.categories ? row.categories.split(',').map(c => c.trim() as ProductCategory) : [],
             productCount: isNaN(productCount) ? 6 : productCount,
         };
     }).filter(section => section.title && section.categories.length > 0);
+};
+
+export const getTopCategories = async (): Promise<TopCategory[]> => {
+    if (!categoriesConfig.topCategoriesSheetUrl) {
+        return [];
+    }
+    const rows = await fetchAndParseSheet(categoriesConfig.topCategoriesSheetUrl);
+
+    return rows.map(row => {
+        if (!row.name || !row.imageUrl) {
+            return null;
+        }
+        return {
+            name: row.name,
+            imageUrl: row.imageUrl,
+            imageHint: row.imageHint || row.name.toLowerCase(),
+        };
+    }).filter((category): category is TopCategory => category !== null);
 };

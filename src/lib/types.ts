@@ -39,6 +39,12 @@ export interface FeaturedSection {
     productCount: number;
 }
 
+export interface TopCategory {
+    name: string;
+    imageUrl: string;
+    imageHint: string;
+}
+
 export type SiteSettings = {
     [key: string]: string | number | undefined;
     name?: string;

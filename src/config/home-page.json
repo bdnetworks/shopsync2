@@ -1,17 +1,5 @@
 
 {
-    "topCategories": [
-        { "name": "Laptop", "imageUrl": "https://picsum.photos/seed/laptop-cat/80/80", "imageHint": "laptop icon" },
-        { "name": "Processor", "imageUrl": "https://picsum.photos/seed/cpu-cat/80/80", "imageHint": "cpu icon" },
-        { "name": "AIO PC", "imageUrl": "https://picsum.photos/seed/aio-cat/80/80", "imageHint": "all in one pc icon" },
-        { "name": "Speaker", "imageUrl": "https://picsum.photos/seed/speaker-cat/80/80", "imageHint": "speaker icon" },
-        { "name": "Monitor", "imageUrl": "https://picsum.photos/seed/monitor-cat/80/80", "imageHint": "monitor icon" },
-        { "name": "Software", "imageUrl": "https://picsum.photos/seed/hdd-cat/80/80", "imageHint": "hard drive icon" },
-        { "name": "Gaming", "imageUrl": "https://picsum.photos/seed/gaming-cat/80/80", "imageHint": "gamepad icon" },
-        { "name": "Printer", "imageUrl": "https://picsum.photos/seed/printer-cat/80/80", "imageHint": "printer icon" },
-        { "name": "CPU", "imageUrl": "https://picsum.photos/seed/cpu2-cat/80/80", "imageHint": "cpu icon" },
-        { "name": "Camera", "imageUrl": "https://picsum.photos/seed/camera-cat/80/80", "imageHint": "camera icon" }
-    ],
     "topBrands": [
         {
             "name": "Apple",
@@ -70,3 +58,4 @@
         }
     ]
 }
+
