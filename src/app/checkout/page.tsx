@@ -99,8 +99,8 @@ export default function CheckoutPage() {
         OrderTotal: total,
     };
 
-    // 2. Data for Email
-    const orderDetailsForEmail = {
+    // 2. Data for Email & Confirmation Page
+    const orderDetailsForConfirmation = {
       orderId: orderId,
       customer: { name, email, mobile, address },
       items: cartItems,
@@ -119,7 +119,7 @@ export default function CheckoutPage() {
         const emailResponse = await fetch('/api/send-order-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderDetailsForEmail)
+            body: JSON.stringify(orderDetailsForConfirmation)
         });
 
         if (!emailResponse.ok) {
@@ -134,12 +134,11 @@ export default function CheckoutPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderForSheet)
         });
-
-        const sheetResult = await sheetResponse.json();
         
-        if (!sheetResponse.ok || sheetResult.status !== 'success') {
+        if (!sheetResponse.ok) {
+             const sheetResult = await sheetResponse.json();
              // This is a critical failure, so we throw an error
-             throw new Error(sheetResult.message || 'Failed to add order to Google Sheet.');
+             throw new Error(sheetResult.details || 'Failed to add order to Google Sheet.');
         }
 
         // Success!
@@ -147,6 +146,8 @@ export default function CheckoutPage() {
             title: "Order Placed Successfully!",
             description: "Your order has been recorded. We'll be in touch shortly."
         });
+        
+        sessionStorage.setItem('lastOrderDetails', JSON.stringify(orderDetailsForConfirmation));
 
         clearCart();
         router.push(`/order-confirmation?orderId=${orderId}`);
