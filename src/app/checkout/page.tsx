@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { ShippingOption } from '@/lib/types';
+import type { ShippingOption, CartItem } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Terminal } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +27,8 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [address, setAddress] = useState('');
+  const [transactionId, setTransactionId] = useState('');
+  const [zipCode, setZipCode] = useState('');
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>('insideDhaka');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,8 +75,33 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
 
-    const orderDetails = {
-      orderId: `SHOPSYNC-${Date.now()}`,
+    const orderId = `SHOPSYNC-${Date.now()}`;
+    const orderDate = new Date().toISOString();
+    
+    // Format products for Google Sheet
+    const productsString = cartItems.map(item => 
+        `${item.name} (Qty: ${item.quantity}${item.selectedColor ? `, Color: ${item.selectedColor}`:''}${item.selectedSize ? `, Size: ${item.selectedSize}`:''})`
+    ).join(' | ');
+
+    // 1. Data for Google Sheet
+    const orderForSheet = {
+        OrderID: orderId,
+        OrderDate: orderDate,
+        CustomerName: name,
+        CustomerEmail: email,
+        CustomerMobile: mobile,
+        PaymentMethod: paymentMethod,
+        TransactionID: transactionId,
+        ShippingFee: shippingFee,
+        Address: address,
+        ZipCode: zipCode,
+        Products: productsString,
+        OrderTotal: total,
+    };
+
+    // 2. Data for Email
+    const orderDetailsForEmail = {
+      orderId: orderId,
       customer: { name, email, mobile, address },
       items: cartItems,
       summary: {
@@ -84,7 +111,7 @@ export default function CheckoutPage() {
         paymentMethod,
         paymentDetails: selectedPaymentMethodDetails?.details
       },
-      orderDate: new Date().toISOString(),
+      orderDate: orderDate,
     };
 
     try {
@@ -92,7 +119,7 @@ export default function CheckoutPage() {
         const emailResponse = await fetch('/api/send-order-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderDetails)
+            body: JSON.stringify(orderDetailsForEmail)
         });
 
         const emailResult = await emailResponse.json();
@@ -105,7 +132,7 @@ export default function CheckoutPage() {
         const sheetResponse = await fetch('/api/add-to-sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderDetails)
+            body: JSON.stringify(orderForSheet)
         });
 
         const sheetResult = await sheetResponse.json();
@@ -120,7 +147,7 @@ export default function CheckoutPage() {
         });
 
         clearCart();
-        router.push(`/order-confirmation?orderId=${orderDetails.orderId}`);
+        router.push(`/order-confirmation?orderId=${orderId}`);
 
     } catch (error: any) {
         console.error('Order submission error:', error);
@@ -223,17 +250,23 @@ export default function CheckoutPage() {
                     <Label htmlFor="name">Full Name</Label>
                     <Input id="name" name="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" name="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="mobile">Mobile Number</Label>
-                    <Input id="mobile" type="tel" name="mobile" placeholder="01xxxxxxxxx" value={mobile} onChange={(e) => setMobile(e.target.value)} required />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" name="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="mobile">Mobile Number</Label>
+                        <Input id="mobile" type="tel" name="mobile" placeholder="01xxxxxxxxx" value={mobile} onChange={(e) => setMobile(e.target.value)} required />
+                    </div>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Full Address</Label>
                     <Input id="address" name="address" placeholder="123 Main St, Anytown" value={address} onChange={(e) => setAddress(e.target.value)} required />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="zipCode">Zip Code (Optional)</Label>
+                    <Input id="zipCode" name="zipCode" placeholder="1212" value={zipCode} onChange={(e) => setZipCode(e.target.value)} />
                 </div>
               </CardContent>
             </Card>
@@ -277,9 +310,13 @@ export default function CheckoutPage() {
                 <Terminal className="h-4 w-4" />
                 <AlertTitle>Advance Payment Instruction</AlertTitle>
                 <AlertDescription>
-                  <p className="mb-2">Please complete your payment quickly using the details below. We will confirm your order upon receiving the payment.</p>
+                  <p className="mb-2">Please complete your payment using the details below. We will confirm your order upon receiving the payment.</p>
                   <p><strong>Method:</strong> {selectedPaymentMethodDetails.name}</p>
                   <p><strong>Details:</strong> {selectedPaymentMethodDetails.details}</p>
+                   <div className="space-y-2 mt-4">
+                        <Label htmlFor="transactionId">Transaction ID</Label>
+                        <Input id="transactionId" name="transactionId" placeholder="Enter payment transaction ID" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} />
+                    </div>
                 </AlertDescription>
               </Alert>
             )}
