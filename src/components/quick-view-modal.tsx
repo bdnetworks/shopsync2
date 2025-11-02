@@ -10,7 +10,7 @@ import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
@@ -22,12 +22,19 @@ function QuickViewContent({ product }: { product: Product }) {
   const { addToCart } = useCart();
   const { closeQuickView } = useQuickView();
   const { toast } = useToast();
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
 
   useEffect(() => {
+    const fetchConfig = async () => {
+        const config = await getSiteConfig();
+        setSiteConfig(config);
+    }
+    fetchConfig();
+    
     if (product) {
       setQuantity(1);
       setSelectedColor(product.colors && product.colors.length > 0 ? product.colors[0] : undefined);
@@ -35,7 +42,7 @@ function QuickViewContent({ product }: { product: Product }) {
     }
   }, [product]);
 
-   if (!product) {
+   if (!product || !siteConfig) {
     return null;
   }
 

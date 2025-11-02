@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { CartItem, Product, ShippingOption } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -25,11 +25,19 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartLoading, setIsCartLoading] = useState(true);
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
   const { toast } = useToast();
-  const [shippingFee, setShippingFee] = useState(siteConfig.checkout.shippingFee.insideDhaka);
+  const [shippingFee, setShippingFee] = useState(0);
   const [shippingOption, setShippingOption] = useState<ShippingOption>('insideDhaka');
 
   useEffect(() => {
+    const fetchConfig = async () => {
+        const config = await getSiteConfig();
+        setSiteConfig(config);
+        setShippingFee(config.checkout.shippingFee.insideDhaka);
+    }
+    fetchConfig();
+    
     setIsCartLoading(true);
     const storedCart = localStorage.getItem('cartItems');
     if (storedCart) {
@@ -54,6 +62,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [cartItems, isCartLoading]);
 
   const handleSetShippingOption = (option: ShippingOption) => {
+    if (!siteConfig) return;
     setShippingOption(option);
     const newShippingFee = option === 'insideDhaka' 
       ? siteConfig.checkout.shippingFee.insideDhaka 
@@ -63,7 +72,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToCart = (product: Product, quantity: number = 1, selectedColor?: string, selectedSize?: string) => {
     setCartItems(prevItems => {
-      // A unique ID for the cart item based on product ID, color, and size
       const cartItemId = `${product.id}${selectedColor ? `-${selectedColor}`:''}${selectedSize ? `-${selectedSize}`:''}`;
       
       const existingItem = prevItems.find(item => 
@@ -73,7 +81,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       );
 
       if (existingItem) {
-        // If item with same options exists, update its quantity
         return prevItems.map(item =>
           item.id === product.id && item.selectedColor === selectedColor && item.selectedSize === selectedSize 
           ? { ...item, quantity: item.quantity + quantity } 
@@ -81,13 +88,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         );
       }
       
-      // If item with same options does not exist, add as a new item
       const newItem: CartItem = { 
           ...product, 
           quantity,
           selectedColor,
           selectedSize,
-          // Use the generated unique ID for the item to differentiate it in the cart
           id: cartItemId 
       };
       return [...prevItems, newItem];
@@ -137,7 +142,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     itemCount,
     shippingFee,
     total,
-    isCartLoading,
+isCartLoading: isCartLoading || !siteConfig,
     setShippingOption: handleSetShippingOption,
   };
 

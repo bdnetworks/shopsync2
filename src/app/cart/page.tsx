@@ -9,10 +9,24 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
-import { siteConfig } from '@/config/site';
+import { useEffect, useState } from 'react';
+import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, subtotal, shippingFee, total, itemCount } = useCart();
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const config = await getSiteConfig();
+      setSiteConfig(config);
+    }
+    fetchConfig();
+  }, []);
+
+  if (!siteConfig) {
+      return <div>Loading...</div>
+  }
 
   if (itemCount === 0) {
     return (

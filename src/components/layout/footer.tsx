@@ -1,10 +1,11 @@
 
 import Link from 'next/link';
 import Logo from '@/components/logo';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig } from '@/config/site';
 import { getIcon } from '@/lib/icons.tsx';
 
-export default function Footer() {
+export default async function Footer() {
+  const siteConfig = await getSiteConfig();
   return (
     <footer className="bg-[#0d2253] text-white">
       <div className="container mx-auto px-4 py-12 md:py-16">
@@ -48,7 +49,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t border-gray-800 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved. | Developer <Link href="https://facebook.com/bdthemex" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">BDthemeX</Link></p>
+          <p>&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved. | Developer <Link href={`https://facebook.com/${siteConfig.socialMedia || 'bdthemex'}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">BDthemeX</Link></p>
         </div>
       </div>
     </footer>

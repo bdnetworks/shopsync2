@@ -3,13 +3,13 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Autoplay from "embla-carousel-autoplay";
 
 import { Button } from '@/components/ui/button';
 import { getProducts, getFeaturedSections } from '@/lib/products';
 import ProductCard from '@/components/product-card';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
@@ -17,9 +17,45 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { Product, FeaturedSection } from '@/lib/types';
-import { useState, useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function HomePageSkeleton() {
+    return (
+        <div className="flex flex-col gap-8 py-6 container mx-auto px-4">
+            <Skeleton className="w-full h-[30vh] md:h-[40vh] rounded-lg" />
+            <div className="space-y-2 text-center">
+                <Skeleton className="h-8 w-48 mx-auto" />
+                <div className="grid grid-cols-5 md:grid-cols-10 gap-4 pt-4">
+                    {[...Array(10)].map((_, i) => (
+                        <div key={i} className="flex flex-col items-center gap-2">
+                           <Skeleton key={i} className="w-16 h-16 rounded-full" />
+                           <Skeleton key={i} className="h-4 w-12" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+             <div className="space-y-2">
+                <Skeleton className="h-8 w-32" />
+                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
+                    {[...Array(6)].map((_, i) => (
+                         <div key={i} className="flex flex-col space-y-3">
+                            <Skeleton className="h-[225px] w-full rounded-xl" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-3/4" />
+                            </div>
+                            <Skeleton className="h-10 w-1/2" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
+}
+
 
 export default function Home() {
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [featuredSections, setFeaturedSections] = useState<FeaturedSection[]>([]);
   const plugin = useRef(
@@ -28,13 +64,21 @@ export default function Home() {
 
   useEffect(() => {
     async function loadData() {
-        const products = await getProducts();
+        const [config, products, sections] = await Promise.all([
+            getSiteConfig(),
+            getProducts(),
+            getFeaturedSections()
+        ]);
+        setSiteConfig(config);
         setAllProducts(products);
-        const sections = await getFeaturedSections();
         setFeaturedSections(sections);
     }
     loadData();
   }, []);
+
+  if (!siteConfig) {
+      return <HomePageSkeleton />;
+  }
 
   // Get the last 6 products as "latest"
   const latestProducts = allProducts.slice(-6).reverse();

@@ -1,24 +1,33 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { siteConfig } from "@/config/site";
+import { getSiteConfig, type MergedSiteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons.tsx";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 export default function ContactPage() {
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const config = await getSiteConfig();
+      setSiteConfig(config);
+    }
+    fetchConfig();
+  }, []);
   
   const isFormValid = name && email && subject && message;
 
@@ -69,6 +78,10 @@ export default function ContactPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (!siteConfig) {
+      return <div>Loading...</div> // Or a skeleton loader
+  }
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -127,6 +140,7 @@ export default function ContactPage() {
             <h2 className="font-headline text-2xl font-semibold">Our Information</h2>
             {siteConfig.contactInfo.map(info => {
               const Icon = getIcon(info.icon);
+              if (!info.value) return null;
               return (
                 <div key={info.title} className="flex items-start gap-4">
                     <div className="bg-primary/10 text-primary p-3 rounded-full">

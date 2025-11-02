@@ -38,3 +38,19 @@ export interface FeaturedSection {
     categories: ProductCategory[];
     productCount: number;
 }
+
+export type SiteSettings = {
+    [key: string]: string | number | undefined;
+    name?: string;
+    description?: string;
+    logo?: string;
+    banner?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    socialMedia?: string;
+    currency?: string;
+    currencysymbol?: string;
+    shippingInsideCity?: number;
+    shippingOutsideCity?: number;
+};

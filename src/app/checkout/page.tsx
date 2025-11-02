@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useCart } from '@/context/cart-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
@@ -21,15 +21,27 @@ export default function CheckoutPage() {
   const { cartItems, subtotal, total, isCartLoading, shippingFee, setShippingOption, clearCart } = useCart();
   const router = useRouter();
   const { toast } = useToast();
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [address, setAddress] = useState('');
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>('insideDhaka');
-  const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0].name);
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const config = await getSiteConfig();
+      setSiteConfig(config);
+      if (config.checkout.paymentMethods.length > 0) {
+        setPaymentMethod(config.checkout.paymentMethods[0].name);
+      }
+    }
+    fetchConfig();
+  }, []);
+
   useEffect(() => {
     setShippingOption(selectedShipping);
   }, [selectedShipping, setShippingOption]);
@@ -47,7 +59,7 @@ export default function CheckoutPage() {
 
   const isFormValid = name && email && mobile && address && paymentMethod;
   
-  const selectedPaymentMethodDetails = siteConfig.checkout.paymentMethods.find(method => method.name === paymentMethod);
+  const selectedPaymentMethodDetails = siteConfig?.checkout.paymentMethods.find(method => method.name === paymentMethod);
 
   const handlePlaceOrder = async () => {
     if (!isFormValid) {
@@ -122,7 +134,7 @@ export default function CheckoutPage() {
     }
   };
   
-  if (isCartLoading) {
+  if (isCartLoading || !siteConfig) {
     return (
         <div className="container mx-auto px-4 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">

@@ -2,7 +2,6 @@
 {
     "name": "RYANS SHOP",
     "description": "Syncing you with the best products from across the web.",
-    "currency": "$",
-    "logoType": "text",
-    "logoImageUrl": "https://picsum.photos/seed/ryans-logo/200/50"
+    "themeColor": "#e11d48",
+    "currency": "$"
 }

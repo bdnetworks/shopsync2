@@ -1,5 +1,6 @@
+
 import { NextRequest, NextResponse } from 'next/server';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig } from '@/config/site';
 import type { CartItem } from '@/lib/types';
 import nodemailer from 'nodemailer';
 
@@ -27,14 +28,17 @@ async function sendNodemailerEmail({
     to, 
     subject, 
     bodyHtml, 
-    replyTo 
+    replyTo,
+    siteName,
+    gmailUser
 }: { 
     to: string, 
     subject: string, 
     bodyHtml: string, 
-    replyTo?: string 
+    replyTo?: string,
+    siteName: string,
+    gmailUser: string
 }) {
-    const gmailUser = process.env.GMAIL_USER;
     const gmailPass = process.env.GMAIL_PASS;
 
     if (!gmailUser || !gmailPass || gmailUser === 'your-email@gmail.com') {
@@ -50,7 +54,7 @@ async function sendNodemailerEmail({
     });
 
     const mailOptions: nodemailer.SendMailOptions = {
-        from: `"${siteConfig.name}" <${gmailUser}>`,
+        from: `"${siteName}" <${gmailUser}>`,
         to: to,
         subject: subject,
         html: bodyHtml,
@@ -63,7 +67,7 @@ async function sendNodemailerEmail({
     await transporter.sendMail(mailOptions);
 }
 
-function generateCustomerEmail(details: OrderDetails): string {
+function generateCustomerEmail(details: OrderDetails, siteConfig: any): string {
     const itemsHtml = details.items.map(item => `
         <tr>
             <td style="padding: 10px; border-bottom: 1px solid #ddd;">
@@ -120,7 +124,7 @@ function generateCustomerEmail(details: OrderDetails): string {
     `;
 }
 
-function generateAdminEmail(details: OrderDetails): string {
+function generateAdminEmail(details: OrderDetails, siteConfig: any): string {
     const itemsHtml = details.items.map(item => `
        <li style="margin-bottom: 10px;">
         ${item.name} (ID: ${item.id}) - Qty: ${item.quantity} - Price: ${siteConfig.currency}${item.price.toFixed(2)}
@@ -161,27 +165,37 @@ function generateAdminEmail(details: OrderDetails): string {
 export async function POST(req: NextRequest) {
   try {
     const orderDetails: OrderDetails = await req.json();
-    const adminEmail = process.env.GMAIL_USER;
+    const siteConfig = await getSiteConfig();
+
+    const gmailUser = process.env.GMAIL_USER;
+    const adminEmail = siteConfig.email;
 
     if (!adminEmail) {
-        throw new Error('Admin email (GMAIL_USER) is not configured.');
+        throw new Error('Admin email is not configured.');
+    }
+    if (!gmailUser) {
+        throw new Error('Gmail sending email (GMAIL_USER) is not configured in environment variables.');
     }
 
     // 1. Send confirmation email to the customer
-    const customerEmailBody = generateCustomerEmail(orderDetails);
+    const customerEmailBody = generateCustomerEmail(orderDetails, siteConfig);
     const customerEmailPromise = sendNodemailerEmail({
         to: orderDetails.customer.email,
         subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetails.orderId})`,
         bodyHtml: customerEmailBody,
+        siteName: siteConfig.name,
+        gmailUser: gmailUser
     });
 
     // 2. Send notification email to the admin
-    const adminEmailBody = generateAdminEmail(orderDetails);
+    const adminEmailBody = generateAdminEmail(orderDetails, siteConfig);
     const adminEmailPromise = sendNodemailerEmail({
         to: adminEmail,
         subject: `[${siteConfig.name}] New Order Received! (#${orderDetails.orderId})`,
         bodyHtml: adminEmailBody,
         replyTo: orderDetails.customer.email,
+        siteName: siteConfig.name,
+        gmailUser: gmailUser
     });
 
     // Wait for both emails to be sent successfully

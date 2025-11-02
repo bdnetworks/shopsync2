@@ -8,10 +8,11 @@ import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 import { ShoppingCart, Heart } from 'lucide-react';
 import Link from 'next/link';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 import { useWishlist } from '@/context/wishlist-context';
 import { cn } from '@/lib/utils';
 import { useQuickView } from '@/context/quick-view-context';
+import { useEffect, useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -21,6 +22,16 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const { openQuickView } = useQuickView();
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const config = await getSiteConfig();
+      setSiteConfig(config);
+    }
+    fetchConfig();
+  }, []);
+
   const isInWishlist = isWishlisted(product.id);
 
   const hasOptions = (product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0);
@@ -40,6 +51,10 @@ export default function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
     toggleWishlist(product);
   };
+
+  if (!siteConfig) {
+      return <div className="h-full w-full bg-muted animate-pulse rounded-lg"></div>
+  }
 
   return (
     <Link href={`/products/${product.id}`} className="group flex flex-col h-full">

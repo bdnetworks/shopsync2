@@ -1,21 +1,32 @@
 
 'use client';
 
-import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getSiteConfig, MergedSiteConfig } from "@/config/site";
 
 export default function FloatingWhatsAppButton() {
-    const socialLink = siteConfig.socialLinks.find(link => link.name === 'WhatsApp');
-    
-    if (!socialLink) return null;
+    const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
 
+    useEffect(() => {
+        const fetchConfig = async () => {
+          const config = await getSiteConfig();
+          setSiteConfig(config);
+        }
+        fetchConfig();
+    }, []);
+    
+    if (!siteConfig || !siteConfig.phone) return null;
+
+    const whatsAppUrl = `https://wa.me/${siteConfig.phone.replace(/\D/g, '')}?text=Hello%2C%20I%20have%20a%20question%20about%20products.`;
+    
     const WhatsAppIcon = getIcon('WhatsApp');
     const ChatIcon = getIcon('MessageSquareMore');
 
     return (
         <Link 
-            href={socialLink.href}
+            href={whatsAppUrl}
             target="_blank" 
             rel="noopener noreferrer"
             className="fixed bottom-5 right-5 z-50 flex items-center gap-2 cursor-pointer group"

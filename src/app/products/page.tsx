@@ -7,7 +7,7 @@ import { getProducts } from '@/lib/products';
 import ProductCard from '@/components/product-card';
 import { Product, ProductCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 function ProductsComponent() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
   const searchParams = useSearchParams();
   const selectedCategoryParam = searchParams.get('category') as ProductCategory | null;
 
@@ -34,15 +35,17 @@ function ProductsComponent() {
   }, [allProducts]);
   
   useEffect(() => {
-    async function loadProducts() {
+    async function loadData() {
       setLoading(true);
+      const config = await getSiteConfig();
+      setSiteConfig(config);
       const products = await getProducts();
       const maxProductPrice = Math.ceil(Math.max(...products.map(p => p.price))) || 1000;
       setAllProducts(products);
       setPriceRange([0, maxProductPrice]);
       setLoading(false);
     }
-    loadProducts();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -91,6 +94,10 @@ function ProductsComponent() {
           ))}
       </div>
   );
+
+  if (loading || !siteConfig) {
+      return <ProductDetailSkeleton />;
+  }
 
   return (
     <div className="container mx-auto px-2 py-2">

@@ -16,17 +16,24 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
-import { siteConfig } from '@/config/site';
 import { useWishlist } from '@/context/wishlist-context';
+import { getSiteConfig, type MergedSiteConfig } from '@/config/site';
 
 export default function Header() {
   const { itemCount } = useCart();
   const { wishlistCount } = useWishlist();
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
+    const fetchConfig = async () => {
+      const config = await getSiteConfig();
+      setSiteConfig(config);
+    }
+    fetchConfig();
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 80);
     };
@@ -36,13 +43,18 @@ export default function Header() {
     };
   }, []);
 
+  if (!siteConfig) {
+      // You can return a loading state or a placeholder header here
+      return <header className="w-full bg-[#0d2253] text-white h-40 animate-pulse"></header>;
+  }
+
   const topBarLinks = [
-      { href: "tel:16810", label: "16810", icon: Phone },
-      { href: "mailto:info@ryans.com", label: "info@ryans.com", icon: Mail },
+      { href: `tel:${siteConfig.phone}`, label: siteConfig.phone, icon: Phone },
+      { href: `mailto:${siteConfig.email}`, label: siteConfig.email, icon: Mail },
       { href: "/contact", label: "Contact", icon: User },
       { href: "/offer", label: "Offer", icon: Tag },
-      { href: "#", label: "New Arrival", icon: Shirt },
-      { href: "#", label: "Store", icon: Store },
+      { href: "/products", label: "New Arrival", icon: Shirt },
+      { href: "/about", label: "Store", icon: Store },
   ]
 
   const RightIcons = () => (
@@ -138,6 +150,7 @@ export default function Header() {
           <div className="container hidden h-10 max-w-screen-2xl items-center justify-end gap-6 text-sm md:flex">
               {topBarLinks.map(link => {
                   const Icon = link.icon;
+                  if (!link.label) return null;
                   return (
                       <Link key={link.label} href={link.href} className="flex items-center gap-2 hover:text-primary transition-colors">
                           <Icon className="h-4 w-4" />

@@ -1,9 +1,11 @@
+
 import { NextRequest, NextResponse } from 'next/server';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig } from '@/config/site';
 import nodemailer from 'nodemailer';
 
 export async function POST(req: NextRequest) {
   const { name, email, subject, message } = await req.json();
+  const siteConfig = await getSiteConfig();
 
   const gmailUser = process.env.GMAIL_USER;
   const gmailPass = process.env.GMAIL_PASS;
@@ -11,6 +13,13 @@ export async function POST(req: NextRequest) {
   if (!gmailUser || !gmailPass || gmailUser === 'your-email@gmail.com') {
     console.error('Gmail credentials are not configured in .env file.');
     return NextResponse.json({ error: 'Email service is not configured. Please set up GMAIL_USER and GMAIL_PASS in your environment variables.' }, { status: 500 });
+  }
+  
+  const adminEmail = siteConfig.email;
+
+  if (!adminEmail) {
+    console.error('Admin email is not configured in site settings.');
+    return NextResponse.json({ error: 'Recipient email is not configured.' }, { status: 500 });
   }
 
   const transporter = nodemailer.createTransport({
@@ -23,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   const mailOptions = {
     from: `"${siteConfig.name}" <${gmailUser}>`,
-    to: gmailUser, // Send to your own email
+    to: adminEmail, // Send to your own email
     replyTo: email, // Set customer's email as reply-to
     subject: `New Contact Form: ${subject}`,
     html: `

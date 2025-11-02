@@ -11,7 +11,7 @@ import { useCart } from '@/context/cart-context';
 import { ShoppingCart, CheckCircle, Heart, Share2, Minus, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/lib/types';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 import { useWishlist } from '@/context/wishlist-context';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,9 +30,16 @@ function ProductDetail({ params }: { params: { id: string } }) {
     const [quantity, setQuantity] = useState(1);
     const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
     const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
+    const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
     const { toast } = useToast();
 
     useEffect(() => {
+        const fetchConfig = async () => {
+            const config = await getSiteConfig();
+            setSiteConfig(config);
+        };
+        fetchConfig();
+        
         const findProduct = async () => {
             const foundProduct = await getProductById(params.id);
             setProduct(foundProduct);
@@ -103,7 +110,7 @@ function ProductDetail({ params }: { params: { id: string } }) {
         notFound();
     }
     
-    if (product === null) {
+    if (product === null || !siteConfig) {
         return <ProductDetailSkeleton />;
     }
     
