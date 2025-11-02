@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
 import { useWishlist } from '@/context/wishlist-context';
 import { getSiteConfig, type MergedSiteConfig } from '@/config/site';
+import { getIcon } from '@/lib/icons';
 
 export default function Header() {
   const { itemCount } = useCart();
@@ -47,15 +48,6 @@ export default function Header() {
       // You can return a loading state or a placeholder header here
       return <header className="w-full bg-[#0d2253] text-white h-40 animate-pulse"></header>;
   }
-
-  const topBarLinks = [
-      { href: `tel:${siteConfig.phone}`, label: siteConfig.phone, icon: Phone },
-      { href: `mailto:${siteConfig.email}`, label: siteConfig.email, icon: Mail },
-      { href: "/contact", label: "Contact", icon: User },
-      { href: "/offer", label: "Offer", icon: Tag },
-      { href: "/products", label: "New Arrival", icon: Shirt },
-      { href: "/about", label: "Store", icon: Store },
-  ]
 
   const RightIcons = () => (
     <div className="flex flex-1 items-center justify-end">
@@ -148,12 +140,12 @@ export default function Header() {
       <header className="w-full bg-[#0d2253] text-white">
         <div className="border-b border-gray-700">
           <div className="container hidden h-10 max-w-screen-2xl items-center justify-end gap-6 text-sm md:flex">
-              {topBarLinks.map(link => {
-                  const Icon = link.icon;
+              {siteConfig.topBarLinks.map(link => {
+                  const Icon = getIcon(link.icon);
                   if (!link.label) return null;
                   return (
                       <Link key={link.label} href={link.href} className="flex items-center gap-2 hover:text-primary transition-colors">
-                          <Icon className="h-4 w-4" />
+                          {Icon && <Icon className="h-4 w-4" />}
                           <span>{link.label}</span>
                       </Link>
                   )

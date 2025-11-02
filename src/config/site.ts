@@ -3,10 +3,8 @@ import { getSiteSettings } from '@/lib/settings';
 import type { SiteSettings, ProductCategory } from "@/lib/types";
 
 // Import static JSON files
-import nav from './nav.json';
 import socials from './socials.json';
 import footer from './footer.json';
-import banners from './banners.json';
 import home from './home-page.json';
 import product from './product-page.json';
 import offers from './offers.json';
@@ -20,11 +18,12 @@ export type MergedSiteConfig = {
     currency: string;
     logoImageUrl?: string;
     logoType: 'text' | 'image';
-    navLinks: typeof nav.navLinks;
+    navLinks: { href: string; label: string; }[];
+    topBarLinks: { href: string; label: string; icon: string; }[];
     socialLinks: typeof socials.socialLinks;
     footerLinks: typeof footer.footerLinks;
     contactInfo: { title: string; value: string; icon: string; }[];
-    heroBanners: typeof banners.heroBanners;
+    heroBanners: { id: string; imageUrl: string; description: string; imageHint: string; }[];
     topCategories: typeof home.topCategories;
     productCategories: ProductCategory[];
     topBrands: typeof home.topBrands;
@@ -48,6 +47,26 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     // Fetch dynamic settings from Google Sheet
     const dynamicSettings = await getSiteSettings();
 
+    // Helper to parse menu strings (e.g., "Home:/,About:/about")
+    const parseMenu = (menuString: string | undefined) => {
+        if (!menuString) return [];
+        return menuString.split(',').map(item => {
+            const [label, href] = item.split(':');
+            return { label: label.trim(), href: href ? href.trim() : '#' };
+        });
+    };
+    
+    // Helper to parse slider strings
+    const parseSlider = (sliderString: string | undefined) => {
+        if (!sliderString) return [];
+        return sliderString.split(',').map((url, index) => ({
+            id: `slider-${index + 1}`,
+            imageUrl: url.trim(),
+            description: `Slider image ${index + 1}`,
+            imageHint: 'banner image'
+        }));
+    };
+
     // Start with default values from JSON files
     const config: MergedSiteConfig = {
         // Defaults from static files or hardcoded
@@ -56,10 +75,15 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         currency: dynamicSettings.currencysymbol || '$',
         logoType: dynamicSettings.logo ? 'image' : 'text',
         logoImageUrl: dynamicSettings.logo || undefined,
-        navLinks: nav.navLinks,
+        navLinks: parseMenu(dynamicSettings.headermenu),
+        topBarLinks: parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})),
         socialLinks: socials.socialLinks.map(link => {
-            if (dynamicSettings.socialMedia && link.name.toLowerCase() === 'facebook') {
-                return { ...link, href: `https://facebook.com/${dynamicSettings.socialMedia}`};
+            const socialKey = link.name.toLowerCase();
+            if (dynamicSettings[socialKey]) {
+                const url = socialKey === 'whatsapp' 
+                    ? `https://wa.me/${(dynamicSettings[socialKey] as string).replace(/\D/g, '')}`
+                    : `https://${socialKey}.com/${dynamicSettings[socialKey]}`;
+                return { ...link, href: url };
             }
             return link;
         }),
@@ -69,7 +93,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             { title: "Phone", value: dynamicSettings.phone || contact.contactInfo.find(c => c.title === 'Phone')?.value || '', icon: "Phone" },
             { title: "Office", value: dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '', icon: "MapPin" }
         ],
-        heroBanners: banners.heroBanners,
+        heroBanners: parseSlider(dynamicSettings.Slider),
         topCategories: home.topCategories,
         productCategories: product.productCategories as ProductCategory[],
         topBrands: home.topBrands,

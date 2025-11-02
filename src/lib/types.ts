@@ -53,4 +53,7 @@ export type SiteSettings = {
     currencysymbol?: string;
     shippingInsideCity?: number;
     shippingOutsideCity?: number;
+    topmenu?: string;
+    headermenu?: string;
+    Slider?: string;
 };
