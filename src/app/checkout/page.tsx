@@ -31,6 +31,17 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
+    // This effect runs when the user comes back to this page.
+    // If we find our flag in session storage, it means they were probably sent to mail/whatsapp.
+    // We then redirect them to the confirmation page and clear the flag.
+    if (sessionStorage.getItem('order_redirect')) {
+      sessionStorage.removeItem('order_redirect');
+      clearCart();
+      router.push('/order-confirmation');
+    }
+  }, [router, clearCart]);
+
+  useEffect(() => {
     setShippingOption(selectedShipping);
   }, [selectedShipping, setShippingOption]);
 
@@ -50,6 +61,55 @@ export default function CheckoutPage() {
   const selectedPaymentMethodDetails = useMemo(() => {
       return siteConfig.checkout.paymentMethods.find(method => method.name === paymentMethod)
   }, [paymentMethod]);
+
+  const itemsSummary = useMemo(() => {
+    return cartItems.map(item => 
+        `${item.name} (x${item.quantity})` +
+        `${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}` +
+        `${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}`
+    ).join(',\n');
+  }, [cartItems]);
+
+  const whatsappMessage = useMemo(() => {
+    const message = `
+Hello, I'd like to place an order.
+*Customer Details:*
+Name: ${name}
+Mobile: ${mobile}
+Address: ${address}
+Email: ${email}
+*Order Items:*
+${itemsSummary}
+*Summary:*
+Subtotal: ${siteConfig.currency}${subtotal.toFixed(2)}
+Shipping: ${siteConfig.currency}${shippingFee.toFixed(2)}
+Total: ${siteConfig.currency}${total.toFixed(2)}
+Payment Method: ${paymentMethod}
+Thank you!
+`;
+    return encodeURIComponent(message.trim());
+  }, [name, mobile, address, email, itemsSummary, subtotal, shippingFee, total, paymentMethod]);
+  
+  const subject = `New Order from ${name} - ${new Date().toLocaleDateString()}`;
+
+  const gmailComposeLink = useMemo(() => {
+    const body = `
+New Order Received
+Customer Details:
+- Name: ${name}
+- Email: ${email}
+- Mobile: ${mobile}
+- Address: ${address}
+Order Items:
+${itemsSummary}
+Summary:
+- Subtotal: ${siteConfig.currency}${subtotal.toFixed(2)}
+- Shipping Fee: ${siteConfig.currency}${shippingFee.toFixed(2)}
+- Total: ${siteConfig.currency}${total.toFixed(2)}
+- Payment Method: ${paymentMethod}
+`;
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${siteConfig.checkout.contact.email}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }, [name, email, mobile, address, itemsSummary, subtotal, shippingFee, total, paymentMethod, subject]);
 
   const handlePlaceOrder = async () => {
     if (!isFormValid) {
@@ -81,6 +141,7 @@ export default function CheckoutPage() {
     };
 
     try {
+        // We still send the automated email as a reliable backup
         const response = await fetch('/api/send-order-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -90,21 +151,26 @@ export default function CheckoutPage() {
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.details || 'Something went wrong.');
+            // If email fails, we don't block the user, just log it.
+            console.error("Automated email failed:", result.details || 'Something went wrong.');
         }
 
-        clearCart();
-        router.push('/order-confirmation');
-
     } catch (error: any) {
-        console.error("Failed to place order:", error);
-        toast({
-            title: "Order Failed",
-            description: error.message || "We couldn't process your order. Please try again.",
-            variant: "destructive",
-        });
+        console.error("Failed to send automated email:", error);
     } finally {
-        setIsSubmitting(false);
+        // Set a flag before redirecting away from our site
+        sessionStorage.setItem('order_redirect', 'true');
+
+        // Redirect in the same tab
+        const preferWhatsapp = true; // or based on user choice
+        if(preferWhatsapp) {
+            window.location.href = `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${whatsappMessage}`;
+        } else {
+             window.location.href = gmailComposeLink;
+        }
+
+        // The user will be redirected back and the useEffect at the top will handle the rest.
+        // We don't set isSubmitting to false here as we are navigating away.
     }
   };
   
@@ -318,5 +384,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
