@@ -66,7 +66,7 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
         const lines = parseCSV(csv);
         
         return lines.map((values, index) => {
-             // Columns: Name, Category, Price, Description, Size, Color, Tag, Brand, Stock, Availability, Thumbnail, Image1, Image2
+             // Columns: 0:Name, 1:Category, 2:Price, 3:Description, 4:Size, 5:Color, 6:Tag, 7:Brand, 8:Stock, 9:Availability, 10:Thumbnail, 11:Image1, 12:Image2
              const [name, category, price, description, size, color, tag, brand, stock, availability, thumbnail, image1, image2] = values;
              
              const product: Product = {
@@ -118,7 +118,10 @@ async function initializeProducts(): Promise<Product[]> {
         
         // Deduplicate products based on their ID
         const uniqueProducts = new Map<string, Product>();
+        let i = 0;
         for (const product of allProducts) {
+            const id = `product_${i++}`;
+            product.id = id;
             if (!uniqueProducts.has(product.id)) {
                 uniqueProducts.set(product.id, product);
             }
