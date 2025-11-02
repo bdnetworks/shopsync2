@@ -2,28 +2,37 @@
 import type { Product } from './types';
 import categories from '@/config/categories.json';
 
-// A more robust CSV parser that handles quoted fields.
+// A more robust CSV parser that handles quoted fields and commas within fields.
 function parseCSV(csv: string): string[][] {
     const lines = csv.split('\n');
     const result: string[][] = [];
     for (const line of lines) {
         if (!line.trim()) continue;
+        
         const values: string[] = [];
         let currentField = '';
         let inQuotes = false;
+
         for (let i = 0; i < line.length; i++) {
             const char = line[i];
+
             if (char === '"') {
-                inQuotes = !inQuotes;
+                // If the next character is also a quote, it's an escaped quote
+                if (inQuotes && line[i+1] === '"') {
+                    currentField += '"';
+                    i++; // Skip the next quote
+                } else {
+                    inQuotes = !inQuotes;
+                }
             } else if (char === ',' && !inQuotes) {
-                values.push(currentField.trim());
+                values.push(currentField);
                 currentField = '';
             } else {
                 currentField += char;
             }
         }
-        values.push(currentField.trim());
-        result.push(values);
+        values.push(currentField); // Add the last field
+        result.push(values.map(v => v.trim()));
     }
     return result;
 }
@@ -66,8 +75,6 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
             const name = values[headerMap['Name']];
             const price = parseFloat(values[headerMap['Price']]);
             const thumbnail = values[headerMap['Thumbnail']];
-            const category = values[headerMap['Category']];
-            const brand = values[headerMap['Brand']];
 
             // Basic validation: name, price and a valid thumbnail URL are required
             if (!name || isNaN(price) || !thumbnail) {
@@ -76,18 +83,20 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
              try {
                 new URL(thumbnail); // Validate URL
             } catch (e) {
-                console.error(`Invalid thumbnail URL for product '${name}': ${thumbnail}`);
-                return null;
+                console.warn(`Invalid thumbnail URL for product '${name}': ${thumbnail}`);
+                return null; // Skip products with invalid thumbnail URLs
             }
 
-            const productId = `${name.replace(/\s+/g, '-').toLowerCase()}-${(brand || 'item').replace(/\s+/g, '-').toLowerCase()}`;
+            const category = values[headerMap['Category']] || 'Products';
+            const brand = values[headerMap['Brand']];
+            const productId = `${name.replace(/\s+/g, '-').toLowerCase()}-${(brand || category || 'item').replace(/\s+/g, '-').toLowerCase()}`;
 
              const product: Product = {
                 id: productId,
                 name: name,
                 description: values[headerMap['Description']] || '',
                 price: price,
-                category: (category as any) || 'Products',
+                category: (category as any),
                 image: {
                     id: `${productId}-img`,
                     src: thumbnail,
@@ -99,7 +108,7 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
                 sizes: values[headerMap['Size']] ? values[headerMap['Size']].split(',').map(s => s.trim()) : undefined,
                 brand: brand,
                 tags: values[headerMap['Tag']] ? values[headerMap['Tag']].split(',').map(t => t.trim()) : undefined,
-                stock: parseInt(values[headerMap['Stock']]) || 0,
+                stock: parseInt(values[headerMap['Stock']], 10) || 0,
                 availability: values[headerMap['Availability']],
             };
 
@@ -113,7 +122,13 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
 }
 
 
+let productsCache: Product[] | null = null;
+
 async function initializeProducts(): Promise<Product[]> {
+    if (productsCache) {
+        return productsCache;
+    }
+
     const fetchPromises = categories.map(category => fetchAndParseSheet(category.sheetUrl));
     
     try {
@@ -122,7 +137,8 @@ async function initializeProducts(): Promise<Product[]> {
         
         // Simple deduplication based on a generated ID
         const uniqueProducts = Array.from(new Map(allProducts.map(p => [p.id, p])).values());
-
+        
+        productsCache = uniqueProducts;
         return uniqueProducts;
 
     } catch (error) {
