@@ -18,10 +18,7 @@ export default function OrderConfirmationPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            Your order details have been sent for processing. We will contact you shortly to confirm the delivery.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            If you have sent the order via email, please make sure you have clicked the "Send" button in your email client.
+            Your order has been successfully placed. You will receive a confirmation email shortly with the order details.
           </p>
           <Button asChild className="mt-6">
             <Link href="/products">Continue Shopping</Link>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,15 +14,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Mail, Terminal } from 'lucide-react';
+import { Loader2, Terminal } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getIcon } from '@/lib/icons';
 
 export default function CheckoutPage() {
   const { cartItems, subtotal, total, isCartLoading, shippingFee, setShippingOption, clearCart } = useCart();
   const router = useRouter();
   const { toast } = useToast();
-  const WhatsAppIcon = getIcon('WhatsApp');
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -32,17 +30,6 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState(siteConfig.checkout.paymentMethods[0].name);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  useEffect(() => {
-    // This effect runs when the user comes back to this page.
-    // If we find our flag in session storage, it means they were probably sent to mail/whatsapp.
-    // We then redirect them to the confirmation page and clear the flag.
-    if (sessionStorage.getItem('order_redirect')) {
-      sessionStorage.removeItem('order_redirect');
-      clearCart();
-      router.push('/order-confirmation');
-    }
-  }, [router, clearCart]);
-
   useEffect(() => {
     setShippingOption(selectedShipping);
   }, [selectedShipping, setShippingOption]);
@@ -60,60 +47,9 @@ export default function CheckoutPage() {
 
   const isFormValid = name && email && mobile && address && paymentMethod;
   
-  const selectedPaymentMethodDetails = useMemo(() => {
-      return siteConfig.checkout.paymentMethods.find(method => method.name === paymentMethod)
-  }, [paymentMethod]);
+  const selectedPaymentMethodDetails = siteConfig.checkout.paymentMethods.find(method => method.name === paymentMethod);
 
-  const itemsSummary = useMemo(() => {
-    return cartItems.map(item => 
-        `${item.name} (x${item.quantity})` +
-        `${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}` +
-        `${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}`
-    ).join(',\n');
-  }, [cartItems]);
-
-  const whatsappMessage = useMemo(() => {
-    const message = `
-Hello, I'd like to place an order.
-*Customer Details:*
-Name: ${name}
-Mobile: ${mobile}
-Address: ${address}
-Email: ${email}
-*Order Items:*
-${itemsSummary}
-*Summary:*
-Subtotal: ${siteConfig.currency}${subtotal.toFixed(2)}
-Shipping: ${siteConfig.currency}${shippingFee.toFixed(2)}
-Total: ${siteConfig.currency}${total.toFixed(2)}
-Payment Method: ${paymentMethod}
-Thank you!
-`;
-    return encodeURIComponent(message.trim());
-  }, [name, mobile, address, email, itemsSummary, subtotal, shippingFee, total, paymentMethod]);
-  
-  const subject = `New Order from ${name} - ${new Date().toLocaleDateString()}`;
-
-  const gmailComposeLink = useMemo(() => {
-    const body = `
-New Order Received
-Customer Details:
-- Name: ${name}
-- Email: ${email}
-- Mobile: ${mobile}
-- Address: ${address}
-Order Items:
-${itemsSummary}
-Summary:
-- Subtotal: ${siteConfig.currency}${subtotal.toFixed(2)}
-- Shipping Fee: ${siteConfig.currency}${shippingFee.toFixed(2)}
-- Total: ${siteConfig.currency}${total.toFixed(2)}
-- Payment Method: ${paymentMethod}
-`;
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=${siteConfig.checkout.contact.email}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  }, [name, email, mobile, address, itemsSummary, subtotal, shippingFee, total, paymentMethod, subject]);
-
-  const handlePlaceOrder = async (method: 'whatsapp' | 'gmail') => {
+  const handlePlaceOrder = async () => {
     if (!isFormValid) {
         toast({
             title: "Incomplete Information",
@@ -152,19 +88,26 @@ Summary:
         const result = await response.json();
 
         if (!response.ok) {
-            console.error("Automated email failed:", result.details || 'Something went wrong.');
+            throw new Error(result.details || 'Failed to process order. Please try again.');
         }
+
+        toast({
+            title: "Order Placed!",
+            description: "Your order has been successfully placed. You will receive a confirmation email shortly.",
+        });
+
+        clearCart();
+        router.push('/order-confirmation');
 
     } catch (error: any) {
-        console.error("Failed to send automated email:", error);
+        console.error("Failed to place order:", error);
+        toast({
+            title: "Order Failed",
+            description: error.message || "We couldn't place your order. Please try again later.",
+            variant: "destructive",
+        });
     } finally {
-        sessionStorage.setItem('order_redirect', 'true');
-
-        if (method === 'whatsapp') {
-            window.location.href = `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${whatsappMessage}`;
-        } else if (method === 'gmail') {
-             window.location.href = gmailComposeLink;
-        }
+        setIsSubmitting(false);
     }
   };
   
@@ -323,14 +266,16 @@ Summary:
                     <CardTitle className="font-headline">Place Your Order</CardTitle>
                     <CardDescription>Your cart total is {siteConfig.currency}{total.toFixed(2)}</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Button onClick={() => handlePlaceOrder('whatsapp')} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (WhatsAppIcon && <WhatsAppIcon className="mr-2 h-5 w-5" />)}
-                        Order via WhatsApp
-                    </Button>
-                     <Button onClick={() => handlePlaceOrder('gmail')} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-5 w-5" />}
-                        Order via Gmail
+                <CardContent>
+                    <Button onClick={handlePlaceOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing Order...
+                            </>
+                        ) : (
+                          'Place Order Now'
+                        )}
                     </Button>
                 </CardContent>
                 {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
@@ -376,6 +321,3 @@ Summary:
     </div>
   );
 }
-
-
-    
