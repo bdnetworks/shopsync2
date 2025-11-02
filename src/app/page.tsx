@@ -36,7 +36,8 @@ export default function Home() {
     loadData();
   }, []);
 
-  const collectionsProducts = allProducts.slice(0, 12);
+  // Get the last 6 products as "latest"
+  const latestProducts = allProducts.slice(-6).reverse();
 
   return (
     <div className="flex flex-col bg-background">
@@ -94,13 +95,13 @@ export default function Home() {
       <section className="pt-2.5 pb-6 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Collections</h2>
+            <h2 className="text-2xl font-bold">Latest</h2>
             <Button asChild variant="outline">
               <Link href="/products">View All</Link>
             </Button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
-            {collectionsProducts.map((product) => (
+            {latestProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
