@@ -2,34 +2,28 @@
 import type { Product } from './types';
 import categories from '@/config/categories.json';
 
+// A more robust CSV parser that handles quoted fields.
 function parseCSV(csv: string): string[][] {
     const lines = csv.split('\n');
     const result: string[][] = [];
-    const headers = lines[0].split(',');
-
-    for (let i = 1; i < lines.length; i++) {
-        if (!lines[i]) continue; // Skip empty lines
-
-        const obj: string[] = [];
-        let currentLine = lines[i];
+    for (const line of lines) {
+        if (!line.trim()) continue;
+        const values: string[] = [];
+        let currentField = '';
         let inQuotes = false;
-        let field = '';
-
-        for (let j = 0; j < currentLine.length; j++) {
-            const char = currentLine[j];
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
             if (char === '"') {
                 inQuotes = !inQuotes;
             } else if (char === ',' && !inQuotes) {
-                obj.push(field.trim());
-                field = '';
+                values.push(currentField.trim());
+                currentField = '';
             } else {
-                field += char;
+                currentField += char;
             }
         }
-        obj.push(field.trim());
-        if(obj.length === headers.length) {
-            result.push(obj);
-        }
+        values.push(currentField.trim());
+        result.push(values);
     }
     return result;
 }
@@ -46,46 +40,70 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
         const csv = await response.text();
         const lines = parseCSV(csv);
         
-        return lines.map((values) => {
-             // Columns: Name,Category,Price,Description,Size,Color,Tag,Brand,Stock,Availability,Thumbnail,Image1,Image2
-             if (values.length < 11) return null; // Ensure there are enough columns
+        if (lines.length < 2) return []; // Should have header and at least one data row
 
-             const [name, category, price, description, size, color, tag, brand, stock, availability, thumbnail, image1, image2] = values;
-             
-             const productId = `${name.replace(/\s+/g, '-').toLowerCase()}-${brand.replace(/\s+/g, '-').toLowerCase()}`;
+        const headers = lines[0].map(h => h.trim());
+        const dataRows = lines.slice(1);
+
+        // Map headers to their indices
+        const headerMap: { [key: string]: number } = {};
+        headers.forEach((header, index) => {
+            headerMap[header] = index;
+        });
+
+        // Check for essential columns
+        const requiredColumns = ['Name', 'Price', 'Thumbnail'];
+        for (const col of requiredColumns) {
+            if (headerMap[col] === undefined) {
+                console.error(`Missing required column in Google Sheet: ${col}`);
+                return [];
+            }
+        }
+
+        return dataRows.map((values) => {
+            if (values.length < headers.length) return null; // Skip malformed rows
+            
+            const name = values[headerMap['Name']];
+            const price = parseFloat(values[headerMap['Price']]);
+            const thumbnail = values[headerMap['Thumbnail']];
+            const category = values[headerMap['Category']];
+            const brand = values[headerMap['Brand']];
+
+            // Basic validation: name, price and a valid thumbnail URL are required
+            if (!name || isNaN(price) || !thumbnail) {
+                return null;
+            }
+             try {
+                new URL(thumbnail); // Validate URL
+            } catch (e) {
+                console.error(`Invalid thumbnail URL for product '${name}': ${thumbnail}`);
+                return null;
+            }
+
+            const productId = `${name.replace(/\s+/g, '-').toLowerCase()}-${(brand || 'item').replace(/\s+/g, '-').toLowerCase()}`;
 
              const product: Product = {
                 id: productId,
                 name: name,
-                description: description,
-                price: parseFloat(price),
-                category: category as any,
+                description: values[headerMap['Description']] || '',
+                price: price,
+                category: (category as any) || 'Products',
                 image: {
                     id: `${productId}-img`,
                     src: thumbnail,
                     alt: name,
-                    hint: tag || category,
+                    hint: values[headerMap['Tag']] || category,
                 },
-                gallery: [image1, image2].filter(Boolean),
-                colors: color ? color.split(',').map(c => c.trim()) : undefined,
-                sizes: size ? size.split(',').map(s => s.trim()) : undefined,
+                gallery: [values[headerMap['Image1']], values[headerMap['Image2']]].filter(Boolean),
+                colors: values[headerMap['Color']] ? values[headerMap['Color']].split(',').map(c => c.trim()) : undefined,
+                sizes: values[headerMap['Size']] ? values[headerMap['Size']].split(',').map(s => s.trim()) : undefined,
                 brand: brand,
-                tags: tag ? tag.split(',').map(t => t.trim()) : undefined,
-                stock: parseInt(stock) || 0,
-                availability: availability,
+                tags: values[headerMap['Tag']] ? values[headerMap['Tag']].split(',').map(t => t.trim()) : undefined,
+                stock: parseInt(values[headerMap['Stock']]) || 0,
+                availability: values[headerMap['Availability']],
             };
 
-            // Basic validation: name, price and a valid thumbnail URL are required
-            if (product.name && !isNaN(product.price) && product.image.src) {
-                 try {
-                    new URL(product.image.src); // Validate URL
-                    return product;
-                } catch (e) {
-                    console.error(`Invalid thumbnail URL for product '${product.name}': ${product.image.src}`);
-                    return null;
-                }
-            }
-            return null;
+            return product;
         }).filter((p): p is Product => p !== null);
 
     } catch (error) {
