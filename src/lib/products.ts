@@ -60,7 +60,7 @@ function parseCSV(csv: string): string[][] {
 
 
 async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
-    if (!sheetUrl) return [];
+    if (!sheetUrl || sheetUrl.includes('YOUR_')) return [];
     try {
         const response = await fetch(sheetUrl, { cache: 'no-store' });
         if (!response.ok) {
@@ -157,9 +157,6 @@ export const getFeaturedSections = async (): Promise<FeaturedSection[]> => {
 };
 
 export const getTopCategories = async (): Promise<TopCategory[]> => {
-    if (!categoriesConfig.topCategoriesSheetUrl) {
-        return [];
-    }
     const rows = await fetchAndParseSheet(categoriesConfig.topCategoriesSheetUrl);
 
     return rows.map(row => {
@@ -173,3 +170,18 @@ export const getTopCategories = async (): Promise<TopCategory[]> => {
         };
     }).filter((category): category is TopCategory => category !== null);
 };
+
+
+export const getTopBrands = async (): Promise<{name: string; imageUrl: string; imageHint: string}[]> => {
+    const rows = await fetchAndParseSheet(categoriesConfig.topBrandsSheetUrl);
+    return rows.map(row => {
+        if (!row.name || !row.imageUrl) {
+            return null;
+        }
+        return {
+            name: row.name,
+            imageUrl: row.imageUrl,
+            imageHint: row.imageHint || `${row.name.toLowerCase()} logo`,
+        };
+    }).filter((brand): brand is {name: string; imageUrl: string; imageHint: string} => brand !== null);
+}

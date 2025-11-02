@@ -1,12 +1,11 @@
 
 import { getSiteSettings } from '@/lib/settings';
 import type { SiteSettings, ProductCategory, TopCategory } from "@/lib/types";
-import { getFeaturedSections, getTopCategories } from '@/lib/products';
+import { getFeaturedSections, getTopCategories, getTopBrands } from '@/lib/products';
 
 // Import static JSON files
 import socials from './socials.json';
 import footer from './footer.json';
-import home from './home-page.json';
 import product from './product-page.json';
 import offers from './offers.json';
 import contact from './contact.json';
@@ -27,7 +26,7 @@ export type MergedSiteConfig = {
     heroBanners: { id: string; imageUrl: string; description: string; imageHint: string; }[];
     topCategories: TopCategory[];
     productCategories: ProductCategory[];
-    topBrands: typeof home.topBrands;
+    topBrands: {name: string, imageUrl: string, imageHint: string}[];
     offers: typeof offers.offers;
     checkout: {
       shippingFee: { insideDhaka: number; outsideDhaka: number; };
@@ -53,8 +52,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         if (!menuString) return [];
         return menuString.split(',').map(item => {
             const [label, href] = item.split(':');
-            return { label: label.trim(), href: href ? href.trim() : '#' };
-        });
+            return { label: label ? label.trim() : '', href: href ? href.trim() : '#' };
+        }).filter(item => item.label);
     };
     
     // Helper to parse slider strings
@@ -65,13 +64,17 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             imageUrl: url.trim(),
             description: `Slider image ${index + 1}`,
             imageHint: 'banner image'
-        }));
+        })).filter(item => item.imageUrl);
     };
-    
-    const [featuredSections, topCategories] = await Promise.all([
+
+    const [featuredSections, topCategories, topBrands] = await Promise.all([
         getFeaturedSections(),
-        getTopCategories()
+        getTopCategories(),
+        getTopBrands()
     ]);
+    
+    const [insideDhaka, outsideDhaka] = (dynamicSettings.deliveryFee || '0,0').split(',').map(Number);
+
 
     // Start with default values from JSON files
     const config: MergedSiteConfig = {
@@ -104,12 +107,12 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         topCategories: topCategories,
         featuredSections: featuredSections,
         productCategories: product.productCategories as ProductCategory[],
-        topBrands: home.topBrands,
+        topBrands: topBrands,
         offers: offers.offers,
         checkout: {
             shippingFee: {
-                insideDhaka: typeof dynamicSettings.shippingInsideCity === 'number' ? dynamicSettings.shippingInsideCity : checkout.shippingFee.insideDhaka,
-                outsideDhaka: typeof dynamicSettings.shippingOutsideCity === 'number' ? dynamicSettings.shippingOutsideCity : checkout.shippingFee.outsideDhaka,
+                insideDhaka: !isNaN(insideDhaka) ? insideDhaka : checkout.shippingFee.insideDhaka,
+                outsideDhaka: !isNaN(outsideDhaka) ? outsideDhaka : checkout.shippingFee.outsideDhaka,
             },
             paymentMethods: checkout.paymentMethods,
             contact: {

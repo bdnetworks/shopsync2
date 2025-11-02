@@ -27,9 +27,9 @@ function HomePageSkeleton() {
                 <Skeleton className="h-8 w-48 mx-auto" />
                 <div className="grid grid-cols-5 md:grid-cols-10 gap-4 pt-4">
                     {[...Array(10)].map((_, i) => (
-                        <div key={i} className="flex flex-col items-center gap-2">
-                           <Skeleton key={i} className="w-16 h-16 rounded-full" />
-                           <Skeleton key={i} className="h-4 w-12" />
+                        <div key={`top-cat-skel-${i}`} className="flex flex-col items-center gap-2">
+                           <Skeleton className="w-16 h-16 rounded-full" />
+                           <Skeleton className="h-4 w-12" />
                         </div>
                     ))}
                 </div>
@@ -38,7 +38,7 @@ function HomePageSkeleton() {
                 <Skeleton className="h-8 w-32" />
                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                     {[...Array(6)].map((_, i) => (
-                         <div key={i} className="flex flex-col space-y-3">
+                         <div key={`latest-prod-skel-${i}`} className="flex flex-col space-y-3">
                             <Skeleton className="h-[225px] w-full rounded-xl" />
                             <div className="space-y-2">
                                 <Skeleton className="h-4 w-full" />
