@@ -7,7 +7,6 @@ function parseCSV(csv: string): string[][] {
     const lines: string[][] = [];
     if (!csv) return lines;
 
-    // Normalize line endings
     const csvNormalized = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const rows = csvNormalized.split('\n');
 
@@ -37,14 +36,14 @@ function parseCSV(csv: string): string[][] {
                 if (char === '"') {
                     inQuotedField = true;
                 } else if (char === ',') {
-                    line.push(field);
+                    line.push(field.trim());
                     field = '';
                 } else {
                     field += char;
                 }
             }
         }
-        line.push(field);
+        line.push(field.trim());
         lines.push(line);
     }
     

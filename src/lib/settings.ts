@@ -33,23 +33,24 @@ function parseCSV(csv: string): string[][] {
                 if (char === '"') {
                     inQuotedField = true;
                 } else if (char === ',') {
-                    line.push(field);
+                    line.push(field.trim());
                     field = '';
                 } else {
                     field += char;
                 }
             }
         }
-        line.push(field);
+        line.push(field.trim());
         lines.push(line);
     }
     return lines;
 }
 
 async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
-    if (!sheetUrl) return [];
+    if (!sheetUrl || sheetUrl.includes('YOUR_')) return [];
     try {
-        const response = await fetch(sheetUrl, { next: { revalidate: 60 } }); // Revalidate every 60 seconds
+        // Revalidate every 60 seconds. In a real app, you might want a longer interval.
+        const response = await fetch(sheetUrl, { next: { revalidate: 60 } }); 
         if (!response.ok) {
             console.error(`Failed to fetch sheet: ${response.statusText} for url: ${sheetUrl}`);
             return [];

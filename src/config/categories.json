@@ -2,8 +2,12 @@
 {
     "productCategories": [
         {
-            "name": "Products",
-            "sheetUrl": "YOUR_PRODUCTS_SHEET_URL_HERE"
+            "name": "Products1",
+            "sheetUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlxPN_QY2wJWBmDKWhSoF3EkOdSDS6XqBN2Ncx-jaAX4qMzUq4F9WSBjPtILrBJEXnK4UobyCEPese/pub?gid=190389532&single=true&output=csv"
+        },
+        {
+            "name": "Products2",
+            "sheetUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlxPN_QY2wJWBmDKWhSoF3EkOdSDS6XqBN2Ncx-jaAX4qMzUq4F9WSBjPtILrBJEXnK4UobyCEPese/pub?gid=65989352&single=true&output=csv"
         }
     ],
     "featuredSectionsSheetUrl": "YOUR_FEATURED_SECTIONS_SHEET_URL_HERE",
