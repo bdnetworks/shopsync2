@@ -25,14 +25,14 @@ function parseCSV(csv: string): string[][] {
                     inQuotes = !inQuotes;
                 }
             } else if (char === ',' && !inQuotes) {
-                values.push(currentField);
+                values.push(currentField.trim());
                 currentField = '';
             } else {
                 currentField += char;
             }
         }
-        values.push(currentField); // Add the last field
-        result.push(values.map(v => v.trim()));
+        values.push(currentField.trim()); // Add the last field
+        result.push(values);
     }
     return result;
 }
