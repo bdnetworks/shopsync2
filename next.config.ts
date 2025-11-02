@@ -45,6 +45,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'www.khaasfood.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: '6000-firebase-shopsync2-1761566564683.cluster-w5vd22whf5gmav2vgkomwtc4go.cloudworkstations.dev',
         port: '',
         pathname: '/**',
