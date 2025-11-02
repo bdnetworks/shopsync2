@@ -115,20 +115,20 @@ export default function CheckoutPage() {
     };
 
     try {
-        // First, send the email
+        // Attempt to send email, but don't block the order if it fails
         const emailResponse = await fetch('/api/send-order-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderDetailsForEmail)
         });
 
-        const emailResult = await emailResponse.json();
-
         if (!emailResponse.ok) {
-            throw new Error(emailResult.details || 'Failed to send order email.');
+            const emailResult = await emailResponse.json();
+            console.error("Could not send order email:", emailResult.details);
+            // Non-blocking: we can still proceed with the sheet update
         }
 
-        // Then, add the order to Google Sheet
+        // Proceed to add the order to Google Sheet
         const sheetResponse = await fetch('/api/add-to-sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -138,12 +138,14 @@ export default function CheckoutPage() {
         const sheetResult = await sheetResponse.json();
         
         if (!sheetResponse.ok || sheetResult.status !== 'success') {
+             // This is a critical failure, so we throw an error
              throw new Error(sheetResult.message || 'Failed to add order to Google Sheet.');
         }
 
+        // Success!
         toast({
             title: "Order Placed Successfully!",
-            description: "We've sent a confirmation email and your order has been recorded."
+            description: "Your order has been recorded. We'll be in touch shortly."
         });
 
         clearCart();
