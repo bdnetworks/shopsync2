@@ -26,11 +26,11 @@ function parseCSV(csv: string): string[][] {
             if (char === '"') {
                 inQuotes = true;
             } else if (char === ',') {
-                currentLine.push(field);
+                currentLine.push(field.trim());
                 field = '';
             } else if (char === '\n' || char === '\r') {
                 if(i > 0 && csv[i-1] !== '\n' && csv[i-1] !== '\r') {
-                    currentLine.push(field);
+                    currentLine.push(field.trim());
                     field = '';
                     lines.push(currentLine);
                     currentLine = [];
@@ -45,7 +45,7 @@ function parseCSV(csv: string): string[][] {
     }
 
     if (field || currentLine.length > 0) {
-        currentLine.push(field);
+        currentLine.push(field.trim());
         lines.push(currentLine);
     }
     
@@ -62,7 +62,6 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
             return [];
         }
         const csv = await response.text();
-        
         const lines = parseCSV(csv);
         
         return lines.map((values, index) => {
@@ -71,23 +70,23 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
              
              const product: Product = {
                 id: `product_${index + 1}`, // Generate a unique ID
-                name: name?.trim(),
-                description: description?.trim(),
-                price: parseFloat(price?.trim()),
-                category: category?.trim() as any,
+                name: name,
+                description: description,
+                price: parseFloat(price),
+                category: category as any,
                 image: {
                     id: `img_${index + 1}`,
-                    src: thumbnail?.trim(),
-                    alt: name?.trim(),
-                    hint: tag?.trim() || category?.trim(),
+                    src: thumbnail,
+                    alt: name,
+                    hint: tag || category,
                 },
-                gallery: [image1?.trim(), image2?.trim()].filter(Boolean) as string[],
-                colors: color?.trim() ? color.split(',').map(c => c.trim()) : undefined,
-                sizes: size?.trim() ? size.split(',').map(s => s.trim()) : undefined,
-                brand: brand?.trim(),
-                tags: tag?.trim() ? tag.split(',').map(t => t.trim()) : undefined,
-                stock: parseInt(stock?.trim()) || 0,
-                availability: availability?.trim(),
+                gallery: [image1, image2].filter(Boolean),
+                colors: color ? color.split(',').map(c => c.trim()) : undefined,
+                sizes: size ? size.split(',').map(s => s.trim()) : undefined,
+                brand: brand,
+                tags: tag ? tag.split(',').map(t => t.trim()) : undefined,
+                stock: parseInt(stock) || 0,
+                availability: availability,
             };
 
             // Basic validation
@@ -118,14 +117,13 @@ async function initializeProducts(): Promise<Product[]> {
         
         // Deduplicate products based on their ID
         const uniqueProducts = new Map<string, Product>();
-        let i = 0;
-        for (const product of allProducts) {
-            const id = `product_${i++}`;
+        allProducts.forEach((product, index) => {
+            const id = `product_${index + 1}`;
             product.id = id;
             if (!uniqueProducts.has(product.id)) {
                 uniqueProducts.set(product.id, product);
             }
-        }
+        });
         
         return Array.from(uniqueProducts.values());
 
