@@ -14,13 +14,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Terminal } from 'lucide-react';
+import { Loader2, Mail, Terminal } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getIcon } from '@/lib/icons';
 
 export default function CheckoutPage() {
   const { cartItems, subtotal, total, isCartLoading, shippingFee, setShippingOption, clearCart } = useCart();
   const router = useRouter();
   const { toast } = useToast();
+  const WhatsAppIcon = getIcon('WhatsApp');
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -111,7 +113,7 @@ Summary:
     return `https://mail.google.com/mail/?view=cm&fs=1&to=${siteConfig.checkout.contact.email}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }, [name, email, mobile, address, itemsSummary, subtotal, shippingFee, total, paymentMethod, subject]);
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = async (method: 'whatsapp' | 'gmail') => {
     if (!isFormValid) {
         toast({
             title: "Incomplete Information",
@@ -141,7 +143,6 @@ Summary:
     };
 
     try {
-        // We still send the automated email as a reliable backup
         const response = await fetch('/api/send-order-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -151,26 +152,19 @@ Summary:
         const result = await response.json();
 
         if (!response.ok) {
-            // If email fails, we don't block the user, just log it.
             console.error("Automated email failed:", result.details || 'Something went wrong.');
         }
 
     } catch (error: any) {
         console.error("Failed to send automated email:", error);
     } finally {
-        // Set a flag before redirecting away from our site
         sessionStorage.setItem('order_redirect', 'true');
 
-        // Redirect in the same tab
-        const preferWhatsapp = true; // or based on user choice
-        if(preferWhatsapp) {
+        if (method === 'whatsapp') {
             window.location.href = `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${whatsappMessage}`;
-        } else {
+        } else if (method === 'gmail') {
              window.location.href = gmailComposeLink;
         }
-
-        // The user will be redirected back and the useEffect at the top will handle the rest.
-        // We don't set isSubmitting to false here as we are navigating away.
     }
   };
   
@@ -329,16 +323,14 @@ Summary:
                     <CardTitle className="font-headline">Place Your Order</CardTitle>
                     <CardDescription>Your cart total is {siteConfig.currency}{total.toFixed(2)}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <Button onClick={handlePlaceOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Processing...
-                            </>
-                        ) : (
-                            'Place Order Now'
-                        )}
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Button onClick={() => handlePlaceOrder('whatsapp')} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (WhatsAppIcon && <WhatsAppIcon className="mr-2 h-5 w-5" />)}
+                        Order via WhatsApp
+                    </Button>
+                     <Button onClick={() => handlePlaceOrder('gmail')} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-5 w-5" />}
+                        Order via Gmail
                     </Button>
                 </CardContent>
                 {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
@@ -384,3 +376,6 @@ Summary:
     </div>
   );
 }
+
+
+    
