@@ -38,7 +38,7 @@ function parseCSV(csv: string): string[][] {
 async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
      if (!sheetUrl) return [];
     try {
-        const response = await fetch(sheetUrl, { cache: 'no-store' });
+        const response = await fetch(sheetUrl, { next: { revalidate: 5 } }); // Revalidate every 5 seconds
         if (!response.ok) {
             console.error(`Failed to fetch sheet: ${response.statusText} for url: ${sheetUrl}`);
             return [];
@@ -46,20 +46,22 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
         const csv = await response.text();
         const lines = parseCSV(csv);
         
-        return lines.map((values, index) => {
-             // Columns: 0:Name, 1:Category, 2:Price, 3:Description, 4:Size, 5:Color, 6:Tag, 7:Brand, 8:Stock, 9:Availability, 10:Thumbnail, 11:Image1, 12:Image2
+        return lines.map((values) => {
+             // Columns: Name,Category,Price,Description,Size,Color,Tag,Brand,Stock,Availability,Thumbnail,Image1,Image2
              if (values.length < 11) return null; // Ensure there are enough columns
 
              const [name, category, price, description, size, color, tag, brand, stock, availability, thumbnail, image1, image2] = values;
              
+             const productId = `${name.replace(/\s+/g, '-').toLowerCase()}-${brand.replace(/\s+/g, '-').toLowerCase()}`;
+
              const product: Product = {
-                id: `product_${Date.now()}_${index}`, // Generate a more unique ID
+                id: productId,
                 name: name,
                 description: description,
                 price: parseFloat(price),
                 category: category as any,
                 image: {
-                    id: `img_${Date.now()}_${index}`,
+                    id: `${productId}-img`,
                     src: thumbnail,
                     alt: name,
                     hint: tag || category,
@@ -79,7 +81,7 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<Product[]> {
                     new URL(product.image.src); // Validate URL
                     return product;
                 } catch (e) {
-                    // console.error(`Invalid thumbnail URL for product '${product.name}': ${product.image.src}`);
+                    console.error(`Invalid thumbnail URL for product '${product.name}': ${product.image.src}`);
                     return null;
                 }
             }
@@ -100,8 +102,10 @@ async function initializeProducts(): Promise<Product[]> {
         const productArrays = await Promise.all(fetchPromises);
         const allProducts = productArrays.flat();
         
-        // No need to deduplicate with more unique IDs
-        return allProducts;
+        // Simple deduplication based on a generated ID
+        const uniqueProducts = Array.from(new Map(allProducts.map(p => [p.id, p])).values());
+
+        return uniqueProducts;
 
     } catch (error) {
         console.error("Failed to initialize products from Google Sheets.", error);
