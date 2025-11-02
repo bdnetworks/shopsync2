@@ -12,23 +12,6 @@
         { "name": "CPU", "imageUrl": "https://picsum.photos/seed/cpu2-cat/80/80", "imageHint": "cpu icon" },
         { "name": "Camera", "imageUrl": "https://picsum.photos/seed/camera-cat/80/80", "imageHint": "camera icon" }
     ],
-    "featuredSections": [
-        {
-            "title": "Featured Laptops",
-            "category": "Laptop",
-            "productCount": 6
-        },
-        {
-            "title": "Gaming Zone",
-            "category": "Gaming",
-            "productCount": 6
-        },
-        {
-            "title": "Essential Accessories",
-            "category": "Accessories",
-            "productCount": 6
-        }
-    ],
     "topBrands": [
         {
             "name": "Apple",
