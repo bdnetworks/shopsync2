@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { siteConfig } from '@/config/site';
 import type { CartItem } from '@/lib/types';
+import nodemailer from 'nodemailer';
 
 interface OrderDetails {
     orderId: string;
@@ -21,8 +22,8 @@ interface OrderDetails {
     orderDate: string;
 }
 
-// Reusable function to send email via Elastic Email
-async function sendElasticEmail({ 
+// Reusable function to send email via Nodemailer
+async function sendNodemailerEmail({ 
     to, 
     subject, 
     bodyHtml, 
@@ -33,39 +34,33 @@ async function sendElasticEmail({
     bodyHtml: string, 
     replyTo?: string 
 }) {
-    const apiKey = process.env.ELASTIC_EMAIL_API_KEY;
-    // This MUST be a verified sender in your Elastic Email account.
-    // Using the admin email as the verified sender.
-    const fromEmail = "saakib.com@gmail.com"; 
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASS;
 
-    if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
-        throw new Error('Email service is not configured. Please set up ELASTIC_EMAIL_API_KEY in your environment variables.');
+    if (!gmailUser || !gmailPass || gmailUser === 'your-email@gmail.com') {
+        throw new Error('Email service is not configured. Please set up GMAIL_USER and GMAIL_PASS in your environment variables.');
     }
 
-    const formData = new URLSearchParams();
-    formData.append('apikey', apiKey);
-    formData.append('subject', subject);
-    formData.append('from', fromEmail);
-    formData.append('fromName', siteConfig.name);
-    if (replyTo) {
-        formData.append('replyTo', replyTo);
-    }
-    formData.append('to', to);
-    formData.append('bodyHtml', bodyHtml);
-    formData.append('isTransactional', 'true');
-
-    const response = await fetch('https://api.elasticemail.com/v2/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData,
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: gmailUser,
+          pass: gmailPass, // Use the App Password here
+        },
     });
 
-    const result = await response.json();
-    if (!result.success) {
-        console.error(`Elastic Email API Error for ${to}:`, result.error);
-        throw new Error(result.error || `Failed to send email to ${to}.`);
+    const mailOptions: nodemailer.SendMailOptions = {
+        from: `"${siteConfig.name}" <${gmailUser}>`,
+        to: to,
+        subject: subject,
+        html: bodyHtml,
+    };
+
+    if (replyTo) {
+        mailOptions.replyTo = replyTo;
     }
-    return result;
+
+    await transporter.sendMail(mailOptions);
 }
 
 function generateCustomerEmail(details: OrderDetails): string {
@@ -166,11 +161,15 @@ function generateAdminEmail(details: OrderDetails): string {
 export async function POST(req: NextRequest) {
   try {
     const orderDetails: OrderDetails = await req.json();
-    const adminEmail = "saakib.com@gmail.com";
+    const adminEmail = process.env.GMAIL_USER;
+
+    if (!adminEmail) {
+        throw new Error('Admin email (GMAIL_USER) is not configured.');
+    }
 
     // 1. Send confirmation email to the customer
     const customerEmailBody = generateCustomerEmail(orderDetails);
-    const customerEmailPromise = sendElasticEmail({
+    const customerEmailPromise = sendNodemailerEmail({
         to: orderDetails.customer.email,
         subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetails.orderId})`,
         bodyHtml: customerEmailBody,
@@ -178,7 +177,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Send notification email to the admin
     const adminEmailBody = generateAdminEmail(orderDetails);
-    const adminEmailPromise = sendElasticEmail({
+    const adminEmailPromise = sendNodemailerEmail({
         to: adminEmail,
         subject: `[${siteConfig.name}] New Order Received! (#${orderDetails.orderId})`,
         bodyHtml: adminEmailBody,

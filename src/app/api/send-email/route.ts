@@ -1,52 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { siteConfig } from '@/config/site';
+import nodemailer from 'nodemailer';
 
 export async function POST(req: NextRequest) {
   const { name, email, subject, message } = await req.json();
 
-  const apiKey = process.env.ELASTIC_EMAIL_API_KEY;
-  const adminEmail = "saakib.com@gmail.com"; 
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_PASS;
 
-  if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
-    console.error('Elastic Email API Key is not configured.');
-    return NextResponse.json({ error: 'Email service is not configured. Please set up ELASTIC_EMAIL_API_KEY in your environment variables.' }, { status: 500 });
+  if (!gmailUser || !gmailPass || gmailUser === 'your-email@gmail.com') {
+    console.error('Gmail credentials are not configured in .env file.');
+    return NextResponse.json({ error: 'Email service is not configured. Please set up GMAIL_USER and GMAIL_PASS in your environment variables.' }, { status: 500 });
   }
 
-  const formData = new URLSearchParams();
-  formData.append('apikey', apiKey);
-  formData.append('subject', `New Contact Form: ${subject}`);
-  formData.append('from', adminEmail); // This MUST be a verified sender in your Elastic Email account.
-  formData.append('fromName', siteConfig.name);
-  formData.append('to', adminEmail);
-  formData.append('replyTo', email); // Set customer's email as reply-to
-  formData.append('bodyHtml', `
-    <h3>New Contact Form Submission from ${siteConfig.name}</h3>
-    <p><strong>Name:</strong> ${name}</p>
-    <p><strong>Email:</strong> ${email}</p>
-    <p><strong>Subject:</strong> ${subject}</p>
-    <p><strong>Message:</strong></p>
-    <p>${message.replace(/\n/g, '<br>')}</p>
-  `);
-  formData.append('isTransactional', 'true');
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: gmailUser,
+      pass: gmailPass, // Use the App Password here
+    },
+  });
+
+  const mailOptions = {
+    from: `"${siteConfig.name}" <${gmailUser}>`,
+    to: gmailUser, // Send to your own email
+    replyTo: email, // Set customer's email as reply-to
+    subject: `New Contact Form: ${subject}`,
+    html: `
+      <h3>New Contact Form Submission from ${siteConfig.name}</h3>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Subject:</strong> ${subject}</p>
+      <p><strong>Message:</strong></p>
+      <p>${message.replace(/\n/g, '<br>')}</p>
+    `,
+  };
 
   try {
-    const response = await fetch('https://api.elasticemail.com/v2/email/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData,
-    });
-
-    const result = await response.json();
-
-    if (!result.success) {
-      console.error('Elastic Email API Error:', result.error);
-      throw new Error(result.error || 'Failed to send email.');
-    }
-
+    await transporter.sendMail(mailOptions);
     return NextResponse.json({ success: true, message: 'Email sent successfully!' });
-
   } catch (error: any) {
     console.error('Error sending email:', error);
     return NextResponse.json({ error: 'Failed to send email.', details: error.message }, { status: 500 });
