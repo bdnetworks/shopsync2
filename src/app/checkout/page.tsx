@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ShippingOption } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Terminal } from 'lucide-react';
+import { Loader2, Terminal, Mail, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CheckoutPage() {
@@ -49,7 +49,36 @@ export default function CheckoutPage() {
   
   const selectedPaymentMethodDetails = siteConfig.checkout.paymentMethods.find(method => method.name === paymentMethod);
 
-  const handlePlaceOrder = async () => {
+  const generateOrderText = () => {
+    const itemsText = cartItems.map(item => 
+        `- ${item.name} (x${item.quantity}) - ${siteConfig.currency}${(item.price * item.quantity).toFixed(2)}` +
+        `${item.selectedColor ? ` | Color: ${item.selectedColor}` : ''}` +
+        `${item.selectedSize ? ` | Size: ${item.selectedSize}` : ''}`
+    ).join('\n');
+
+    return `
+New Order from ${siteConfig.name}
+-----------------------------
+Customer Details:
+Name: ${name}
+Email: ${email}
+Mobile: ${mobile}
+Address: ${address}
+-----------------------------
+Order Items:
+${itemsText}
+-----------------------------
+Summary:
+Subtotal: ${siteConfig.currency}${subtotal.toFixed(2)}
+Shipping: ${siteConfig.currency}${shippingFee.toFixed(2)}
+Total: ${siteConfig.currency}${total.toFixed(2)}
+Payment Method: ${paymentMethod}
+-----------------------------
+Thank you!
+    `.trim();
+  };
+
+  const handlePlaceOrder = (medium: 'whatsapp' | 'gmail') => {
     if (!isFormValid) {
         toast({
             title: "Incomplete Information",
@@ -58,57 +87,21 @@ export default function CheckoutPage() {
         });
         return;
     }
-
-    setIsSubmitting(true);
-
-    const orderId = `order_${Date.now()}`;
-    const orderDate = new Date().toISOString();
-
-    const orderDetails = {
-        orderId,
-        customer: { name, email, mobile, address },
-        items: cartItems,
-        summary: {
-            subtotal,
-            shippingFee,
-            total,
-            paymentMethod,
-            paymentDetails: selectedPaymentMethodDetails?.details
-        },
-        orderDate,
-    };
-
-    try {
-        const response = await fetch('/api/send-order-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderDetails),
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.details || 'Failed to process order. Please try again.');
-        }
-
-        toast({
-            title: "Order Placed!",
-            description: "Your order has been successfully placed. You will receive a confirmation email shortly.",
-        });
-
-        clearCart();
-        router.push('/order-confirmation');
-
-    } catch (error: any) {
-        console.error("Failed to place order:", error);
-        toast({
-            title: "Order Failed",
-            description: error.message || "We couldn't place your order. Please try again later.",
-            variant: "destructive",
-        });
-    } finally {
-        setIsSubmitting(false);
+    
+    const orderText = generateOrderText();
+    
+    if (medium === 'whatsapp') {
+        const whatsappUrl = `https://wa.me/${siteConfig.checkout.contact.whatsappNumber}?text=${encodeURIComponent(orderText)}`;
+        window.open(whatsappUrl, '_blank');
+    } else if (medium === 'gmail') {
+        const subject = `New Order from ${name} - ${siteConfig.name}`;
+        const body = encodeURIComponent(orderText);
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${siteConfig.checkout.contact.email}&su=${subject}&body=${body}`;
+        window.open(gmailUrl, '_blank');
     }
+
+    clearCart();
+    router.push('/order-confirmation');
   };
   
   if (isCartLoading) {
@@ -266,16 +259,14 @@ export default function CheckoutPage() {
                     <CardTitle className="font-headline">Place Your Order</CardTitle>
                     <CardDescription>Your cart total is {siteConfig.currency}{total.toFixed(2)}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <Button onClick={handlePlaceOrder} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Processing Order...
-                            </>
-                        ) : (
-                          'Place Order Now'
-                        )}
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Button onClick={() => handlePlaceOrder('whatsapp')} size="lg" className="w-full bg-green-600 hover:bg-green-700" disabled={!isFormValid || isSubmitting}>
+                         <MessageSquare className="mr-2 h-5 w-5" />
+                         Order via WhatsApp
+                    </Button>
+                    <Button onClick={() => handlePlaceOrder('gmail')} size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
+                         <Mail className="mr-2 h-5 w-5" />
+                         Order via Gmail
                     </Button>
                 </CardContent>
                 {!isFormValid && <CardContent><p className="text-sm text-center text-destructive">Please fill out all shipping information to place an order.</p></CardContent>}
@@ -321,3 +312,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
