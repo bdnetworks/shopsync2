@@ -10,6 +10,7 @@ import product from './product-page.json';
 import offers from './offers.json';
 import contact from './contact.json';
 import checkout from './checkout.json';
+import banners from './banners.json';
 
 // Define a type for the final configuration object
 export type MergedSiteConfig = {
@@ -103,7 +104,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             { title: "Phone", value: dynamicSettings.phone || contact.contactInfo.find(c => c.title === 'Phone')?.value || '', icon: "Phone" },
             { title: "Office", value: dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '', icon: "MapPin" }
         ],
-        heroBanners: parseSlider(dynamicSettings.Slider),
+        heroBanners: parseSlider(dynamicSettings.Slider).length > 0 ? parseSlider(dynamicSettings.Slider) : banners.heroBanners,
         topCategories: topCategories,
         featuredSections: featuredSections,
         productCategories: product.productCategories as ProductCategory[],
