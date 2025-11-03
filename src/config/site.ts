@@ -89,6 +89,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         ? (dynamicSettings.productCategories as string).split(',').map(c => c.trim() as ProductCategory)
         : categoriesConfig.productCategories.map(c => c.name as ProductCategory);
 
+    const isLogoUrl = logoFromSettings && (logoFromSettings.startsWith('http') || logoFromSettings.startsWith('/'));
 
     // Start with default values from JSON files
     const config: MergedSiteConfig = {
@@ -99,8 +100,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         email: siteEmail,
         phone: sitePhone,
         address: siteAddress,
-        logoType: (logoFromSettings && logoFromSettings.startsWith('http')) ? 'image' : 'text',
-        logoImageUrl: (logoFromSettings && logoFromSettings.startsWith('http')) ? logoFromSettings : undefined,
+        logoType: isLogoUrl ? 'image' : 'text',
+        logoImageUrl: isLogoUrl ? logoFromSettings : undefined,
         navLinks: parseMenu(dynamicSettings.headermenu),
         topBarLinks: parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})),
         socialLinks: socials.socialLinks.map(link => {
@@ -141,4 +142,3 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
 
     return config;
 };
-
