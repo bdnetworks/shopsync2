@@ -120,30 +120,15 @@ export default function CheckoutPage() {
     };
 
     try {
-        // Attempt to send email, but don't block the order if it fails
-        const emailResponse = await fetch('/api/send-order-email', {
+        const response = await fetch('/api/add-to-sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderDetailsForConfirmation)
-        });
-
-        if (!emailResponse.ok) {
-            const emailResult = await emailResponse.json();
-            console.error("Could not send order email:", emailResult.details);
-            // Non-blocking: we can still proceed with the sheet update
-        }
-
-        // Proceed to add the order to Google Sheet
-        const sheetResponse = await fetch('/api/add-to-sheet', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderForSheet)
+            body: JSON.stringify({ orderForSheet, orderDetailsForConfirmation })
         });
         
-        if (!sheetResponse.ok) {
-             const sheetResult = await sheetResponse.json();
-             // This is a critical failure, so we throw an error
-             throw new Error(sheetResult.details || 'Failed to add order to Google Sheet.');
+        if (!response.ok) {
+             const result = await response.json();
+             throw new Error(result.details || 'Failed to submit order.');
         }
 
         // Success!
@@ -395,3 +380,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
