@@ -1,16 +1,17 @@
 
 import { getSiteSettings } from '@/lib/settings';
 import type { SiteSettings, ProductCategory, TopCategory } from "@/lib/types";
-import { getFeaturedSections, getTopCategories, getTopBrands } from '@/lib/products';
+import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks } from '@/lib/products';
 
 // Import static JSON files
 import socials from './socials.json';
-import footer from './footer.json';
+// import footer from './footer.json'; // No longer needed
 import product from './product-page.json';
 import offers from './offers.json';
 import contact from './contact.json';
 import checkout from './checkout.json';
 import banners from './banners.json';
+import type { FooterLinkSection } from '@/lib/types';
 
 // Define a type for the final configuration object
 export type MergedSiteConfig = {
@@ -25,7 +26,7 @@ export type MergedSiteConfig = {
     navLinks: { href: string; label: string; }[];
     topBarLinks: { href: string; label: string; icon: string; }[];
     socialLinks: typeof socials.socialLinks;
-    footerLinks: typeof footer.footerLinks;
+    footerLinks: FooterLinkSection[];
     contactInfo: { title: string; value: string; icon: string; }[];
     heroBanners: { id: string; imageUrl: string; description: string; imageHint: string; }[];
     topCategories: TopCategory[];
@@ -70,10 +71,11 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         })).filter(item => item.imageUrl);
     };
 
-    const [featuredSections, topCategories, topBrands] = await Promise.all([
+    const [featuredSections, topCategories, topBrands, footerLinks] = await Promise.all([
         getFeaturedSections(),
         getTopCategories(),
-        getTopBrands()
+        getTopBrands(),
+        getFooterLinks()
     ]);
     
     const [insideDhaka, outsideDhaka] = (dynamicSettings.deliveryFee || '0,0').split(',').map(Number);
@@ -107,7 +109,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             }
             return link;
         }),
-        footerLinks: footer.footerLinks,
+        footerLinks: footerLinks.length > 0 ? footerLinks : [],
         contactInfo: [
             { title: "Email", value: siteEmail, icon: "Mail" },
             { title: "Phone", value: sitePhone, icon: "Phone" },

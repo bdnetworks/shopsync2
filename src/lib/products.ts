@@ -1,5 +1,5 @@
 
-import type { Product, ProductCategory, FeaturedSection, TopCategory } from './types';
+import type { Product, ProductCategory, FeaturedSection, TopCategory, FooterLinkSection } from './types';
 import categoriesConfig from '@/config/categories.json';
 
 // A more robust CSV parser that handles quoted fields.
@@ -177,3 +177,24 @@ export const getTopBrands = async (): Promise<{name: string; imageUrl: string; i
         };
     }).filter((brand): brand is {name: string; imageUrl: string; imageHint: string} => brand !== null);
 }
+
+export const getFooterLinks = async (): Promise<FooterLinkSection[]> => {
+    const rows = await fetchAndParseSheet(categoriesConfig.footerLinksSheetUrl);
+    
+    const sections: { [key: string]: FooterLinkSection } = {};
+
+    rows.forEach(row => {
+        const { title, name, href } = row;
+        if (title && name && href) {
+            if (!sections[title]) {
+                sections[title] = {
+                    title: title,
+                    links: [],
+                };
+            }
+            sections[title].links.push({ name, href });
+        }
+    });
+
+    return Object.values(sections);
+};

@@ -12,7 +12,7 @@ export interface Product {
   price: number;
   category: ProductCategory;
   image: {
-    id: string;
+    id:string;
     src: string;
     alt: string;
     hint: string;
@@ -44,6 +44,17 @@ export interface TopCategory {
     imageUrl: string;
     imageHint: string;
 }
+
+export interface FooterLink {
+    name: string;
+    href: string;
+}
+
+export interface FooterLinkSection {
+    title: string;
+    links: FooterLink[];
+}
+
 
 export type SiteSettings = {
     [key: string]: string | number | undefined;
