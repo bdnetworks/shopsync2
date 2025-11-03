@@ -91,8 +91,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         email: siteEmail,
         phone: sitePhone,
         address: siteAddress,
-        logoType: dynamicSettings.logo ? 'image' : 'text',
-        logoImageUrl: dynamicSettings.logo || undefined,
+        logoType: (dynamicSettings.logo && dynamicSettings.logo.startsWith('http')) ? 'image' : 'text',
+        logoImageUrl: (dynamicSettings.logo && dynamicSettings.logo.startsWith('http')) ? dynamicSettings.logo : undefined,
         navLinks: parseMenu(dynamicSettings.headermenu),
         topBarLinks: parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})),
         socialLinks: socials.socialLinks.map(link => {
