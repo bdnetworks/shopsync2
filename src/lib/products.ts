@@ -54,7 +54,7 @@ function parseCSV(csv: string): string[][] {
 async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
     if (!sheetUrl || sheetUrl.includes('YOUR_')) return [];
     try {
-        const response = await fetch(sheetUrl, { cache: 'no-store' });
+        const response = await fetch(sheetUrl, { next: { revalidate: 300 } });
         if (!response.ok) {
             console.error(`Failed to fetch sheet: ${response.statusText} for url: ${sheetUrl}`);
             return [];
