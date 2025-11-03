@@ -80,6 +80,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     const siteEmail = dynamicSettings.email || contact.contactInfo.find(c => c.title === 'Email')?.value || '';
     const sitePhone = dynamicSettings.phone || contact.contactInfo.find(c => c.title === 'Phone')?.value || '';
     const siteAddress = dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '';
+    const logoUrl = dynamicSettings.logo as string | undefined;
 
 
     // Start with default values from JSON files
@@ -91,8 +92,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         email: siteEmail,
         phone: sitePhone,
         address: siteAddress,
-        logoType: (dynamicSettings.logo && dynamicSettings.logo.startsWith('http')) ? 'image' : 'text',
-        logoImageUrl: (dynamicSettings.logo && dynamicSettings.logo.startsWith('http')) ? dynamicSettings.logo : undefined,
+        logoType: (logoUrl && logoUrl.startsWith('http')) ? 'image' : 'text',
+        logoImageUrl: (logoUrl && logoUrl.startsWith('http')) ? logoUrl : undefined,
         navLinks: parseMenu(dynamicSettings.headermenu),
         topBarLinks: parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})),
         socialLinks: socials.socialLinks.map(link => {
