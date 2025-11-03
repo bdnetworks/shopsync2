@@ -39,14 +39,7 @@ export type MergedSiteConfig = {
     [key: string]: any; // Allow other properties from dynamic settings
 }
 
-let siteConfigCache: MergedSiteConfig | null = null;
-
 export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
-    // If we have a cached version, return it
-    if (siteConfigCache) {
-        return siteConfigCache;
-    }
-
     // Fetch dynamic settings from Google Sheet
     const dynamicSettings = await getSiteSettings();
 
@@ -134,9 +127,6 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         },
         ...dynamicSettings // Spread the rest of the dynamic settings
     };
-
-    // Cache the merged config
-    siteConfigCache = config;
 
     return config;
 };
