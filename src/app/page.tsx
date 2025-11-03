@@ -3,7 +3,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { getProducts, getFeaturedSections } from '@/lib/products';
@@ -16,68 +15,71 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { Card } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { Product, FeaturedSection } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function HomePageSkeleton() {
-    return (
-        <div className="flex flex-col bg-background gap-4 p-4">
-            <Skeleton className="h-[30vh] md:h-[40vh] w-full rounded-lg" />
-            <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
-                {[...Array(10)].map((_, i) => (
-                    <div key={i} className="flex flex-col items-center gap-2">
-                        <Skeleton className="h-16 w-16 rounded-full" />
-                        <Skeleton className="h-4 w-12" />
-                    </div>
-                ))}
+  return (
+    <div className="container mx-auto px-4 py-8 space-y-12">
+      <Skeleton className="h-[30vh] md:h-[40vh] w-full rounded-lg" />
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48 mx-auto" />
+        <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-2">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <Skeleton className="h-4 w-12" />
             </div>
-             <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                    <Skeleton className="h-8 w-32" />
-                    <Skeleton className="h-10 w-24" />
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {[...Array(6)].map((_, i) => (
-                         <div key={i} className="flex flex-col space-y-3">
-                            <Skeleton className="h-[225px] w-full rounded-xl" />
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-full" />
-                                <Skeleton className="h-4 w-3/4" />
-                            </div>
-                            <Skeleton className="h-10 w-1/2" />
-                        </div>
-                    ))}
-                </div>
-            </div>
+          ))}
         </div>
-    )
+      </div>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {[...Array(6)].map((_, i) => (
+             <div key={i} className="flex flex-col space-y-3">
+                <Skeleton className="h-[225px] w-full rounded-xl" />
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                </div>
+                  <Skeleton className="h-10 w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }
-
 
 export default function Home() {
   const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [featuredSections, setFeaturedSections] = useState<FeaturedSection[]>([]);
   const [loading, setLoading] = useState(true);
-
+  
   useEffect(() => {
     const fetchData = async () => {
-        setLoading(true);
-        const [config, products, sections] = await Promise.all([
-            getSiteConfig(),
-            getProducts(),
-            getFeaturedSections()
-        ]);
-        setSiteConfig(config);
-        setAllProducts(products);
-        setFeaturedSections(sections);
-        setLoading(false);
+      setLoading(true);
+      const [config, products, sections] = await Promise.all([
+          getSiteConfig(),
+          getProducts(),
+          getFeaturedSections()
+      ]);
+      setSiteConfig(config);
+      setAllProducts(products);
+      setFeaturedSections(sections);
+      setLoading(false);
     }
     fetchData();
-  }, [])
+  }, []);
 
   if (loading || !siteConfig) {
-      return <HomePageSkeleton />;
+    return <HomePageSkeleton />;
   }
 
   // Get the last 6 products as "latest"
