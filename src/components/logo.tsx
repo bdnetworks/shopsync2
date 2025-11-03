@@ -17,15 +17,17 @@ export default function Logo() {
   }, []);
 
   if (!siteConfig) {
-    return <Skeleton className="h-8 w-24" />
+    return <Skeleton className="h-8 w-24" />;
   }
 
-  // Corrected Logic: Only render Image if logoType is 'image' AND logoImageUrl is not empty.
-  if (siteConfig.logoType === 'image' && siteConfig.logoImageUrl) {
+  // Simplified and robust logic: If a logo URL exists, use it. Otherwise, fall back to text.
+  const isImageLogo = siteConfig.logoImageUrl && (siteConfig.logoImageUrl.startsWith('http') || siteConfig.logoImageUrl.startsWith('/'));
+
+  if (isImageLogo) {
     return (
       <div className="flex items-center">
         <Image 
-            src={siteConfig.logoImageUrl} 
+            src={siteConfig.logoImageUrl!} 
             alt={`${siteConfig.name} logo`}
             width={120}
             height={40}
