@@ -10,6 +10,7 @@ import offers from './offers.json';
 import contact from './contact.json';
 import checkout from './checkout.json';
 import banners from './banners.json';
+import nav from './nav.json';
 import type { FooterLinkSection } from '@/lib/types';
 
 // Define a type for the final configuration object
@@ -39,8 +40,6 @@ export type MergedSiteConfig = {
     [key: string]: any; // Allow other properties from dynamic settings
 }
 
-let siteConfigCache: MergedSiteConfig | null = null;
-
 export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     // Fetch dynamic settings from Google Sheet
     const dynamicSettings = await getSiteSettings();
@@ -65,8 +64,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         })).filter(item => item.imageUrl);
     };
 
-    const [featuredSections, topCategories, topBrands, footerLinks] = await Promise.all([
-        getFeaturedSections(),
+    const [topCategories, topBrands, footerLinks] = await Promise.all([
         getTopCategories(),
         getTopBrands(),
         getFooterLinks()
@@ -83,9 +81,13 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     const logoFromSettings = dynamicSettings.logo as string | undefined;
     const isLogoUrl = logoFromSettings && (logoFromSettings.startsWith('http') || logoFromSettings.startsWith('/'));
     
-    const dynamicProductCategories = dynamicSettings.productCategories
-        ? (dynamicSettings.productCategories as string).split(',').map(c => c.trim() as ProductCategory)
+    const dynamicProductCategories = dynamicSettings.productcategories
+        ? (dynamicSettings.productcategories as string).split(',').map(c => c.trim() as ProductCategory)
         : categoriesConfig.productCategories.map(c => c.name as ProductCategory);
+
+    const mergedNavLinks = parseMenu(dynamicSettings.headermenu).length > 0 ? parseMenu(dynamicSettings.headermenu) : nav.navLinks;
+    const mergedTopBarLinks = parseMenu(dynamicSettings.topmenu).length > 0 ? parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})) : [];
+
 
     // Start with default values from JSON files
     const config: MergedSiteConfig = {
@@ -97,15 +99,15 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         address: siteAddress,
         logoType: isLogoUrl ? 'image' : 'text',
         logoImageUrl: isLogoUrl ? logoFromSettings : undefined,
-        navLinks: parseMenu(dynamicSettings.headermenu).length > 0 ? parseMenu(dynamicSettings.headermenu) : [],
-        topBarLinks: parseMenu(dynamicSettings.topmenu).length > 0 ? parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})) : [],
+        navLinks: mergedNavLinks,
+        topBarLinks: mergedTopBarLinks,
         socialLinks: socials.socialLinks.map(link => {
             const socialKey = link.name.toLowerCase();
             const socialValue = dynamicSettings[socialKey] as string | undefined;
             if (socialValue && socialValue !== '#') {
                  const url = socialKey === 'whatsapp' 
                     ? `https://wa.me/${socialValue.replace(/\D/g, '')}`
-                    : (socialValue.startsWith('http')) ? socialValue : `https://facebook.com/${socialValue}`;
+                    : (socialValue.startsWith('http')) ? socialValue : `https://${socialKey}.com/${socialValue}`;
                 return { ...link, href: url };
             }
             return { ...link, href: '#' }; // Return a default non-functional link
@@ -118,7 +120,6 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         ].filter(info => info.value),
         heroBanners: parseSlider(dynamicSettings.slider).length > 0 ? parseSlider(dynamicSettings.slider) : banners.heroBanners,
         topCategories: topCategories,
-        featuredSections: featuredSections,
         productCategories: dynamicProductCategories,
         topBrands: topBrands,
         offers: offers.offers,

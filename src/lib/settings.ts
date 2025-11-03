@@ -50,7 +50,7 @@ function parseCSV(csv: string): string[][] {
 async function fetchAndParseSheet(sheetUrl: string): Promise<{ [key: string]: string }[]> {
     if (!sheetUrl || sheetUrl.includes('YOUR_')) return [];
     try {
-        const response = await fetch(sheetUrl, { cache: 'no-store' }); 
+        const response = await fetch(sheetUrl, { next: { revalidate: 5 } }); 
         if (!response.ok) {
             console.error(`Failed to fetch sheet: ${response.statusText} for url: ${sheetUrl}`);
             return [];
@@ -62,17 +62,23 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<{ [key: string]: st
 
         const headers = lines[0].map(h => h.trim().toLowerCase());
         const dataRows = lines.slice(1);
+        
+        const keyIndex = headers.indexOf('key');
+        const valueIndex = headers.indexOf('value');
+
+        if (keyIndex === -1 || valueIndex === -1) {
+            console.error("CSV must have 'key' and 'value' columns.");
+            return [];
+        }
 
         return dataRows.map(values => {
-            if (values.every(v => v === '')) return null;
-
-            const rowObject: { [key: string]: string } = {};
-            headers.forEach((header, index) => {
-                rowObject[header] = values[index] || '';
-            });
-            return rowObject;
-
-        }).filter(row => row && typeof row === 'object' && ('key' in row) && ('value' in row) && row.key);
+            const key = values[keyIndex];
+            const value = values[valueIndex];
+            if (key && value) {
+                return { key, value };
+            }
+            return null;
+        }).filter((row): row is {key: string; value: string} => row !== null);
 
     } catch (error) {
         console.error(`Error in fetchAndParseSheet for ${sheetUrl}:`, error);
@@ -94,10 +100,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         const value = row.value?.trim();
         
         if (key && value) {
-            acc[key] = value;
+            // Convert key to a format that can be used as an object property
+            const formattedKey = key.replace(/\s+/g, '').toLowerCase();
+            acc[formattedKey] = value;
         }
         return acc;
     }, {} as SiteSettings);
-
+    
     return settings;
 }
