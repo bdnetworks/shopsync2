@@ -81,7 +81,17 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         : siteData.productCategories.map(c => c as ProductCategory);
 
     const mergedNavLinks = parseMenu(dynamicSettings.headermenu).length > 0 ? parseMenu(dynamicSettings.headermenu) : nav.navLinks;
-    const mergedTopBarLinks = parseMenu(dynamicSettings.topmenu).length > 0 ? parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})) : [];
+    
+    const defaultTopBarLinks = [
+        { href: `tel:${sitePhone}`, label: sitePhone, icon: 'Phone' },
+        { href: `mailto:${siteEmail}`, label: siteEmail, icon: 'Mail' },
+        { href: "/#customer-service", label: "Customer Service", icon: "User" },
+        { href: "/offer", label: "Offer", icon: "Tag" },
+        { href: "/products", label: "New Arrival", icon: "Shirt" },
+        { href: "/#stores", label: "Store", icon: "Store" },
+    ].filter(link => link.label);
+
+    const mergedTopBarLinks = parseMenu(dynamicSettings.topmenu).length > 0 ? parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})) : defaultTopBarLinks;
 
     const config: MergedSiteConfig = {
         name: dynamicSettings.name || 'ShopSync',
