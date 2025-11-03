@@ -1,0 +1,178 @@
+
+{
+  "products": [
+    {
+      "id": "prod_001",
+      "name": "Classic Cotton Tee",
+      "description": "A timeless crewneck t-shirt made from 100% premium cotton. Perfect for everyday wear.",
+      "price": 29.99,
+      "category": "Apparel",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "A comfortable and stylish cotton t-shirt.",
+        "hint": "t-shirt"
+      },
+      "colors": ["Red", "Green", "Blue"],
+      "sizes": ["S", "M", "L", "XL"]
+    },
+    {
+      "id": "prod_002",
+      "name": "Urban Explorer Backpack",
+      "description": "A durable and stylish backpack crafted from genuine leather, with multiple compartments for all your gear.",
+      "price": 149.99,
+      "category": "Bags",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1622560481156-01fc7e1693e6?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "A durable and spacious leather backpack.",
+        "hint": "leather backpack"
+      },
+      "colors": ["Red", "Green", "Blue"]
+    },
+    {
+      "id": "prod_003",
+      "name": "Canvas Low-Top Sneakers",
+      "description": "Classic lace-up sneakers with a durable canvas upper and a comfortable rubber sole.",
+      "price": 79.99,
+      "category": "Footwear",
+      "unit": "1 pair",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1564484539125-88cbf21cbb25?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "Classic canvas sneakers for everyday wear.",
+        "hint": "canvas sneakers"
+      },
+      "colors": ["Red", "Green", "Blue"]
+    },
+    {
+      "id": "prod_004",
+      "name": "Minimalist Steel Watch",
+      "description": "A sleek and modern watch featuring a stainless steel case and a genuine leather strap.",
+      "price": 199.99,
+      "category": "Accessories",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1565250634684-f5e306ee1fa0?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "A modern stainless steel watch.",
+        "hint": "steel watch"
+      },
+      "colors": ["Red", "Green", "Blue"],
+      "sizes": ["S", "M", "L", "XL"]
+    },
+    {
+      "id": "prod_005",
+      "name": "Cozy Wool Scarf",
+      "description": "Stay warm with this soft and luxurious scarf made from 100% fine wool.",
+      "price": 49.99,
+      "category": "Accessories",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1630412931755-766c52c640a3?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "A warm and cozy wool scarf.",
+        "hint": "wool scarf"
+      },
+      "colors": ["Red", "Green", "Blue"]
+    },
+    {
+      "id": "prod_006",
+      "name": "Slim Leather Wallet",
+      "description": "A minimalist wallet with multiple card slots and a cash compartment, made from premium leather.",
+      "price": 69.99,
+      "category": "Accessories",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1627123424574-724758594e93?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "A sleek leather wallet with multiple compartments.",
+        "hint": "leather wallet"
+      },
+      "colors": ["Red", "Green", "Blue"]
+    },
+    {
+      "id": "prod_007",
+      "name": "Aviator Sunglasses",
+      "description": "Protect your eyes in style with these classic aviator sunglasses featuring polarized lenses.",
+      "price": 89.99,
+      "category": "Accessories",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1610136649349-0f646f318053?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "Stylish sunglasses with UV protection.",
+        "hint": "sunglasses"
+      },
+      "colors": ["Red", "Green", "Blue"],
+      "sizes": ["S", "M", "L", "XL"]
+    },
+    {
+      "id": "prod_008",
+      "name": "Performance Running Shoes",
+      "description": "Lightweight and breathable running shoes designed for maximum comfort and support.",
+      "price": 129.99,
+      "category": "Footwear",
+      "unit": "1 pair",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1585944672394-4c58a015c1fb?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "Comfortable running shoes for athletes.",
+        "hint": "running shoes"
+      },
+      "colors": ["Red", "Green", "Blue"]
+    },
+    {
+      "id": "prod_009",
+      "name": "Vintage Denim Jacket",
+      "description": "A classic denim jacket with a modern fit, perfect for layering in any season.",
+      "price": 99.99,
+      "category": "Apparel",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1614693348454-1e0710d21c60?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "A versatile denim jacket.",
+        "hint": "denim jacket"
+      },
+      "colors": ["Red", "Green", "Blue"],
+      "sizes": ["S", "M", "L", "XL"]
+    },
+    {
+      "id": "prod_010",
+      "name": "Canvas Weekender Bag",
+      "description": "A spacious and durable bag, perfect for short trips and weekend getaways.",
+      "price": 119.99,
+      "category": "Bags",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1759304426524-382146fa9tza7?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "A minimalist weekender bag.",
+        "hint": "weekender bag"
+      },
+      "colors": ["Red", "Green", "Blue"]
+    },
+    {
+      "id": "prod_011",
+      "name": "Leather Oxford Shoes",
+      "description": "Elegant and timeless Oxford shoes, handcrafted from the finest full-grain leather.",
+      "price": 249.99,
+      "category": "Footwear",
+      "unit": "1 pair",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1611937679167-a6c1d78d2fb5?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "Elegant leather dress shoes.",
+        "hint": "dress shoes"
+      },
+      "colors": ["Red", "Green", "Blue"],
+      "sizes": ["S", "M", "L", "XL"]
+    },
+    {
+      "id": "prod_012",
+      "name": "Classic Leather Belt",
+      "description": "A versatile and durable belt made from 100% genuine leather with a solid brass buckle.",
+      "price": 59.99,
+      "category": "Accessories",
+      "unit": "1 pc",
+      "image": {
+        "src": "https://images.unsplash.com/photo-1664286022007-9d2eb1003165?ixlib=rb-4.1.0&q=80&w=1080",
+        "alt": "A stylish and functional belt.",
+        "hint": "leather belt"
+      },
+      "colors": ["Red", "Green", "Blue"]
+    }
+  ]
+}

@@ -24,7 +24,7 @@ export interface Product {
   tags?: string[];
   stock?: number;
   availability?: string;
-  unit?: string; // Kept for compatibility if needed
+  unit?: string;
 }
 
 export interface CartItem extends Product {
@@ -47,6 +47,17 @@ export interface TopCategory {
 
 export interface FooterLink {
     name: string;
+    href: string;
+}
+
+export interface NavLink {
+    href: string;
+    label: string;
+}
+
+export interface SocialLink {
+    name: string;
+    icon: string;
     href: string;
 }
 
@@ -88,5 +99,5 @@ export type SiteSettings = {
     topmenu?: string;
     headermenu?: string;
     Slider?: string;
-    productCategories?: string;
+    productcategories?: string;
 };

@@ -1,0 +1,113 @@
+
+{
+    "settings": {
+        "name": "Muskan Shop",
+        "description": "Syncing you with the best, most interesting products curated from various online stores.",
+        "logo": "https://muskan.com.bd/wp-content/uploads/2025/06/muskanlogo-removebg-preview.png",
+        "phone": "01711466850",
+        "email": "saakib.com@gmail.com",
+        "address": "123 Main St, Dhaka, Bangladesh",
+        "facebook": "bdthemex",
+        "twitter": "bdthemex",
+        "instagram": "bdthemex",
+        "youtube": "bdthemex",
+        "whatsapp": "8801711466850",
+        "currencysymbol": "৳",
+        "deliveryfee": "80,150",
+        "topmenu": "Offers:/offer,Contact:/contact",
+        "headermenu": "Home:/,Products:/products,About:/about,Contact:/contact",
+        "slider": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80,https://images.unsplash.com/photo-1594411440399-973405c935e4?w=800&q=80,https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80",
+        "productcategories": "Laptop,Gaming,Bags,Footwear,Accessories,Apparel"
+    },
+    "productCategories": ["Laptop", "Gaming", "Bags", "Footwear", "Accessories", "Apparel"],
+    "featuredSections": [
+        { "title": "Featured Laptops", "categories": ["Footwear"], "productCount": 3 },
+        { "title": "Collections", "categories": ["Apparel", "Bags"], "productCount": 4 },
+        { "title": "Fashion", "categories": ["Footwear"], "productCount": 3 },
+        { "title": "Special", "categories": ["Footwear", "Accessories"], "productCount": 6 }
+    ],
+    "topCategories": [
+        { "name": "Laptop", "imageUrl": "https://picsum.photos/seed/laptops/80/80", "imageHint": "laptop icon" },
+        { "name": "Gaming", "imageUrl": "https://picsum.photos/seed/gaming/80/80", "imageHint": "gaming console" },
+        { "name": "Bags", "imageUrl": "https://picsum.photos/seed/bags/80/80", "imageHint": "stylish bag" },
+        { "name": "Footwear", "imageUrl": "https://picsum.photos/seed/bags/80/81", "imageHint": "stylish bag" },
+        { "name": "Accessories", "imageUrl": "https://picsum.photos/seed/bags/80/82", "imageHint": "stylish bag" },
+        { "name": "Apparel", "imageUrl": "https://picsum.photos/seed/bags/80/83", "imageHint": "stylish bag" },
+        { "name": "Bags", "imageUrl": "https://picsum.photos/seed/bags/80/84", "imageHint": "stylish bag" },
+        { "name": "Bags", "imageUrl": "https://picsum.photos/seed/bags/80/85", "imageHint": "stylish bag" },
+        { "name": "Footwear", "imageUrl": "https://picsum.photos/seed/bags/80/86", "imageHint": "stylish bag" },
+        { "name": "Accessories", "imageUrl": "https://picsum.photos/seed/bags/80/87", "imageHint": "stylish bag" }
+    ],
+    "topBrands": [
+        { "name": "Apple", "imageUrl": "https://picsum.photos/seed/apple/120/60", "imageHint": "Apple logo" },
+        { "name": "Microsoft", "imageUrl": "https://picsum.photos/seed/microsoft/120/60", "imageHint": "Microsoft logo" },
+        { "name": "Starlink", "imageUrl": "https://picsum.photos/seed/starlink/120/60", "imageHint": "Starlink logo" },
+        { "name": "HP", "imageUrl": "https://picsum.photos/seed/hp/120/60", "imageHint": "HP logo" },
+        { "name": "Asus", "imageUrl": "https://picsum.photos/seed/asus/120/60", "imageHint": "Asus logo" },
+        { "name": "Dell", "imageUrl": "https://picsum.photos/seed/dell/120/60", "imageHint": "Dell logo" }
+    ],
+    "footerLinks": [
+        {
+            "title": "Shop",
+            "links": [
+                { "name": "All Products", "href": "/products" },
+                { "name": "Apparel", "href": "/products?category=Apparel" },
+                { "name": "Bags", "href": "/products?category=Bags" },
+                { "name": "Accessories", "href": "/products?category=Accessories" }
+            ]
+        },
+        {
+            "title": "About Us",
+            "links": [
+                { "name": "Our Story", "href": "/about" },
+                { "name": "Contact", "href": "/contact" },
+                { "name": "FAQs", "href": "/#faqs" }
+            ]
+        },
+        {
+            "title": "Support",
+            "links": [
+                { "name": "Shipping & Returns", "href": "/#shipping" },
+                { "name": "Privacy Policy", "href": "/#privacy" },
+                { "name": "Terms of Service", "href": "/#terms" }
+            ]
+        }
+    ],
+    "offers": [
+        {
+            "id": "offer-1",
+            "title": "Summer Sale - 10% Off!",
+            "description": "Get a flat 10% discount on all items from our summer collection. Limited time offer!",
+            "couponCode": "SUMMER10",
+            "imageUrl": "https://images.unsplash.com/photo-1560243563-062d762d3854?w=800&q=80",
+            "imageHint": "summer sale",
+            "discountPercentage": 10
+        },
+        {
+            "id": "offer-2",
+            "title": "New User Discount",
+            "description": "First time shopping with us? Get 20% off on your very first order. Welcome aboard!",
+            "couponCode": "NEW20",
+            "imageUrl": "https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800&q=80",
+            "imageHint": "welcome gift",
+            "discountPercentage": 20
+        },
+        {
+            "id": "offer-3",
+            "title": "Flash Sale - 15% Off",
+            "description": "A surprise 15% discount on everything for the next 24 hours only. Hurry up!",
+            "couponCode": "FLASH15",
+            "imageUrl": "https://images.unsplash.com/photo-1551199341-35b0e8c2c1df?w=800&q=80",
+            "imageHint": "delivery truck",
+            "discountPercentage": 15
+        }
+    ],
+    "paymentMethods": [
+        { "name": "CASH ON DELIVERY", "details": "Pay with cash upon delivery." },
+        { "name": "Bkash", "details": "Please send payment to our bKash number: 01700000000" },
+        { "name": "Nagad", "details": "Please send payment to our Nagad number: 01800000000" },
+        { "name": "Card", "details": "After placing the order, we will send you a secure link to complete the payment." },
+        { "name": "Google Pay", "details": "Pay easily and securely with your Google account." },
+        { "name": "PayPal", "details": "Please send payment to our PayPal email: your-email@example.com" }
+    ]
+}

@@ -1,11 +1,10 @@
 
-import { getSiteSettings } from '@/lib/settings';
-import type { SiteSettings, ProductCategory, TopCategory, PaymentMethod } from "@/lib/types";
+import type { SiteSettings, ProductCategory, TopCategory, PaymentMethod, SocialLink, NavLink } from "@/lib/types";
 import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks, getPaymentMethods } from '@/lib/products';
 
 // Import static JSON files for fallback
+import siteData from './site.json';
 import socials from './socials.json';
-import categoriesConfig from '@/config/categories.json';
 import checkout from './checkout.json';
 import banners from './banners.json';
 import nav from './nav.json';
@@ -21,9 +20,9 @@ export type MergedSiteConfig = {
     address: string;
     logoImageUrl?: string;
     logoType: 'text' | 'image';
-    navLinks: { href: string; label: string; }[];
+    navLinks: NavLink[];
     topBarLinks: { href: string; label: string; icon: string; }[];
-    socialLinks: typeof socials.socialLinks;
+    socialLinks: SocialLink[];
     footerLinks: FooterLinkSection[];
     contactInfo: { title: string; value: string; icon: string; }[];
     heroBanners: { id: string; imageUrl: string; description: string; imageHint: string; }[];
@@ -38,11 +37,10 @@ export type MergedSiteConfig = {
 }
 
 export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
-    // Fetch dynamic settings from Google Sheet
-    const dynamicSettings = await getSiteSettings();
+    // All data is now sourced from local JSON files for performance.
+    const dynamicSettings: SiteSettings = siteData.settings;
 
-    // Helper to parse menu strings (e.g., "Home:/,About:/about")
-    const parseMenu = (menuString: string | undefined) => {
+    const parseMenu = (menuString: string | undefined): NavLink[] => {
         if (!menuString) return [];
         return menuString.split(',').map(item => {
             const [label, href] = item.split(':');
@@ -50,7 +48,6 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         }).filter(item => item.label && item.href);
     };
     
-    // Helper to parse slider strings
     const parseSlider = (sliderString: string | undefined) => {
         if (!sliderString) return [];
         return sliderString.split(',').map((url, index) => ({
@@ -76,20 +73,16 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     const sitePhone = dynamicSettings.phone || '';
     const siteAddress = dynamicSettings.address || '';
     
-    // START: Hardcoded logo fix
-    const logoFromSettings = dynamicSettings.logo || "https://muskan.com.bd/wp-content/uploads/2025/06/muskanlogo-removebg-preview.png";
+    const logoFromSettings = dynamicSettings.logo || "";
     const isLogoUrl = logoFromSettings && (logoFromSettings.startsWith('http') || logoFromSettings.startsWith('/'));
-    // END: Hardcoded logo fix
     
     const dynamicProductCategories = dynamicSettings.productcategories
         ? (dynamicSettings.productcategories as string).split(',').map(c => c.trim() as ProductCategory)
-        : categoriesConfig.productCategories.map(c => c.name as ProductCategory);
+        : siteData.productCategories.map(c => c as ProductCategory);
 
     const mergedNavLinks = parseMenu(dynamicSettings.headermenu).length > 0 ? parseMenu(dynamicSettings.headermenu) : nav.navLinks;
     const mergedTopBarLinks = parseMenu(dynamicSettings.topmenu).length > 0 ? parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})) : [];
 
-
-    // Start with default values from JSON files
     const config: MergedSiteConfig = {
         name: dynamicSettings.name || 'ShopSync',
         description: dynamicSettings.description || 'Syncing you with the best products from across the web.',
@@ -110,18 +103,18 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
                     : (socialValue.startsWith('http')) ? socialValue : `https://${socialKey}.com/${socialValue}`;
                 return { ...link, href: url };
             }
-            return { ...link, href: '#' }; // Return a default non-functional link
+            return { ...link, href: '#' };
         }),
-        footerLinks: footerLinks.length > 0 ? footerLinks : [],
+        footerLinks: footerLinks.length > 0 ? footerLinks : siteData.footerLinks,
         contactInfo: [
             { title: "Email", value: siteEmail, icon: "Mail" },
             { title: "Phone", value: sitePhone, icon: "Phone" },
             { title: "Office", value: siteAddress, icon: "MapPin" }
         ].filter(info => info.value),
         heroBanners: parseSlider(dynamicSettings.slider).length > 0 ? parseSlider(dynamicSettings.slider) : banners.heroBanners,
-        topCategories: topCategories,
+        topCategories: topCategories.length > 0 ? topCategories : siteData.topCategories,
         productCategories: dynamicProductCategories,
-        topBrands: topBrands,
+        topBrands: topBrands.length > 0 ? topBrands : siteData.topBrands,
         checkout: {
             shippingFee: {
                 insideDhaka: !isNaN(insideDhaka) && insideDhaka > 0 ? insideDhaka : checkout.shippingFee.insideDhaka,
@@ -129,7 +122,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             },
             paymentMethods: paymentMethods.length > 0 ? paymentMethods : checkout.paymentMethods
         },
-        ...dynamicSettings // Spread the rest of the dynamic settings
+        ...dynamicSettings
     };
 
     return config;
