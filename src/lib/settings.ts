@@ -56,8 +56,8 @@ function parseCSV(csv: string): string[][] {
 async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
     if (!sheetUrl || sheetUrl.includes('YOUR_')) return [];
     try {
-        // Revalidate every 60 seconds. In a real app, you might want a longer interval.
-        const response = await fetch(sheetUrl, { next: { revalidate: 60 } }); 
+        // Revalidate every time for now to ensure fresh data.
+        const response = await fetch(sheetUrl, { cache: 'no-store' }); 
         if (!response.ok) {
             console.error(`Failed to fetch sheet: ${response.statusText} for url: ${sheetUrl}`);
             return [];
@@ -76,7 +76,6 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
             const rowObject: { [key: string]: string } = {};
             headers.forEach((header, index) => {
                  const value = values[index] || '';
-                // The value is already trimmed and quotes are handled by the new parser
                 rowObject[header] = value;
             });
             return rowObject;
@@ -101,16 +100,6 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     const settings: SiteSettings = rows.reduce((acc, row) => {
         const key = row.key;
         let value: string | number | undefined = row.value;
-
-        // Convert numeric strings to numbers for specific keys
-        if (key === 'shippingInsideCity' || key === 'shippingOutsideCity') {
-            if(value) {
-                const numValue = parseFloat(value);
-                value = isNaN(numValue) ? undefined : numValue;
-            } else {
-                 value = undefined;
-            }
-        }
         
         if (key) {
             acc[key] = value;
