@@ -104,7 +104,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             if (socialValue) {
                  const url = socialKey === 'whatsapp' 
                     ? `https://wa.me/${socialValue.replace(/\D/g, '')}`
-                    : socialValue.startsWith('http') ? socialValue : `https://${socialKey}.com/${socialValue}`;
+                    : (socialValue.startsWith('http') || socialValue.startsWith('https')) ? socialValue : `https://${socialKey}.com/${socialValue}`;
                 return { ...link, href: url };
             }
             return link;

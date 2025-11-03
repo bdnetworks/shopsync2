@@ -20,6 +20,7 @@ export default async function Footer() {
             <div className="flex space-x-4 mt-4">
               {siteConfig.socialLinks.map((social) => {
                 const Icon = getIcon(social.icon);
+                if (!social.href || social.href === '#') return null;
                 return (
                   <Link key={social.name} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
                     {Icon && <Icon className="h-5 w-5" />}
