@@ -141,3 +141,4 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
 
     return config;
 };
+
