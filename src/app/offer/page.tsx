@@ -4,12 +4,50 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, type MergedSiteConfig } from '@/config/site';
 import { useToast } from '@/hooks/use-toast';
 import { Copy } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function OfferPageSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-16">
+      <div className="text-center">
+        <Skeleton className="h-12 w-1/2 mx-auto" />
+        <Skeleton className="h-6 w-3/4 mt-4 mx-auto" />
+      </div>
+      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i} className="flex flex-col overflow-hidden">
+            <Skeleton className="aspect-video w-full" />
+            <CardHeader>
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-16 w-full mt-2" />
+            </CardHeader>
+            <CardFooter className="mt-auto">
+              <Skeleton className="h-20 w-full" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 export default function OfferPage() {
   const { toast } = useToast();
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const config = await getSiteConfig();
+      setSiteConfig(config);
+    }
+    fetchConfig();
+  }, []);
+
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code).then(() => {
@@ -26,6 +64,10 @@ export default function OfferPage() {
       console.error('Could not copy text: ', err);
     });
   };
+  
+  if (!siteConfig) {
+    return <OfferPageSkeleton />;
+  }
 
   return (
     <div className="bg-background">
