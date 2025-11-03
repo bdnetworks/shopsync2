@@ -83,7 +83,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     const siteAddress = dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '';
     
     const logoFromSettings = dynamicSettings.logo as string | undefined;
-    const isLogoUrl = !!logoFromSettings && (logoFromSettings.startsWith('http') || logoFromSettings.startsWith('/'));
+    const isLogoUrl = logoFromSettings && (logoFromSettings.startsWith('http') || logoFromSettings.startsWith('/'));
     
     const dynamicProductCategories = dynamicSettings.productCategories
         ? (dynamicSettings.productCategories as string).split(',').map(c => c.trim() as ProductCategory)
