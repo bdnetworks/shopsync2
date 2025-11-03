@@ -1,7 +1,7 @@
 
 import { getSiteSettings } from '@/lib/settings';
-import type { SiteSettings, ProductCategory, TopCategory } from "@/lib/types";
-import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks } from '@/lib/products';
+import type { SiteSettings, ProductCategory, TopCategory, PaymentMethod } from "@/lib/types";
+import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks, getPaymentMethods } from '@/lib/products';
 
 // Import static JSON files for fallback
 import socials from './socials.json';
@@ -32,7 +32,7 @@ export type MergedSiteConfig = {
     topBrands: {name: string, imageUrl: string, imageHint: string}[];
     checkout: {
       shippingFee: { insideDhaka: number; outsideDhaka: number; };
-      paymentMethods: typeof checkout.paymentMethods;
+      paymentMethods: PaymentMethod[];
     };
     [key: string]: any; // Allow other properties from dynamic settings
 }
@@ -61,10 +61,11 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         })).filter(item => item.imageUrl);
     };
 
-    const [topCategories, topBrands, footerLinks] = await Promise.all([
+    const [topCategories, topBrands, footerLinks, paymentMethods] = await Promise.all([
         getTopCategories(),
         getTopBrands(),
-        getFooterLinks()
+        getFooterLinks(),
+        getPaymentMethods(),
     ]);
     
     const [insideDhakaStr, outsideDhakaStr] = (dynamicSettings.deliveryfee || '0,0').split(',');
@@ -126,7 +127,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
                 insideDhaka: !isNaN(insideDhaka) && insideDhaka > 0 ? insideDhaka : checkout.shippingFee.insideDhaka,
                 outsideDhaka: !isNaN(outsideDhaka) && outsideDhaka > 0 ? outsideDhaka : checkout.shippingFee.outsideDhaka,
             },
-            paymentMethods: checkout.paymentMethods
+            paymentMethods: paymentMethods.length > 0 ? paymentMethods : checkout.paymentMethods
         },
         ...dynamicSettings // Spread the rest of the dynamic settings
     };

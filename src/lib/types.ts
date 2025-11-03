@@ -65,6 +65,11 @@ export interface Offer {
     discountPercentage: number;
 }
 
+export interface PaymentMethod {
+    name: string;
+    details: string;
+}
+
 
 export type SiteSettings = {
     [key: string]: string | number | undefined;

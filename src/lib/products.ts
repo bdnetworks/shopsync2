@@ -1,5 +1,5 @@
 
-import type { Product, ProductCategory, FeaturedSection, TopCategory, FooterLinkSection, Offer } from './types';
+import type { Product, ProductCategory, FeaturedSection, TopCategory, FooterLinkSection, Offer, PaymentMethod } from './types';
 import categoriesConfig from '@/config/categories.json';
 
 // A more robust CSV parser that handles quoted fields.
@@ -216,4 +216,18 @@ export const getOffers = async (): Promise<Offer[]> => {
             discountPercentage: discountPercentage,
         };
     }).filter((offer): offer is Offer => offer !== null);
+};
+
+
+export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
+    const rows = await fetchAndParseSheet(categoriesConfig.paymentMethodsSheetUrl);
+    return rows.map(row => {
+        if (!row.name || !row.details) {
+            return null;
+        }
+        return {
+            name: row.name,
+            details: row.details,
+        };
+    }).filter((method): method is PaymentMethod => method !== null);
 };

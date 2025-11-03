@@ -3,15 +3,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Playfair_Display, PT_Sans } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
-import { Toaster } from '@/components/ui/toaster';
-import { CartProvider } from '@/context/cart-context';
-import { WishlistProvider } from '@/context/wishlist-context';
 import { getSiteConfig } from '@/config/site';
-import FloatingWhatsAppButton from '@/components/layout/floating-whatsapp-button';
-import { QuickViewProvider } from '@/context/quick-view-context';
-import QuickViewModal from '@/components/quick-view-modal';
+import { Providers } from '@/components/providers';
 
 const fontPlayfair = Playfair_Display({
   subsets: ['latin'],
@@ -52,20 +45,7 @@ export default async function RootLayout({
           fontPTSans.variable
         )}
       >
-        <CartProvider>
-          <WishlistProvider>
-            <QuickViewProvider>
-              <div className="relative flex min-h-dvh flex-col bg-background">
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-                <FloatingWhatsAppButton />
-              </div>
-              <QuickViewModal />
-              <Toaster />
-            </QuickViewProvider>
-          </WishlistProvider>
-        </CartProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
