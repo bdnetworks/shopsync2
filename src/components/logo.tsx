@@ -20,6 +20,7 @@ export default function Logo() {
     return <Skeleton className="h-8 w-24" />
   }
 
+  // Corrected Logic: Only render Image if logoType is 'image' AND logoImageUrl is not empty.
   if (siteConfig.logoType === 'image' && siteConfig.logoImageUrl) {
     return (
       <div className="flex items-center">
@@ -29,6 +30,7 @@ export default function Logo() {
             width={120}
             height={40}
             className="object-contain"
+            priority
         />
       </div>
     );
