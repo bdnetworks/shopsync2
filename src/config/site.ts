@@ -82,8 +82,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     const siteEmail = dynamicSettings.email || contact.contactInfo.find(c => c.title === 'Email')?.value || '';
     const sitePhone = dynamicSettings.phone || contact.contactInfo.find(c => c.title === 'Phone')?.value || '';
     const siteAddress = dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '';
-    const logoUrl = dynamicSettings.logo as string | undefined;
-
+    
+    const logoUrlFromSettings = dynamicSettings.logo as string | undefined;
 
     // Start with default values from JSON files
     const config: MergedSiteConfig = {
@@ -94,20 +94,20 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         email: siteEmail,
         phone: sitePhone,
         address: siteAddress,
-        logoType: (logoUrl && logoUrl.startsWith('http')) ? 'image' : 'text',
-        logoImageUrl: (logoUrl && logoUrl.startsWith('http')) ? logoUrl : undefined,
+        logoType: (logoUrlFromSettings && logoUrlFromSettings.startsWith('http')) ? 'image' : 'text',
+        logoImageUrl: (logoUrlFromSettings && logoUrlFromSettings.startsWith('http')) ? logoUrlFromSettings : undefined,
         navLinks: parseMenu(dynamicSettings.headermenu),
         topBarLinks: parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})),
         socialLinks: socials.socialLinks.map(link => {
             const socialKey = link.name.toLowerCase();
             const socialValue = dynamicSettings[socialKey] as string | undefined;
-            if (socialValue) {
+            if (socialValue && socialValue !== '#') {
                  const url = socialKey === 'whatsapp' 
                     ? `https://wa.me/${socialValue.replace(/\D/g, '')}`
-                    : (socialValue.startsWith('http') || socialValue.startsWith('https')) ? socialValue : `https://${socialKey}.com/${socialValue}`;
+                    : (socialValue.startsWith('http') || socialValue.startsWith('https')) ? socialValue : `https://facebook.com/${socialValue}`;
                 return { ...link, href: url };
             }
-            return link;
+            return { ...link, href: '#' }; // Return a default non-functional link
         }),
         footerLinks: footerLinks.length > 0 ? footerLinks : [],
         contactInfo: [
