@@ -5,7 +5,6 @@ import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks } f
 
 // Import static JSON files
 import socials from './socials.json';
-// import footer from './footer.json'; // No longer needed
 import categoriesConfig from '@/config/categories.json';
 import offers from './offers.json';
 import contact from './contact.json';
