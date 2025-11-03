@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, ShoppingCart, Search, Heart, User, Phone, Mail, Tag, Shirt, Store } from 'lucide-react';
+import { Menu, ShoppingCart, Search, Heart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import { useCart } from '@/context/cart-context';
@@ -17,24 +17,21 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
 import { useWishlist } from '@/context/wishlist-context';
-import { getSiteConfig, type MergedSiteConfig } from '@/config/site';
+import { type MergedSiteConfig } from '@/config/site';
 import { getIcon } from '@/lib/icons';
 
-export default function Header() {
+interface HeaderProps {
+  siteConfig: MergedSiteConfig;
+}
+
+export default function Header({ siteConfig }: HeaderProps) {
   const { itemCount } = useCart();
   const { wishlistCount } = useWishlist();
-  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      const config = await getSiteConfig();
-      setSiteConfig(config);
-    }
-    fetchConfig();
-
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 80);
     };
@@ -43,11 +40,6 @@ export default function Header() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-  if (!siteConfig) {
-      // You can return a loading state or a placeholder header here
-      return <header className="w-full bg-[#0d2253] text-white h-40 animate-pulse"></header>;
-  }
 
   const RightIcons = () => (
     <div className="flex flex-1 items-center justify-end">

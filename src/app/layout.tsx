@@ -45,7 +45,7 @@ export default async function RootLayout({
           fontPTSans.variable
         )}
       >
-        <Providers>{children}</Providers>
+        <Providers siteConfig={siteConfig}>{children}</Providers>
       </body>
     </html>
   );
