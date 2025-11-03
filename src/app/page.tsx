@@ -3,42 +3,42 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef, useState, useEffect } from 'react';
-import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { getProducts, getFeaturedSections } from '@/lib/products';
 import ProductCard from '@/components/product-card';
 import { getSiteConfig, MergedSiteConfig } from '@/config/site';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { Card } from '@/components/ui/card';
 import { Product, FeaturedSection } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function HomePageSkeleton() {
     return (
-        <div className="flex flex-col gap-8 py-6 container mx-auto px-4">
-            <Skeleton className="w-full h-[30vh] md:h-[40vh] rounded-lg" />
-            <div className="space-y-2 text-center">
-                <Skeleton className="h-8 w-48 mx-auto" />
-                <div className="grid grid-cols-5 md:grid-cols-10 gap-4 pt-4">
-                    {[...Array(10)].map((_, i) => (
-                        <div key={`top-cat-skel-${i}`} className="flex flex-col items-center gap-2">
-                           <Skeleton className="w-16 h-16 rounded-full" />
-                           <Skeleton className="h-4 w-12" />
-                        </div>
-                    ))}
-                </div>
+        <div className="flex flex-col bg-background gap-4 p-4">
+            <Skeleton className="h-[30vh] md:h-[40vh] w-full rounded-lg" />
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
+                {[...Array(10)].map((_, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                        <Skeleton className="h-16 w-16 rounded-full" />
+                        <Skeleton className="h-4 w-12" />
+                    </div>
+                ))}
             </div>
-             <div className="space-y-2">
-                <Skeleton className="h-8 w-32" />
-                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
+             <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-10 w-24" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {[...Array(6)].map((_, i) => (
-                         <div key={`latest-prod-skel-${i}`} className="flex flex-col space-y-3">
+                         <div key={i} className="flex flex-col space-y-3">
                             <Skeleton className="h-[225px] w-full rounded-xl" />
                             <div className="space-y-2">
                                 <Skeleton className="h-4 w-full" />
@@ -58,12 +58,11 @@ export default function Home() {
   const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [featuredSections, setFeaturedSections] = useState<FeaturedSection[]>([]);
-  const plugin = useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: true })
-  );
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadData() {
+    const fetchData = async () => {
+        setLoading(true);
         const [config, products, sections] = await Promise.all([
             getSiteConfig(),
             getProducts(),
@@ -72,11 +71,12 @@ export default function Home() {
         setSiteConfig(config);
         setAllProducts(products);
         setFeaturedSections(sections);
+        setLoading(false);
     }
-    loadData();
-  }, []);
+    fetchData();
+  }, [])
 
-  if (!siteConfig) {
+  if (loading || !siteConfig) {
       return <HomePageSkeleton />;
   }
 
@@ -88,10 +88,8 @@ export default function Home() {
       <section className="py-4 md:py-6">
         <div className="container mx-auto px-4">
             <Carousel
-              plugins={[plugin.current]}
+              plugins={[Autoplay({ delay: 2000, stopOnInteraction: true })]}
               className="w-full"
-              onMouseEnter={plugin.current.stop}
-              onMouseLeave={plugin.current.reset}
             >
               <CarouselContent>
                 {siteConfig.heroBanners.map((banner, index) => (
@@ -160,8 +158,6 @@ export default function Home() {
 
         if (categoryProducts.length === 0) return null;
         
-        // For the "View All" link, we'll just link to the first category in the list.
-        // A more complex implementation could link to a search results page with all categories.
         const viewAllLink = `/products?category=${sectionCategories[0]}`;
 
         return (

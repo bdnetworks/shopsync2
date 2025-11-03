@@ -22,45 +22,19 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import ProductCard from '@/components/product-card';
 import { Input } from '@/components/ui/input';
 
-function ProductDetail({ params }: { params: { id: string } }) {
+interface ProductDetailProps {
+    product: Product;
+    relatedProducts: Product[];
+    siteConfig: MergedSiteConfig;
+}
+
+function ProductDetail({ product, relatedProducts, siteConfig }: ProductDetailProps) {
     const { addToCart } = useCart();
     const { isWishlisted, toggleWishlist } = useWishlist();
-    const [product, setProduct] = useState<Product | null | undefined>(null);
-    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const [quantity, setQuantity] = useState(1);
     const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
     const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
-    const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
     const { toast } = useToast();
-
-    useEffect(() => {
-        const fetchConfig = async () => {
-            const config = await getSiteConfig();
-            setSiteConfig(config);
-        };
-        fetchConfig();
-        
-        const findProduct = async () => {
-            const foundProduct = await getProductById(params.id);
-            setProduct(foundProduct);
-
-            if (foundProduct) {
-                if (foundProduct.colors && foundProduct.colors.length > 0) {
-                    setSelectedColor(foundProduct.colors[0]);
-                }
-                if (foundProduct.sizes && foundProduct.sizes.length > 0) {
-                    setSelectedSize(foundProduct.sizes[0]);
-                }
-
-                const allProducts = await getProducts();
-                const related = allProducts
-                    .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
-                    .slice(0, 4);
-                setRelatedProducts(related);
-            }
-        }
-        findProduct();
-    }, [params.id]);
     
     useEffect(() => {
         if (product) {
@@ -104,15 +78,6 @@ function ProductDetail({ params }: { params: { id: string } }) {
             }
         }
     };
-
-
-    if (product === undefined) {
-        notFound();
-    }
-    
-    if (product === null || !siteConfig) {
-        return <ProductDetailSkeleton />;
-    }
     
     const isInWishlist = isWishlisted(product.id);
     
@@ -282,11 +247,28 @@ function ProductDetail({ params }: { params: { id: string } }) {
     );
 }
 
+async function ProductDataFetcher({ params }: { params: { id: string } }) {
+    const product = await getProductById(params.id);
+    
+    if (!product) {
+        notFound();
+    }
+
+    const allProducts = await getProducts();
+    const relatedProducts = allProducts
+        .filter(p => p.category === product.category && p.id !== product.id)
+        .slice(0, 4);
+
+    const siteConfig = await getSiteConfig();
+
+    return <ProductDetail product={product} relatedProducts={relatedProducts} siteConfig={siteConfig} />;
+}
+
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
     return (
         <Suspense fallback={<ProductDetailSkeleton />}>
-            <ProductDetail params={params} />
+            <ProductDataFetcher params={params} />
         </Suspense>
     )
 }

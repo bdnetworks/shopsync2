@@ -16,16 +16,16 @@ import { Slider } from '@/components/ui/slider';
 import { Filter } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
+interface ProductsComponentProps {
+    allProducts: Product[];
+    siteConfig: MergedSiteConfig;
+}
 
-function ProductsComponent() {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
+function ProductsComponent({ allProducts, siteConfig }: ProductsComponentProps) {
   const searchParams = useSearchParams();
   const selectedCategoryParam = searchParams.get('category') as ProductCategory | null;
 
   const [activeTab, setActiveTab] = useState<ProductCategory | 'All'>(selectedCategoryParam || 'All');
-
   const [sortOption, setSortOption] = useState('default');
   const [priceRange, setPriceRange] = useState([0, 1000]);
 
@@ -34,20 +34,6 @@ function ProductsComponent() {
     return Math.ceil(Math.max(...allProducts.map(p => p.price)));
   }, [allProducts]);
   
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const config = await getSiteConfig();
-      setSiteConfig(config);
-      const products = await getProducts();
-      const maxProductPrice = Math.ceil(Math.max(...products.map(p => p.price))) || 1000;
-      setAllProducts(products);
-      setPriceRange([0, maxProductPrice]);
-      setLoading(false);
-    }
-    loadData();
-  }, []);
-
   useEffect(() => {
     if(selectedCategoryParam) {
         setActiveTab(selectedCategoryParam);
@@ -73,31 +59,11 @@ function ProductsComponent() {
         products.sort((a, b) => b.price - a.price);
         break;
       default:
-        // Default sort, can be by ID or name
         break;
     }
 
     return products;
   }, [activeTab, allProducts, sortOption, priceRange]);
-  
-  const ProductGridSkeleton = () => (
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-          {[...Array(10)].map((_, i) => (
-              <div key={i} className="flex flex-col space-y-3">
-                  <Skeleton className="h-[225px] w-full rounded-xl" />
-                  <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-3/4" />
-                  </div>
-                   <Skeleton className="h-10 w-1/2" />
-              </div>
-          ))}
-      </div>
-  );
-
-  if (loading || !siteConfig) {
-      return <ProductDetailSkeleton />;
-  }
 
   return (
     <div className="container mx-auto px-2 py-2">
@@ -157,16 +123,12 @@ function ProductsComponent() {
                 </Popover>
             </CardHeader>
             <CardContent className="p-2">
-                {loading ? (
-                    <ProductGridSkeleton />
-                ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                        {filteredAndSortedProducts.map(product => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                )}
-                {!loading && filteredAndSortedProducts.length === 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                    {filteredAndSortedProducts.map(product => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
+                </div>
+                {filteredAndSortedProducts.length === 0 && (
                     <div className="text-center py-16">
                         <p className="text-lg text-muted-foreground">No products found for your selection.</p>
                     </div>
@@ -177,16 +139,7 @@ function ProductsComponent() {
   );
 }
 
-
-export default function ProductsPage() {
-    return (
-        <Suspense fallback={<ProductDetailSkeleton />}>
-            <ProductsComponent />
-        </Suspense>
-    )
-}
-
-function ProductDetailSkeleton() {
+function ProductPageSkeleton() {
     return (
         <div className="container mx-auto px-2 py-2">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
@@ -202,5 +155,22 @@ function ProductDetailSkeleton() {
                 ))}
             </div>
         </div>
+    )
+}
+
+async function ProductsDataFetcher() {
+    const [siteConfig, allProducts] = await Promise.all([
+        getSiteConfig(),
+        getProducts(),
+    ]);
+
+    return <ProductsComponent allProducts={allProducts} siteConfig={siteConfig} />;
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<ProductPageSkeleton />}>
+            <ProductsDataFetcher />
+        </Suspense>
     )
 }
