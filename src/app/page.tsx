@@ -1,206 +1,31 @@
 
-'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
-
-import { Button } from '@/components/ui/button';
 import { getProducts, getFeaturedSections } from '@/lib/products';
-import ProductCard from '@/components/product-card';
-import { getSiteConfig, MergedSiteConfig } from '@/config/site';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import { Card } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
-import { Product, FeaturedSection } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
+import { getSiteConfig } from '@/config/site';
+import { Product, FeaturedSection, MergedSiteConfig } from '@/lib/types';
+import { HomePageClient } from './home-page-client';
 
-function HomePageSkeleton() {
-  return (
-    <div className="container mx-auto px-4 py-8 space-y-12">
-      <Skeleton className="h-[30vh] md:h-[40vh] w-full rounded-lg" />
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48 mx-auto" />
-        <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
-          {[...Array(10)].map((_, i) => (
-            <div key={i} className="flex flex-col items-center gap-2">
-              <Skeleton className="h-16 w-16 rounded-full" />
-              <Skeleton className="h-4 w-12" />
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-10 w-24" />
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {[...Array(6)].map((_, i) => (
-             <div key={i} className="flex flex-col space-y-3">
-                <Skeleton className="h-[225px] w-full rounded-xl" />
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                </div>
-                  <Skeleton className="h-10 w-1/2" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
+async function getHomePageData() {
+    const [siteConfig, allProducts, featuredSections] = await Promise.all([
+        getSiteConfig(),
+        getProducts(),
+        getFeaturedSections()
+    ]);
+    return { siteConfig, allProducts, featuredSections };
 }
 
-export default function Home() {
-  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [featuredSections, setFeaturedSections] = useState<FeaturedSection[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const [config, products, sections] = await Promise.all([
-          getSiteConfig(),
-          getProducts(),
-          getFeaturedSections()
-      ]);
-      setSiteConfig(config);
-      setAllProducts(products);
-      setFeaturedSections(sections);
-      setLoading(false);
-    }
-    fetchData();
-  }, []);
-
-  if (loading || !siteConfig) {
-    return <HomePageSkeleton />;
-  }
+export default async function Home() {
+  const { siteConfig, allProducts, featuredSections } = await getHomePageData();
 
   // Get the last 6 products as "latest"
   const latestProducts = allProducts.slice(-6).reverse();
 
   return (
-    <div className="flex flex-col bg-background">
-      <section className="py-4 md:py-6">
-        <div className="container mx-auto px-4">
-            <Carousel
-              plugins={[Autoplay({ delay: 2000, stopOnInteraction: true })]}
-              className="w-full"
-            >
-              <CarouselContent>
-                {siteConfig.heroBanners.map((banner, index) => (
-                  <CarouselItem key={index}>
-                    <div className="relative w-full h-[30vh] md:h-[40vh] rounded-lg overflow-hidden">
-                        <Image
-                            src={banner.imageUrl}
-                            alt={banner.description}
-                            data-ai-hint={banner.imageHint}
-                            fill
-                            className="object-cover"
-                            priority={index === 0}
-                        />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-        </div>
-      </section>
-
-      <section className="pt-6 pb-2.5">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-6">Top Categories</h2>
-          <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
-            {siteConfig.topCategories.map((category) => (
-                <Link href={`/products?category=${category.name}`} key={category.name} className="flex flex-col items-center gap-2 text-center group">
-                  <Card className="flex items-center justify-center p-1 w-full aspect-square rounded-full overflow-hidden group-hover:shadow-lg transition-shadow">
-                    <Image 
-                      src={category.imageUrl} 
-                      alt={category.name} 
-                      data-ai-hint={category.imageHint}
-                      width={60} 
-                      height={60} 
-                      className="object-cover"
-                    />
-                  </Card>
-                  <p className="text-xs md:text-sm font-medium group-hover:text-primary transition-colors">{category.name}</p>
-                </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="pt-2.5 pb-6 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Latest</h2>
-            <Button asChild variant="outline">
-              <Link href="/products">View All</Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
-            {latestProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {featuredSections.map(section => {
-        const sectionCategories = section.categories.map(c => c.trim());
-        const categoryProducts = allProducts
-            .filter(p => sectionCategories.includes(p.category))
-            .slice(0, section.productCount);
-
-        if (categoryProducts.length === 0) return null;
-        
-        const viewAllLink = `/products?category=${sectionCategories[0]}`;
-
-        return (
-            <section key={section.title} className="py-6 bg-background">
-                <div className="container mx-auto px-4">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold">{section.title}</h2>
-                        <Button asChild variant="outline">
-                            <Link href={viewAllLink}>View All</Link>
-                        </Button>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
-                        {categoryProducts.map((product) => (
-                          <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                </div>
-            </section>
-        );
-      })}
-
-
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold mb-8 text-center">Top Brands</h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 md:gap-8 items-center justify-items-center">
-                {siteConfig.topBrands.map(brand => (
-                    <div key={brand.name} className="grayscale hover:grayscale-0 transition-all duration-300">
-                        <Image
-                            src={brand.imageUrl}
-                            alt={`${brand.name} logo`}
-                            data-ai-hint={brand.imageHint}
-                            width={120}
-                            height={60}
-                            className="object-contain"
-                        />
-                    </div>
-                ))}
-            </div>
-        </div>
-      </section>
-    </div>
+    <HomePageClient
+        siteConfig={siteConfig}
+        allProducts={allProducts}
+        featuredSections={featuredSections}
+        latestProducts={latestProducts}
+    />
   );
 }
