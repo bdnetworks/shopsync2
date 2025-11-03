@@ -6,11 +6,12 @@ function parseCSV(csv: string): string[][] {
     const lines: string[][] = [];
     if (!csv) return lines;
 
+    // Normalize line endings
     const csvNormalized = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const rows = csvNormalized.split('\n');
 
     for (const row of rows) {
-        if (!row.trim()) continue;
+        if (!row.trim()) continue; // Skip empty lines
 
         const line: string[] = [];
         let field = '';
@@ -18,18 +19,24 @@ function parseCSV(csv: string): string[][] {
 
         for (let i = 0; i < row.length; i++) {
             const char = row[i];
+
             if (inQuotedField) {
+                // If the character is a quote
                 if (char === '"') {
+                    // Check if it's an escaped quote (two quotes in a row)
                     if (i + 1 < row.length && row[i + 1] === '"') {
                         field += '"';
-                        i++;
+                        i++; // Skip the next quote
                     } else {
+                        // It's the end of the quoted field
                         inQuotedField = false;
                     }
                 } else {
+                    // It's a normal character inside a quoted field
                     field += char;
                 }
             } else {
+                // If we are not in a quoted field
                 if (char === '"') {
                     inQuotedField = true;
                 } else if (char === ',') {
@@ -60,16 +67,20 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
         const lines = parseCSV(csv);
         if (lines.length < 2) return [];
 
-        const headers = lines[0].map(h => h.trim());
+        const headers = lines[0].map(h => h.trim().toLowerCase());
         const dataRows = lines.slice(1);
 
         return dataRows.map(values => {
+            if (values.every(v => v === '')) return null;
+
             const rowObject: { [key: string]: string } = {};
             headers.forEach((header, index) => {
-                 const value = (values[index] || '').trim();
-                rowObject[header] = value.replace(/^"|"$/g, '');
+                 const value = values[index] || '';
+                // The value is already trimmed and quotes are handled by the new parser
+                rowObject[header] = value;
             });
             return rowObject;
+
         }).filter(row => row && typeof row === 'object' && ('key' in row) && ('value' in row) && row.key);
 
     } catch (error) {
