@@ -6,7 +6,7 @@ import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks } f
 // Import static JSON files
 import socials from './socials.json';
 // import footer from './footer.json'; // No longer needed
-import product from './product-page.json';
+import categoriesConfig from '@/config/categories.json';
 import offers from './offers.json';
 import contact from './contact.json';
 import checkout from './checkout.json';
@@ -85,6 +85,11 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     
     const logoFromSettings = dynamicSettings.logo as string | undefined;
 
+    const dynamicProductCategories = dynamicSettings.productCategories
+        ? (dynamicSettings.productCategories as string).split(',').map(c => c.trim() as ProductCategory)
+        : categoriesConfig.productCategories.map(c => c.name as ProductCategory);
+
+
     // Start with default values from JSON files
     const config: MergedSiteConfig = {
         // Defaults from static files or hardcoded
@@ -118,7 +123,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         heroBanners: parseSlider(dynamicSettings.Slider).length > 0 ? parseSlider(dynamicSettings.Slider) : banners.heroBanners,
         topCategories: topCategories,
         featuredSections: featuredSections,
-        productCategories: product.productCategories as ProductCategory[],
+        productCategories: dynamicProductCategories,
         topBrands: topBrands,
         offers: offers.offers,
         checkout: {

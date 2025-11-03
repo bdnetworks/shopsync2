@@ -1,7 +1,7 @@
 
 import { z } from 'zod';
 
-export type ProductCategory = 'Apparel' | 'Bags' | 'Footwear' | 'Accessories' | 'Products' | 'Laptop' | 'Gaming';
+export type ProductCategory = 'Apparel' | 'Bags' | 'Footwear' | 'Accessories' | 'Products' | 'Laptop' | 'Gaming' | 'Products1' | 'Products2' | 'Products3';
 
 export type ShippingOption = 'insideDhaka' | 'outsideDhaka';
 
@@ -73,4 +73,5 @@ export type SiteSettings = {
     topmenu?: string;
     headermenu?: string;
     Slider?: string;
+    productCategories?: string;
 };
