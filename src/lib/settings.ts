@@ -2,6 +2,7 @@
 import categoriesConfig from '@/config/categories.json';
 import type { SiteSettings } from './types';
 
+// A more robust CSV parser that handles quoted fields.
 function parseCSV(csv: string): string[][] {
     const lines: string[][] = [];
     if (!csv) return lines;
@@ -22,6 +23,7 @@ function parseCSV(csv: string): string[][] {
             if (inQuotedField) {
                 if (char === '"') {
                     if (i + 1 < row.length && row[i + 1] === '"') {
+                        // Escaped quote
                         field += '"';
                         i++; // Skip next quote
                     } else {
@@ -47,7 +49,8 @@ function parseCSV(csv: string): string[][] {
     return lines;
 }
 
-async function fetchAndParseSheet(sheetUrl: string): Promise<{ [key: string]: string }[]> {
+
+async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
     if (!sheetUrl || sheetUrl.includes('YOUR_')) return [];
     try {
         const response = await fetch(sheetUrl, { next: { revalidate: 5 } }); 
@@ -56,29 +59,23 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<{ [key: string]: st
             return [];
         }
         const csv = await response.text();
-        
         const lines = parseCSV(csv);
+        
         if (lines.length < 2) return [];
 
         const headers = lines[0].map(h => h.trim().toLowerCase());
         const dataRows = lines.slice(1);
-        
-        const keyIndex = headers.indexOf('key');
-        const valueIndex = headers.indexOf('value');
-
-        if (keyIndex === -1 || valueIndex === -1) {
-            console.error("CSV must have 'key' and 'value' columns.");
-            return [];
-        }
 
         return dataRows.map(values => {
-            const key = values[keyIndex];
-            const value = values[valueIndex];
-            if (key && value) {
-                return { key, value };
-            }
-            return null;
-        }).filter((row): row is {key: string; value: string} => row !== null);
+            if (values.every(v => v === '')) return null;
+            
+            const rowObject: { [key: string]: string } = {};
+            headers.forEach((header, index) => {
+                rowObject[header] = values[index] || '';
+            });
+            return rowObject;
+
+        }).filter(row => row !== null);
 
     } catch (error) {
         console.error(`Error in fetchAndParseSheet for ${sheetUrl}:`, error);
