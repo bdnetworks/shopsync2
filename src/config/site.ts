@@ -3,7 +3,7 @@ import { getSiteSettings } from '@/lib/settings';
 import type { SiteSettings, ProductCategory, TopCategory } from "@/lib/types";
 import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks } from '@/lib/products';
 
-// Import static JSON files
+// Import static JSON files for fallback
 import socials from './socials.json';
 import categoriesConfig from '@/config/categories.json';
 import offers from './offers.json';
@@ -39,6 +39,8 @@ export type MergedSiteConfig = {
     [key: string]: any; // Allow other properties from dynamic settings
 }
 
+let siteConfigCache: MergedSiteConfig | null = null;
+
 export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     // Fetch dynamic settings from Google Sheet
     const dynamicSettings = await getSiteSettings();
@@ -49,7 +51,7 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         return menuString.split(',').map(item => {
             const [label, href] = item.split(':');
             return { label: label ? label.trim() : '', href: href ? href.trim() : '#' };
-        }).filter(item => item.label);
+        }).filter(item => item.label && item.href);
     };
     
     // Helper to parse slider strings
@@ -70,7 +72,10 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         getFooterLinks()
     ]);
     
-    const [insideDhaka, outsideDhaka] = (dynamicSettings.deliveryFee || '0,0').split(',').map(Number);
+    const [insideDhakaStr, outsideDhakaStr] = (dynamicSettings.deliveryfee || '0,0').split(',');
+    const insideDhaka = parseFloat(insideDhakaStr);
+    const outsideDhaka = parseFloat(outsideDhakaStr);
+
     const siteEmail = dynamicSettings.email || contact.contactInfo.find(c => c.title === 'Email')?.value || '';
     const sitePhone = dynamicSettings.phone || contact.contactInfo.find(c => c.title === 'Phone')?.value || '';
     const siteAddress = dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '';
@@ -84,7 +89,6 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
 
     // Start with default values from JSON files
     const config: MergedSiteConfig = {
-        // Defaults from static files or hardcoded
         name: dynamicSettings.name || 'ShopSync',
         description: dynamicSettings.description || 'Syncing you with the best products from across the web.',
         currency: dynamicSettings.currencysymbol || '$',
@@ -93,15 +97,15 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         address: siteAddress,
         logoType: isLogoUrl ? 'image' : 'text',
         logoImageUrl: isLogoUrl ? logoFromSettings : undefined,
-        navLinks: parseMenu(dynamicSettings.headermenu),
-        topBarLinks: parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})),
+        navLinks: parseMenu(dynamicSettings.headermenu).length > 0 ? parseMenu(dynamicSettings.headermenu) : [],
+        topBarLinks: parseMenu(dynamicSettings.topmenu).length > 0 ? parseMenu(dynamicSettings.topmenu).map(item => ({...item, icon: 'Tag'})) : [],
         socialLinks: socials.socialLinks.map(link => {
             const socialKey = link.name.toLowerCase();
             const socialValue = dynamicSettings[socialKey] as string | undefined;
             if (socialValue && socialValue !== '#') {
                  const url = socialKey === 'whatsapp' 
                     ? `https://wa.me/${socialValue.replace(/\D/g, '')}`
-                    : (socialValue.startsWith('http') || socialValue.startsWith('https')) ? socialValue : `https://facebook.com/${socialValue}`;
+                    : (socialValue.startsWith('http')) ? socialValue : `https://facebook.com/${socialValue}`;
                 return { ...link, href: url };
             }
             return { ...link, href: '#' }; // Return a default non-functional link
@@ -111,8 +115,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
             { title: "Email", value: siteEmail, icon: "Mail" },
             { title: "Phone", value: sitePhone, icon: "Phone" },
             { title: "Office", value: siteAddress, icon: "MapPin" }
-        ],
-        heroBanners: parseSlider(dynamicSettings.Slider).length > 0 ? parseSlider(dynamicSettings.Slider) : banners.heroBanners,
+        ].filter(info => info.value),
+        heroBanners: parseSlider(dynamicSettings.slider).length > 0 ? parseSlider(dynamicSettings.slider) : banners.heroBanners,
         topCategories: topCategories,
         featuredSections: featuredSections,
         productCategories: dynamicProductCategories,

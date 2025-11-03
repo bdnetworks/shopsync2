@@ -6,7 +6,6 @@ function parseCSV(csv: string): string[][] {
     const lines: string[][] = [];
     if (!csv) return lines;
 
-    // Normalize line endings
     const csvNormalized = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const rows = csvNormalized.split('\n');
 
@@ -21,22 +20,17 @@ function parseCSV(csv: string): string[][] {
             const char = row[i];
 
             if (inQuotedField) {
-                // If the character is a quote
                 if (char === '"') {
-                    // Check if it's an escaped quote (two quotes in a row)
                     if (i + 1 < row.length && row[i + 1] === '"') {
                         field += '"';
-                        i++; // Skip the next quote
+                        i++; // Skip next quote
                     } else {
-                        // It's the end of the quoted field
                         inQuotedField = false;
                     }
                 } else {
-                    // It's a normal character inside a quoted field
                     field += char;
                 }
             } else {
-                // If we are not in a quoted field
                 if (char === '"') {
                     inQuotedField = true;
                 } else if (char === ',') {
@@ -53,10 +47,9 @@ function parseCSV(csv: string): string[][] {
     return lines;
 }
 
-async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
+async function fetchAndParseSheet(sheetUrl: string): Promise<{ [key: string]: string }[]> {
     if (!sheetUrl || sheetUrl.includes('YOUR_')) return [];
     try {
-        // Revalidate every time for now to ensure fresh data.
         const response = await fetch(sheetUrl, { cache: 'no-store' }); 
         if (!response.ok) {
             console.error(`Failed to fetch sheet: ${response.statusText} for url: ${sheetUrl}`);
@@ -75,8 +68,7 @@ async function fetchAndParseSheet(sheetUrl: string): Promise<any[]> {
 
             const rowObject: { [key: string]: string } = {};
             headers.forEach((header, index) => {
-                 const value = values[index] || '';
-                rowObject[header] = value;
+                rowObject[header] = values[index] || '';
             });
             return rowObject;
 
@@ -98,10 +90,10 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     const rows = await fetchAndParseSheet(settingsUrl);
     
     const settings: SiteSettings = rows.reduce((acc, row) => {
-        const key = row.key;
-        let value: string | number | undefined = row.value;
+        const key = row.key?.trim();
+        const value = row.value?.trim();
         
-        if (key) {
+        if (key && value) {
             acc[key] = value;
         }
         return acc;
