@@ -62,6 +62,7 @@ export interface Offer {
     couponCode: string;
     imageUrl: string;
     imageHint: string;
+    discountPercentage: number;
 }
 
 

@@ -202,7 +202,8 @@ export const getFooterLinks = async (): Promise<FooterLinkSection[]> => {
 export const getOffers = async (): Promise<Offer[]> => {
     const rows = await fetchAndParseSheet(categoriesConfig.offersSheetUrl);
     return rows.map(row => {
-         if (!row.id || !row.title || !row.couponCode || !row.imageUrl) {
+        const discountPercentage = parseInt(row.discountPercentage, 10);
+        if (!row.id || !row.title || !row.couponCode || !row.imageUrl || isNaN(discountPercentage)) {
             return null;
         }
         return {
@@ -212,6 +213,7 @@ export const getOffers = async (): Promise<Offer[]> => {
             couponCode: row.couponCode,
             imageUrl: row.imageUrl,
             imageHint: row.imageHint || 'offer image',
+            discountPercentage: discountPercentage,
         };
     }).filter((offer): offer is Offer => offer !== null);
 };

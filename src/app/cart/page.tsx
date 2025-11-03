@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, Trash2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 
 export default function CartPage() {
-  const { cartItems, updateQuantity, removeFromCart, subtotal, shippingFee, total, itemCount } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, subtotal, shippingFee, total, itemCount, discount, appliedCoupon, applyCoupon, removeCoupon } = useCart();
   const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
+  const [couponCode, setCouponCode] = useState('');
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -138,10 +139,31 @@ export default function CartPage() {
               <CardTitle className="font-headline">Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+               {!appliedCoupon && (
+                <div className="flex items-center gap-2">
+                    <Input 
+                        placeholder="Coupon code" 
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                    />
+                    <Button onClick={() => applyCoupon(couponCode)}>Apply</Button>
+                </div>
+               )}
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>{siteConfig.currency}{subtotal.toFixed(2)}</span>
               </div>
+              {discount > 0 && appliedCoupon && (
+                 <div className="flex justify-between text-green-600">
+                    <div className="flex items-center gap-2">
+                        <span>Discount ({appliedCoupon.couponCode})</span>
+                        <button onClick={removeCoupon} aria-label="Remove coupon">
+                            <XCircle className="h-4 w-4 text-destructive" />
+                        </button>
+                    </div>
+                    <span>-{siteConfig.currency}{discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span>{siteConfig.currency}{shippingFee.toFixed(2)}</span>

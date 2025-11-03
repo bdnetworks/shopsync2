@@ -2,9 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { CartItem, Product, ShippingOption } from '@/lib/types';
+import type { CartItem, Product, ShippingOption, Offer } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 import { getSiteConfig, MergedSiteConfig } from '@/config/site';
+import { getOffers } from '@/lib/products';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -16,6 +17,10 @@ interface CartContextType {
   itemCount: number;
   shippingFee: number;
   total: number;
+  discount: number;
+  appliedCoupon: Offer | null;
+  applyCoupon: (code: string) => Promise<void>;
+  removeCoupon: () => void;
   isCartLoading: boolean;
   setShippingOption: (option: ShippingOption) => void;
 }
@@ -29,6 +34,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const [shippingFee, setShippingFee] = useState(0);
   const [shippingOption, setShippingOption] = useState<ShippingOption>('insideDhaka');
+  const [appliedCoupon, setAppliedCoupon] = useState<Offer | null>(null);
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -48,6 +55,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setCartItems([]);
       }
     }
+    const storedCoupon = localStorage.getItem('appliedCoupon');
+    if (storedCoupon) {
+      try {
+        setAppliedCoupon(JSON.parse(storedCoupon));
+      } catch (e) {
+        setAppliedCoupon(null);
+      }
+    }
     setIsCartLoading(false);
   }, []);
 
@@ -55,11 +70,27 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!isCartLoading) {
         try {
             localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            if (appliedCoupon) {
+              localStorage.setItem('appliedCoupon', JSON.stringify(appliedCoupon));
+            } else {
+              localStorage.removeItem('appliedCoupon');
+            }
         } catch (error) {
             console.error("Failed to save cart items to localStorage", error);
         }
     }
-  }, [cartItems, isCartLoading]);
+  }, [cartItems, appliedCoupon, isCartLoading]);
+
+  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  useEffect(() => {
+    if (appliedCoupon) {
+      const newDiscount = (subtotal * appliedCoupon.discountPercentage) / 100;
+      setDiscount(newDiscount);
+    } else {
+      setDiscount(0);
+    }
+  }, [subtotal, appliedCoupon]);
 
   const handleSetShippingOption = (option: ShippingOption) => {
     if (!siteConfig) return;
@@ -69,6 +100,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       : siteConfig.checkout.shippingFee.outsideDhaka;
     setShippingFee(newShippingFee);
   }
+
+  const applyCoupon = async (code: string) => {
+    if (!code) {
+      toast({ title: "Please enter a coupon code.", variant: "destructive" });
+      return;
+    }
+
+    const allOffers = await getOffers();
+    const matchingOffer = allOffers.find(offer => offer.couponCode.toLowerCase() === code.toLowerCase());
+
+    if (matchingOffer) {
+      setAppliedCoupon(matchingOffer);
+      toast({
+        title: "Coupon Applied!",
+        description: `You've received a ${matchingOffer.discountPercentage}% discount.`,
+      });
+    } else {
+      setAppliedCoupon(null);
+      toast({
+        title: "Invalid Coupon",
+        description: "The coupon code you entered is not valid.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscount(0);
+    toast({
+      title: "Coupon Removed",
+      description: "The discount has been removed from your order.",
+    });
+  };
 
   const addToCart = (product: Product, quantity: number = 1, selectedColor?: string, selectedSize?: string) => {
     setCartItems(prevItems => {
@@ -126,11 +191,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setCartItems([]);
+    removeCoupon();
+    localStorage.removeItem('appliedCoupon');
   };
 
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const itemCount = cartItems.reduce((count, item) => count + item.quantity, 0);
-  const total = subtotal + shippingFee;
+  const total = subtotal - discount + shippingFee;
 
   const value = {
     cartItems,
@@ -142,7 +208,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     itemCount,
     shippingFee,
     total,
-isCartLoading: isCartLoading || !siteConfig,
+    discount,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    isCartLoading: isCartLoading || !siteConfig,
     setShippingOption: handleSetShippingOption,
   };
 

@@ -23,9 +23,11 @@ interface OrderDetails {
     summary: {
         subtotal: number;
         shippingFee: number;
+        discount: number;
         total: number;
         paymentMethod: string;
         paymentDetails?: string;
+        couponCode?: string;
     };
     orderDate: string;
 }
@@ -192,6 +194,12 @@ function OrderConfirmationContent() {
                                 <span>Subtotal:</span>
                                 <span>{siteConfig.currency}{orderDetails.summary.subtotal.toFixed(2)}</span>
                             </div>
+                            {orderDetails.summary.discount > 0 && (
+                                <div className="flex justify-between text-green-600">
+                                    <span>Discount ({orderDetails.summary.couponCode}):</span>
+                                    <span>-{siteConfig.currency}{orderDetails.summary.discount.toFixed(2)}</span>
+                                </div>
+                            )}
                              <div className="flex justify-between">
                                 <span>Shipping:</span>
                                 <span>{siteConfig.currency}{orderDetails.summary.shippingFee.toFixed(2)}</span>

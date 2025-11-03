@@ -18,7 +18,7 @@ import { Loader2, Terminal } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CheckoutPage() {
-  const { cartItems, subtotal, total, isCartLoading, shippingFee, setShippingOption, clearCart } = useCart();
+  const { cartItems, subtotal, total, isCartLoading, shippingFee, setShippingOption, clearCart, discount, appliedCoupon } = useCart();
   const router = useRouter();
   const { toast } = useToast();
   const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
@@ -96,6 +96,9 @@ export default function CheckoutPage() {
         Address: address,
         ZipCode: zipCode,
         Products: productsString,
+        Subtotal: subtotal,
+        Discount: discount,
+        Coupon: appliedCoupon?.couponCode || '',
         OrderTotal: total,
     };
 
@@ -107,9 +110,11 @@ export default function CheckoutPage() {
       summary: {
         subtotal,
         shippingFee,
+        discount,
         total,
         paymentMethod,
-        paymentDetails: selectedPaymentMethodDetails?.details
+        paymentDetails: selectedPaymentMethodDetails?.details,
+        couponCode: appliedCoupon?.couponCode,
       },
       orderDate: orderDate,
     };
@@ -374,6 +379,12 @@ export default function CheckoutPage() {
               ))}
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{siteConfig.currency}{subtotal.toFixed(2)}</span></div>
+                {discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                        <span>Discount</span>
+                        <span>-{siteConfig.currency}{discount.toFixed(2)}</span>
+                    </div>
+                )}
                 <div className="flex justify-between text-muted-foreground"><span>Shipping Fee</span><span>{siteConfig.currency}{shippingFee.toFixed(2)}</span></div>
                 <div className="flex justify-between font-bold text-lg"><span>Total</span><span>{siteConfig.currency}{total.toFixed(2)}</span></div>
               </div>
