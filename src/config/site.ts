@@ -7,7 +7,6 @@ import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks } f
 import socials from './socials.json';
 import categoriesConfig from '@/config/categories.json';
 import offers from './offers.json';
-import contact from './contact.json';
 import checkout from './checkout.json';
 import banners from './banners.json';
 import nav from './nav.json';
@@ -74,12 +73,14 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     const insideDhaka = parseFloat(insideDhakaStr);
     const outsideDhaka = parseFloat(outsideDhakaStr);
 
-    const siteEmail = dynamicSettings.email || contact.contactInfo.find(c => c.title === 'Email')?.value || '';
-    const sitePhone = dynamicSettings.phone || contact.contactInfo.find(c => c.title === 'Phone')?.value || '';
-    const siteAddress = dynamicSettings.address || contact.contactInfo.find(c => c.title === 'Office')?.value || '';
+    const siteEmail = dynamicSettings.email || '';
+    const sitePhone = dynamicSettings.phone || '';
+    const siteAddress = dynamicSettings.address || '';
     
-    const logoFromSettings = dynamicSettings.logo as string | undefined;
-    const isLogoUrl = logoFromSettings && (logoFromSettings.startsWith('http') || logoFromSettings.startsWith('/'));
+    // START: Hardcoded logo fix
+    const logoFromSettings = "https://muskan.com.bd/wp-content/uploads/2025/06/muskanlogo-removebg-preview.png";
+    const isLogoUrl = true;
+    // END: Hardcoded logo fix
     
     const dynamicProductCategories = dynamicSettings.productcategories
         ? (dynamicSettings.productcategories as string).split(',').map(c => c.trim() as ProductCategory)
