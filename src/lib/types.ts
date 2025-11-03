@@ -55,6 +55,15 @@ export interface FooterLinkSection {
     links: FooterLink[];
 }
 
+export interface Offer {
+    id: string;
+    title: string;
+    description: string;
+    couponCode: string;
+    imageUrl: string;
+    imageHint: string;
+}
+
 
 export type SiteSettings = {
     [key: string]: string | number | undefined;

@@ -1,5 +1,5 @@
 
-import type { Product, ProductCategory, FeaturedSection, TopCategory, FooterLinkSection } from './types';
+import type { Product, ProductCategory, FeaturedSection, TopCategory, FooterLinkSection, Offer } from './types';
 import categoriesConfig from '@/config/categories.json';
 
 // A more robust CSV parser that handles quoted fields.
@@ -197,4 +197,21 @@ export const getFooterLinks = async (): Promise<FooterLinkSection[]> => {
     });
 
     return Object.values(sections);
+};
+
+export const getOffers = async (): Promise<Offer[]> => {
+    const rows = await fetchAndParseSheet(categoriesConfig.offersSheetUrl);
+    return rows.map(row => {
+         if (!row.id || !row.title || !row.couponCode || !row.imageUrl) {
+            return null;
+        }
+        return {
+            id: row.id,
+            title: row.title,
+            description: row.description || '',
+            couponCode: row.couponCode,
+            imageUrl: row.imageUrl,
+            imageHint: row.imageHint || 'offer image',
+        };
+    }).filter((offer): offer is Offer => offer !== null);
 };

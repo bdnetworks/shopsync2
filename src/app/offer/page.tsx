@@ -4,11 +4,12 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { getSiteConfig, type MergedSiteConfig } from '@/config/site';
+import { getOffers } from '@/lib/products';
 import { useToast } from '@/hooks/use-toast';
 import { Copy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Offer } from '@/lib/types';
 
 function OfferPageSkeleton() {
   return (
@@ -38,14 +39,17 @@ function OfferPageSkeleton() {
 
 export default function OfferPage() {
   const { toast } = useToast();
-  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      const config = await getSiteConfig();
-      setSiteConfig(config);
+    const fetchOffers = async () => {
+      setLoading(true);
+      const fetchedOffers = await getOffers();
+      setOffers(fetchedOffers);
+      setLoading(false);
     }
-    fetchConfig();
+    fetchOffers();
   }, []);
 
 
@@ -65,7 +69,7 @@ export default function OfferPage() {
     });
   };
   
-  if (!siteConfig) {
+  if (loading) {
     return <OfferPageSkeleton />;
   }
 
@@ -80,7 +84,7 @@ export default function OfferPage() {
         </div>
 
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {siteConfig.offers.map((offer) => (
+          {offers.map((offer) => (
             <Card key={offer.id} className="flex flex-col overflow-hidden shadow-lg transition-transform hover:-translate-y-1">
               <div className="relative aspect-video w-full">
                 <Image

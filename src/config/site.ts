@@ -6,7 +6,6 @@ import { getFeaturedSections, getTopCategories, getTopBrands, getFooterLinks } f
 // Import static JSON files for fallback
 import socials from './socials.json';
 import categoriesConfig from '@/config/categories.json';
-import offers from './offers.json';
 import checkout from './checkout.json';
 import banners from './banners.json';
 import nav from './nav.json';
@@ -31,7 +30,6 @@ export type MergedSiteConfig = {
     topCategories: TopCategory[];
     productCategories: ProductCategory[];
     topBrands: {name: string, imageUrl: string, imageHint: string}[];
-    offers: typeof offers.offers;
     checkout: {
       shippingFee: { insideDhaka: number; outsideDhaka: number; };
       paymentMethods: typeof checkout.paymentMethods;
@@ -78,8 +76,8 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
     const siteAddress = dynamicSettings.address || '';
     
     // START: Hardcoded logo fix
-    const logoFromSettings = "https://muskan.com.bd/wp-content/uploads/2025/06/muskanlogo-removebg-preview.png";
-    const isLogoUrl = true;
+    const logoFromSettings = dynamicSettings.logo || "https://muskan.com.bd/wp-content/uploads/2025/06/muskanlogo-removebg-preview.png";
+    const isLogoUrl = logoFromSettings && (logoFromSettings.startsWith('http') || logoFromSettings.startsWith('/'));
     // END: Hardcoded logo fix
     
     const dynamicProductCategories = dynamicSettings.productcategories
@@ -123,7 +121,6 @@ export const getSiteConfig = async (): Promise<MergedSiteConfig> => {
         topCategories: topCategories,
         productCategories: dynamicProductCategories,
         topBrands: topBrands,
-        offers: offers.offers,
         checkout: {
             shippingFee: {
                 insideDhaka: !isNaN(insideDhaka) && insideDhaka > 0 ? insideDhaka : checkout.shippingFee.insideDhaka,
