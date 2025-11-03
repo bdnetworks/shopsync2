@@ -32,52 +32,37 @@ export default function ContactPage() {
   
   const isFormValid = name && email && subject && message;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) {
+    if (!isFormValid || !siteConfig || !siteConfig.phone) {
         toast({
             title: "Incomplete Form",
-            description: "Please fill out all the fields.",
+            description: "Please fill out all the fields and ensure site configuration is loaded.",
             variant: "destructive"
         });
         return;
     }
     
     setIsSubmitting(true);
+
+    const whatsappNumber = siteConfig.phone.replace(/\D/g, '');
+    const prefilledMessage = `Hello, I'm contacting you from your website.\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject}\n\nMessage:\n${message}`;
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(prefilledMessage)}`;
+
+    window.open(whatsappUrl, '_blank');
     
-    try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, message }),
-      });
+    // Clear form after attempting to open WhatsApp
+    setName('');
+    setEmail('');
+    setSubject('');
+    setMessage('');
 
-      const result = await response.json();
+    setIsSubmitting(false);
 
-      if (!response.ok) {
-        throw new Error(result.details || 'Failed to send message.');
-      }
-
-      toast({
-        title: "Message Sent!",
-        description: "Thank you for contacting us. We'll get back to you shortly.",
-      });
-
-      // Clear form
-      setName('');
-      setEmail('');
-      setSubject('');
-      setMessage('');
-
-    } catch (error: any) {
-      toast({
-        title: "Submission Failed",
-        description: error.message || "We couldn't send your message. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    toast({
+        title: "Redirecting to WhatsApp",
+        description: "Your message is ready to be sent via WhatsApp.",
+    });
   };
 
   if (!siteConfig) {
@@ -100,7 +85,7 @@ export default function ContactPage() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">Send us a Message</CardTitle>
-            <CardDescription>Fill out the form and we'll get back to you.</CardDescription>
+            <CardDescription>Fill out the form to start a conversation on WhatsApp.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit}>
@@ -128,10 +113,12 @@ export default function ContactPage() {
                       {isSubmitting ? (
                           <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Sending...
+                              Redirecting...
                           </>
                       ) : (
-                          'Send Message'
+                          <>
+                            <WhatsAppIcon className="h-5 w-5 mr-2"/> Send on WhatsApp
+                          </>
                       )}
                   </Button>
               </div>
