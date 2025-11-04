@@ -26,7 +26,9 @@ async function sendEmail({ to, subject, bodyHtml, replyTo, siteName, gmailUser }
     const gmailPass = process.env.GMAIL_PASS;
 
     if (!gmailUser || !gmailPass || gmailUser === 'your-email@gmail.com') {
-        throw new Error('Email service is not configured. Please set up GMAIL_USER and GMAIL_PASS in your environment variables.');
+        // Silently fail if not configured, but log for the server admin.
+        console.warn('Email service is not configured. Skipping email sending.');
+        return;
     }
 
     const transporter = nodemailer.createTransport({
@@ -133,6 +135,7 @@ export async function POST(req: NextRequest) {
     // 1. Fetch site config
     const siteConfig = await getSiteConfig();
     const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASS;
     const adminEmail = siteConfig.email;
     
     // 2. Post to Google Sheet and Send Emails in parallel
@@ -143,8 +146,10 @@ export async function POST(req: NextRequest) {
       signal: AbortSignal.timeout(10000) // 10 seconds timeout
     });
 
-    const emailPromises = [];
-    if (gmailUser && adminEmail) {
+    const emailPromises: Promise<any>[] = [];
+    
+    // Only attempt to send emails if credentials are provided
+    if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
         // Customer Email
         const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
         emailPromises.push(
@@ -154,7 +159,7 @@ export async function POST(req: NextRequest) {
                 bodyHtml: customerEmailBody,
                 siteName: siteConfig.name,
                 gmailUser: gmailUser
-            })
+            }).catch(e => console.error("Failed to send customer email:", e)) // prevent email failure from stopping the whole process
         );
         // Admin Email
         const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
@@ -166,18 +171,23 @@ export async function POST(req: NextRequest) {
                 replyTo: orderDetailsForConfirmation.customer.email,
                 siteName: siteConfig.name,
                 gmailUser: gmailUser
-            })
+            }).catch(e => console.error("Failed to send admin email:", e)) // prevent email failure from stopping the whole process
         );
+    } else {
+        console.warn("Email service is not configured. Skipping email sending.");
     }
 
-    const [sheetResponse] = await Promise.all([sheetPromise, ...emailPromises]);
+    const [sheetResponse] = await Promise.allSettled([sheetPromise, ...emailPromises]);
 
-    if (!sheetResponse.ok) {
-        // If the script returns an error, it might be in JSON format.
-        const result = await sheetResponse.json();
-        throw new Error(result.message || `Failed to post data to Google Sheet. Status: ${sheetResponse.status}`);
+    // Handle sheet response - it's the primary critical path
+    if (sheetResponse.status === 'rejected' || !sheetResponse.value.ok) {
+        const errorMsg = sheetResponse.status === 'rejected' 
+            ? sheetResponse.reason.message 
+            : `Failed to post data to Google Sheet. Status: ${sheetResponse.value.status}`;
+        
+        throw new Error(errorMsg);
     }
-
+    
     return NextResponse.json({ status: 'success', message: 'Order successfully submitted.' });
 
   } catch (error: any) {
