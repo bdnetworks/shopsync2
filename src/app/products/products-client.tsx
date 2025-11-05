@@ -22,6 +22,7 @@ interface ProductsClientProps {
 export function ProductsClient({ allProducts, siteConfig }: ProductsClientProps) {
   const searchParams = useSearchParams();
   const selectedCategoryParam = searchParams.get('category') as ProductCategory | null;
+  const searchTermParam = searchParams.get('search');
 
   const [activeTab, setActiveTab] = useState<ProductCategory | 'All'>(selectedCategoryParam || 'All');
   const [sortOption, setSortOption] = useState('default');
@@ -43,12 +44,22 @@ export function ProductsClient({ allProducts, siteConfig }: ProductsClientProps)
   }, [maxPrice])
 
   const filteredAndSortedProducts = useMemo(() => {
-    let products = activeTab === 'All'
-      ? allProducts
-      : allProducts.filter(p => p.category === activeTab);
+    let products = allProducts;
+    
+    // Filter by search term
+    if (searchTermParam) {
+      products = products.filter(p => p.name.toLowerCase().includes(searchTermParam.toLowerCase()));
+    }
+
+    // Filter by category
+    if (activeTab !== 'All') {
+      products = products.filter(p => p.category === activeTab);
+    }
       
+    // Filter by price range
     products = products.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
+    // Sort products
     switch (sortOption) {
       case 'price-asc':
         products.sort((a, b) => a.price - b.price);
@@ -57,11 +68,12 @@ export function ProductsClient({ allProducts, siteConfig }: ProductsClientProps)
         products.sort((a, b) => b.price - a.price);
         break;
       default:
+        // Default sorting (e.g., by ID or leave as is)
         break;
     }
 
     return products;
-  }, [activeTab, allProducts, sortOption, priceRange]);
+  }, [activeTab, allProducts, sortOption, priceRange, searchTermParam]);
 
   return (
     <div className="container mx-auto px-2 py-2">
@@ -121,6 +133,11 @@ export function ProductsClient({ allProducts, siteConfig }: ProductsClientProps)
                 </Popover>
             </CardHeader>
             <CardContent className="p-2">
+                {searchTermParam && (
+                    <div className="mb-4 text-center">
+                        <p className="text-lg">Showing results for: <span className="font-semibold">"{searchTermParam}"</span></p>
+                    </div>
+                )}
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                     {filteredAndSortedProducts.map(product => (
                         <ProductCard key={product.id} product={product} />

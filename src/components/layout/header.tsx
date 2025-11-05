@@ -13,7 +13,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
 import { useWishlist } from '@/context/wishlist-context';
@@ -29,6 +29,8 @@ export default function Header({ siteConfig }: HeaderProps) {
   const { wishlistCount } = useWishlist();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -40,6 +42,18 @@ export default function Header({ siteConfig }: HeaderProps) {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   const RightIcons = () => (
     <div className="flex flex-1 items-center justify-end">
@@ -130,21 +144,6 @@ export default function Header({ siteConfig }: HeaderProps) {
   return (
     <>
       <header className="w-full bg-[#0d2253] text-white">
-        <div className="border-b border-gray-700">
-          <div className="container hidden h-10 max-w-screen-2xl items-center justify-end gap-6 text-sm md:flex">
-              {siteConfig.topBarLinks.map(link => {
-                  const Icon = getIcon(link.icon);
-                  if (!link.label) return null;
-                  return (
-                      <Link key={link.label} href={link.href} className="flex items-center gap-2 hover:text-primary transition-colors">
-                          {Icon && <Icon className="h-4 w-4" />}
-                          <span>{link.label}</span>
-                      </Link>
-                  )
-              })}
-          </div>
-        </div>
-        
         <div className="bg-[#0d2253] border-b border-gray-700">
             <div className="container flex h-20 max-w-screen-2xl items-center justify-between">
                 <Link href="/" className="flex items-center gap-2">
@@ -152,8 +151,14 @@ export default function Header({ siteConfig }: HeaderProps) {
                 </Link>
 
                 <div className="hidden lg:flex flex-1 max-w-xl mx-4">
-                    <Input placeholder="Enter Your Keyword..." className="bg-white text-black rounded-r-none focus:ring-primary border-0 h-11"/>
-                    <Button className="rounded-l-none bg-primary hover:bg-primary/90 h-11">
+                    <Input 
+                        placeholder="Enter Your Keyword..." 
+                        className="bg-white text-black rounded-r-none focus:ring-primary border-0 h-11"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleSearchKeyDown}
+                    />
+                    <Button className="rounded-l-none bg-primary hover:bg-primary/90 h-11" onClick={handleSearch}>
                         <Search className="h-5 w-5"/>
                     </Button>
                 </div>
