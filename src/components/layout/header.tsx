@@ -193,6 +193,18 @@ export default function Header({ siteConfig }: HeaderProps) {
           <Link href="/" className="flex items-center gap-2">
             <Logo />
           </Link>
+          <div className="hidden lg:flex flex-1 max-w-xl mx-4">
+              <Input 
+                  placeholder="Enter Your Keyword..." 
+                  className="bg-white text-black rounded-r-none focus:ring-primary border-0 h-11"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+              />
+              <Button className="rounded-l-none bg-primary hover:bg-primary/90 h-11" onClick={handleSearch}>
+                  <Search className="h-5 w-5"/>
+              </Button>
+          </div>
           <RightIcons />
         </div>
       </div>
