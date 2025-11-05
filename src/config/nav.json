@@ -3,6 +3,7 @@
     "navLinks": [
         { "href": "/", "label": "Home" },
         { "href": "/products", "label": "Products" },
+        { "href": "/offer", "label": "Offers" },
         { "href": "/about", "label": "About" },
         { "href": "/contact", "label": "Contact" }
     ]
