@@ -11,10 +11,6 @@ import ProductCard from '@/components/product-card';
 import { ProductDetailClient } from './product-detail-client';
 import { Card, CardContent } from '@/components/ui/card';
 
-type ProductPageProps = {
-  params: { id: string };
-};
-
 function ProductDetailSkeleton() {
     return (
         <div className="container mx-auto px-4 py-12">
@@ -115,7 +111,7 @@ async function ProductDetails({ productId }: { productId: string }) {
     );
 }
 
-export default function ProductDetailPage({ params }: ProductPageProps) {
+export default function ProductDetailPage({ params }: { params: { id: string } }) {
     return (
         <Suspense fallback={<ProductDetailSkeleton />}>
             <ProductDetails productId={params.id} />

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useWishlist } from '@/context/wishlist-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, ShoppingBag, ShoppingCart, Trash2 } from 'lucide-react';
+import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import Image from 'next/image';
 import { getSiteConfig, type MergedSiteConfig } from '@/config/site';
