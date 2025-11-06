@@ -1,22 +1,14 @@
 
-import type {NextConfig} from 'next';
+/** @type {import('next').NextConfig} */
 const withPWA = require('next-pwa')({
-  dest: 'public'
-})
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+});
 
-const nextConfig: NextConfig = {
-  /* config options here */
-  env: {
-    NEXT_PUBLIC_BASE_URL: process.env.NODE_ENV === 'production'
-      ? 'https://your-production-url.com' // Replace with your actual production URL
-      : 'http://localhost:9002',
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+const nextConfig = withPWA({
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {
@@ -29,6 +21,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-};
+});
 
-export default withPWA(nextConfig);
+module.exports = nextConfig;
