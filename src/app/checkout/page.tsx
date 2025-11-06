@@ -138,9 +138,8 @@ export default function CheckoutPage() {
         });
         
         sessionStorage.setItem('lastOrderDetails', JSON.stringify(orderDetailsForConfirmation));
-
-        clearCart();
         router.push(`/order-confirmation?orderId=${orderId}`);
+        clearCart();
 
     } catch (error: any) {
         console.error('Order submission error:', error);
@@ -380,5 +379,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
