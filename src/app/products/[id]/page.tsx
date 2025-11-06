@@ -14,12 +14,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DisqusComments from '@/components/disqus-comments';
 import ProductCard from '@/components/product-card';
 import { ProductDetailClient } from './product-detail-client';
+import type { Metadata, ResolvingMetadata } from 'next';
 
-interface ProductDataFetcherProps {
-    params: { id: string };
-}
+type ProductPageProps = {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
-async function ProductDataFetcher({ params }: ProductDataFetcherProps) {
+async function ProductDataFetcher({ params }: { params: { id: string } }) {
     const product = await getProductById(params.id);
     
     if (!product) {
@@ -90,7 +92,7 @@ async function ProductDataFetcher({ params }: ProductDataFetcherProps) {
 }
 
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage({ params }: ProductPageProps) {
     return (
         <Suspense fallback={<ProductDetailSkeleton />}>
             <ProductDataFetcher params={params} />

@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Heart, ShoppingBag, ShoppingCart, Trash2 } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import Image from 'next/image';
-import { siteConfig } from '@/config/site';
+import { getSiteConfig, type MergedSiteConfig } from '@/config/site';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/context/cart-context';
 
@@ -18,6 +18,15 @@ export default function WishlistPage() {
   const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const config = await getSiteConfig();
+      setSiteConfig(config);
+    };
+    fetchConfig();
+  }, []);
 
   useEffect(() => {
     if (wishlistCount > 0) {
@@ -30,7 +39,7 @@ export default function WishlistPage() {
     }
   }, [wishlistItems, getProductDetails, wishlistCount]);
 
-  if (loading) {
+  if (loading || !siteConfig) {
     return (
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-4xl font-headline font-bold text-center mb-8">My Wishlist</h1>
