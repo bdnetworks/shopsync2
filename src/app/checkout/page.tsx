@@ -50,7 +50,10 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!isCartLoading && cartItems.length === 0) {
-      router.push('/products');
+      // If we are not on the confirmation page, redirect to products
+      if (!sessionStorage.getItem('lastOrderDetails')) {
+        router.push('/products');
+      }
     }
   }, [isCartLoading, cartItems.length, router]);
   
@@ -130,12 +133,6 @@ export default function CheckoutPage() {
              const result = await response.json();
              throw new Error(result.details || 'Failed to submit order.');
         }
-
-        // Success!
-        toast({
-            title: "Order Placed Successfully!",
-            description: "Your order has been recorded. We'll be in touch shortly."
-        });
         
         sessionStorage.setItem('lastOrderDetails', JSON.stringify(orderDetailsForConfirmation));
         router.push(`/order-confirmation?orderId=${orderId}`);
