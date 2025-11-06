@@ -4,12 +4,13 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CheckCircle, Printer, ShoppingBag } from "lucide-react";
+import { CheckCircle, Printer, ShoppingBag, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CartItem } from '@/lib/types';
 import { getSiteConfig, MergedSiteConfig } from '@/config/site';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderDetails {
     orderId: string;
@@ -36,6 +37,7 @@ function OrderConfirmationContent() {
     const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
     const [siteConfig, setSiteConfig] = useState<MergedSiteConfig | null>(null);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -58,6 +60,44 @@ function OrderConfirmationContent() {
     const handlePrint = () => {
         window.print();
     };
+
+    const handleShare = async () => {
+        if (!orderDetails || !siteConfig) return;
+
+        const shareText = `I just placed an order from ${siteConfig.name}!\nOrder ID: #${orderDetails.orderId}\nTotal: ${siteConfig.currency}${orderDetails.summary.total.toFixed(2)}`;
+        
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `My Order from ${siteConfig.name}`,
+                    text: shareText,
+                    url: window.location.href,
+                });
+            } catch (error) {
+                console.error('Error sharing:', error);
+                toast({
+                    title: 'Could not share order',
+                    description: 'There was an error trying to share your order details.',
+                    variant: 'destructive',
+                });
+            }
+        } else {
+             try {
+                await navigator.clipboard.writeText(shareText);
+                toast({
+                    title: 'Order Details Copied!',
+                    description: 'Your order summary has been copied to the clipboard.',
+                });
+            } catch (error) {
+                toast({
+                    title: 'Could not copy details',
+                    description: 'There was an error trying to copy the order details.',
+                    variant: 'destructive',
+                });
+            }
+        }
+    };
+
 
     if (loading || !siteConfig) {
         return (
@@ -214,7 +254,8 @@ function OrderConfirmationContent() {
                 <CardFooter className="justify-center no-print">
                      <div className="flex items-center gap-4">
                         <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print Receipt</Button>
-                        <Button asChild variant="outline">
+                        <Button variant="outline" onClick={handleShare}><Share2 className="mr-2 h-4 w-4" /> Share Order</Button>
+                        <Button asChild variant="secondary">
                             <Link href="/products">Continue Shopping</Link>
                         </Button>
                     </div>
@@ -244,3 +285,5 @@ export default function OrderConfirmationPage() {
         </Suspense>
     )
 }
+
+    
