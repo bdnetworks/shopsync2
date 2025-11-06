@@ -101,3 +101,4 @@ export type SiteSettings = {
     Slider?: string;
     productcategories?: string;
 };
+
