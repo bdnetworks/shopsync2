@@ -50,7 +50,6 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!isCartLoading && cartItems.length === 0) {
-      // If we are not on the confirmation page, redirect to products
       if (!sessionStorage.getItem('lastOrderDetails')) {
         router.push('/products');
       }
@@ -81,12 +80,10 @@ export default function CheckoutPage() {
     const orderId = `SHOPSYNC-${Date.now()}`;
     const orderDate = new Date().toISOString();
     
-    // Format products for Google Sheet
     const productsString = cartItems.map(item => 
         `${item.name} (Qty: ${item.quantity}${item.selectedColor ? `, Color: ${item.selectedColor}`:''}${item.selectedSize ? `, Size: ${item.selectedSize}`:''})`
     ).join(' | ');
 
-    // 1. Data for Google Sheet
     const orderForSheet = {
         OrderID: orderId,
         OrderDate: orderDate,
@@ -105,7 +102,6 @@ export default function CheckoutPage() {
         OrderTotal: total,
     };
 
-    // 2. Data for Email & Confirmation Page
     const orderDetailsForConfirmation = {
       orderId: orderId,
       customer: { name, email, mobile, address },
@@ -376,3 +372,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    

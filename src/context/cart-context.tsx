@@ -194,6 +194,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setAppliedCoupon(null);
     setDiscount(0);
     localStorage.removeItem('appliedCoupon');
+    localStorage.removeItem('cartItems');
   };
 
   const itemCount = cartItems.reduce((count, item) => count + item.quantity, 0);
@@ -227,3 +228,5 @@ export const useCart = () => {
   }
   return context;
 };
+
+    
