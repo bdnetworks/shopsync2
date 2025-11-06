@@ -1,28 +1,52 @@
 
-
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { getProductById, getProducts } from '@/lib/products';
-import { ShoppingCart, CheckCircle, Heart, Share2, Minus, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Product } from '@/lib/types';
-import { getSiteConfig, MergedSiteConfig } from '@/config/site';
+import { getSiteConfig } from '@/config/site';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DisqusComments from '@/components/disqus-comments';
 import ProductCard from '@/components/product-card';
 import { ProductDetailClient } from './product-detail-client';
-import type { Metadata, ResolvingMetadata } from 'next';
+import { Card, CardContent } from '@/components/ui/card';
 
 type ProductPageProps = {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
 };
 
-async function ProductDataFetcher({ params }: { params: { id: string } }) {
-    const product = await getProductById(params.id);
+function ProductDetailSkeleton() {
+    return (
+        <div className="container mx-auto px-4 py-12">
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+                <div>
+                    <Card>
+                        <CardContent className="p-4">
+                            <Skeleton className="aspect-square w-full rounded-lg" />
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="flex flex-col justify-center space-y-6">
+                    <Skeleton className="h-12 w-3/4" />
+                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className="h-6 w-4/5" />
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                        <Skeleton className="h-10 w-1/3" />
+                        <Skeleton className="h-6 w-1/4" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full col-span-2" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+async function ProductDetails({ productId }: { productId: string }) {
+    const product = await getProductById(productId);
     
     if (!product) {
         notFound();
@@ -91,41 +115,10 @@ async function ProductDataFetcher({ params }: { params: { id: string } }) {
     );
 }
 
-
 export default function ProductDetailPage({ params }: ProductPageProps) {
     return (
         <Suspense fallback={<ProductDetailSkeleton />}>
-            <ProductDataFetcher params={params} />
+            <ProductDetails productId={params.id} />
         </Suspense>
-    )
-}
-
-function ProductDetailSkeleton() {
-    return (
-        <div className="container mx-auto px-4 py-12">
-            <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-                <div>
-                    <Card>
-                        <CardContent className="p-4">
-                            <Skeleton className="aspect-square w-full rounded-lg" />
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="flex flex-col justify-center space-y-6">
-                    <Skeleton className="h-12 w-3/4" />
-                    <Skeleton className="h-6 w-full" />
-                    <Skeleton className="h-6 w-4/5" />
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                        <Skeleton className="h-10 w-1/3" />
-                        <Skeleton className="h-6 w-1/4" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Skeleton className="h-12 w-full" />
-                      <Skeleton className="h-12 w-full" />
-                      <Skeleton className="h-12 w-full col-span-2" />
-                    </div>
-                </div>
-            </div>
-        </div>
     )
 }
