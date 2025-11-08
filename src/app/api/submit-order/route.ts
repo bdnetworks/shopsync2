@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -17,9 +18,9 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(orderData),
     });
 
-    const result = await scriptResponse.json();
+    const result: any = await scriptResponse.json();
 
-    if (!scriptResponse.ok || result.success === false) {
+    if (!scriptResponse.ok || result.success !== true) {
       // Log the error from Google Script if available
       console.error("Google Script Error:", result.message);
       throw new Error(result.message || 'The Google Script returned an error.');
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('API Route Error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'An unknown server error occurred.' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ success: false, message: errorMessage }, { status: 500 });
   }
 }
