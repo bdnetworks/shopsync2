@@ -15,7 +15,6 @@ interface OrderDetailsForConfirmation {
     discount: number;
     total: number;
     paymentMethod: string;
-    paymentDetails?: string;
     couponCode?: string;
   };
   orderDate: string;
@@ -83,7 +82,6 @@ function generateCustomerEmail(details: OrderDetailsForConfirmation, siteConfig:
             <p style="background-color: #f7f7f7; padding: 15px; border-radius: 5px;">${details.customer.name}<br>${details.customer.address}<br>${details.customer.mobile}</p>
             <h3 style="margin-top: 20px;">Payment Method</h3>
             <p><strong>${details.summary.paymentMethod}</strong></p>
-            ${details.summary.paymentDetails && details.summary.paymentMethod !== 'CASH ON DELIVERY' ? `<p style="background-color: #fffbe6; padding: 15px; border-left: 4px solid #facc15; margin-top: 10px;"><strong>Instructions:</strong> ${details.summary.paymentDetails}</p>` : ''}
             <p style="margin-top: 30px; text-align: center; font-size: 12px; color: #888;">Thanks for shopping with us!<br>${siteConfig.name}</p>
         </div>
     `;
@@ -116,7 +114,6 @@ function generateAdminEmail(details: OrderDetailsForConfirmation, siteConfig: an
                 <li><strong>Shipping Fee:</strong> ${siteConfig.currency}${details.summary.shippingFee.toFixed(2)}</li>
                 <li><strong>Total:</strong> ${siteConfig.currency}${details.summary.total.toFixed(2)}</li>
                 <li><strong>Payment Method:</strong> ${details.summary.paymentMethod}</li>
-                 ${details.summary.paymentDetails && details.summary.paymentMethod !== 'CASH ON DELIVERY' ? `<li><strong>Payment Instructions:</strong> ${details.summary.paymentDetails}</li>` : ''}
             </ul>
         </div>
     `;
@@ -166,5 +163,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to process emails.', details: error.message }, { status: 500 });
   }
 }
-
-    
