@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSiteConfig } from '@/config/site';
 import type { CartItem } from '@/lib/types';
 import nodemailer from 'nodemailer';
+import fetch from 'node-fetch';
 
 // This interface should match the one in checkout page
 interface OrderDetailsForConfirmation {
@@ -128,24 +129,26 @@ function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmatio
 
     // Use an async IIFE (Immediately Invoked Function Expression) to run tasks
     (async () => {
+        // --- 1. Submit to Google Sheet ---
         try {
             if (googleScriptUrl) {
-                // We don't await this, letting it run in the background
+                // We use node-fetch and don't await the promise, letting it run in the background
                 fetch(googleScriptUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderForSheet),
                 }).catch(sheetError => {
-                    // Log errors from the fetch promise itself
+                    // Log errors from the fetch promise itself, this is crucial for debugging
                     console.error('Error submitting to Google Sheet in background:', sheetError);
                 });
             } else {
                  console.warn('Google Script URL is not configured.');
             }
         } catch (initialError) {
-             console.error('Initial error setting up background processing:', initialError);
+             console.error('Initial error setting up background sheet submission:', initialError);
         }
-
+        
+        // --- 2. Send Emails ---
         try {
             const siteConfig = await getSiteConfig();
             const gmailUser = process.env.GMAIL_USER;
@@ -156,28 +159,30 @@ function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmatio
                 const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
                 const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
 
-                // No need for Promise.allSettled, just await them sequentially but without blocking the main response
-                await sendEmail({
+                // Send customer email
+                sendEmail({
                     to: orderDetailsForConfirmation.customer.email,
                     subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
                     bodyHtml: customerEmailBody,
                     siteName: siteConfig.name,
                     gmailUser: gmailUser
-                });
+                }).catch(e => console.error('Failed to send customer email:', e));
 
-                await sendEmail({
+                // Send admin email
+                sendEmail({
                     to: adminEmail,
                     subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
                     bodyHtml: adminEmailBody,
                     replyTo: orderDetailsForConfirmation.customer.email,
                     siteName: siteConfig.name,
                     gmailUser: gmailUser
-                });
+                }).catch(e => console.error('Failed to send admin email:', e));
+
             } else {
                 console.warn("Email service is not configured. Skipping email sending in background.");
             }
         } catch (emailError) {
-            console.error('Error sending emails in background:', emailError);
+            console.error('Error setting up email sending in background:', emailError);
         }
     })();
 }
@@ -198,5 +203,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to initiate order processing.', details: error.message }, { status: 500 });
   }
 }
-
-    
