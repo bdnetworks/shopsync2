@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getSiteConfig } from '@/config/site';
 import type { CartItem } from '@/lib/types';
@@ -26,7 +25,6 @@ async function sendEmail({ to, subject, bodyHtml, replyTo, siteName, gmailUser }
     const gmailPass = process.env.GMAIL_PASS;
 
     if (!gmailUser || !gmailPass || gmailUser === 'your-email@gmail.com') {
-        // Silently fail if not configured, but log for the server admin.
         console.warn('Email service is not configured. Skipping email sending.');
         return;
     }
@@ -132,64 +130,58 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // 1. Fetch site config
-    const siteConfig = await getSiteConfig();
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GMAIL_PASS;
-    const adminEmail = siteConfig.email;
-    
-    // 2. Prepare all promises
-    const allPromises: Promise<any>[] = [];
-
-    // Google Sheet Promise
-    const sheetPromise = fetch(googleScriptUrl, {
+    // Step 1: Submit to Google Sheet (Primary critical path)
+    const sheetResponse = await fetch(googleScriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderForSheet),
     });
-    allPromises.push(sheetPromise);
 
-    // Email Promises (if configured)
+    if (!sheetResponse.ok) {
+        // Try to get more details from the response body if it's not ok
+        const errorBody = await sheetResponse.text();
+        console.error('Google Sheet API Error:', errorBody);
+        throw new Error(`Failed to post data to Google Sheet. Status: ${sheetResponse.status}`);
+    }
+
+    // Step 2: If sheet submission is successful, send emails (non-critical path)
+    // We run this after the main success, so email failures don't block the order.
+    const siteConfig = await getSiteConfig();
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASS;
+    const adminEmail = siteConfig.email;
+
     if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
-        // Customer Email
-        const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
-        allPromises.push(
-            sendEmail({
+        try {
+            // Customer Email
+            const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
+            await sendEmail({
                 to: orderDetailsForConfirmation.customer.email,
                 subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
                 bodyHtml: customerEmailBody,
                 siteName: siteConfig.name,
                 gmailUser: gmailUser
-            }).catch(e => console.error("Failed to send customer email:", e)) // prevent email failure from stopping the whole process
-        );
-        // Admin Email
-        const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
-        allPromises.push(
-            sendEmail({
+            });
+
+            // Admin Email
+            const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
+            await sendEmail({
                 to: adminEmail,
                 subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
                 bodyHtml: adminEmailBody,
                 replyTo: orderDetailsForConfirmation.customer.email,
                 siteName: siteConfig.name,
                 gmailUser: gmailUser
-            }).catch(e => console.error("Failed to send admin email:", e)) // prevent email failure from stopping the whole process
-        );
+            });
+        } catch (emailError: any) {
+            // Log email errors but don't fail the overall request since sheet was successful
+            console.error("Failed to send one or more emails:", emailError);
+        }
     } else {
         console.warn("Email service is not configured. Skipping email sending.");
     }
     
-    // Execute all promises in parallel
-    const [sheetResponse, ...emailResponses] = await Promise.allSettled(allPromises);
-
-    // Handle sheet response - it's the primary critical path
-    if (sheetResponse.status === 'rejected' || (sheetResponse.status === 'fulfilled' && !sheetResponse.value.ok)) {
-        const errorMsg = sheetResponse.status === 'rejected' 
-            ? sheetResponse.reason.message 
-            : `Failed to post data to Google Sheet. Status: ${sheetResponse.value.status}`;
-        
-        throw new Error(errorMsg);
-    }
-    
+    // Return success response since the critical path (Google Sheet) was successful
     return NextResponse.json({ status: 'success', message: 'Order successfully submitted.' });
 
   } catch (error: any) {
