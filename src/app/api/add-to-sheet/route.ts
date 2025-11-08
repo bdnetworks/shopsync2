@@ -127,14 +127,13 @@ function generateAdminEmail(details: OrderDetailsForConfirmation, siteConfig: an
 function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmation: OrderDetailsForConfirmation) {
     const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
 
-    // Use an async IIFE (Immediately Invoked Function Expression) to run tasks
-    // This ensures the main function can return a response quickly.
+    // Use an async IIFE (Immediately Invoked Function Expression) to run tasks.
+    // This ensures the main function can return a response quickly without waiting for these tasks to complete.
     (async () => {
         // --- 1. Submit to Google Sheet ---
         if (googleScriptUrl) {
             try {
-                // We use node-fetch and don't await the promise, letting it run in the background.
-                // The .catch() is crucial for logging any errors from the fetch promise itself.
+                // We use node-fetch and don't await the promise. The .catch() is crucial for logging any errors.
                 fetch(googleScriptUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

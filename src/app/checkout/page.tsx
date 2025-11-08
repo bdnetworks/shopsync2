@@ -130,8 +130,7 @@ export default function CheckoutPage() {
         });
 
         if (!response.ok) {
-          // The API now responds immediately, so this block might not be hit
-          // for background processing errors, but it's good practice to keep it.
+          // The API now responds immediately, but we can still check for initial server errors.
           const errorResult = await response.json();
           throw new Error(errorResult.details || 'An unknown error occurred during submission.');
         }
