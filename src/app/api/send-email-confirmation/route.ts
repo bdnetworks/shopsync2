@@ -26,6 +26,7 @@ async function sendEmail({ to, subject, bodyHtml, replyTo, siteName, gmailUser }
     const gmailPass = process.env.GMAIL_PASS;
 
     if (!gmailUser || !gmailPass || gmailUser === 'your-email@gmail.com') {
+        // Silently fail if not configured, but log for the server admin.
         console.warn('Email service is not configured. Skipping email sending.');
         return;
     }
@@ -44,7 +45,7 @@ async function sendEmail({ to, subject, bodyHtml, replyTo, siteName, gmailUser }
     });
 }
 
-// Email generation functions
+// Email generation functions (could be moved to a separate file if they grow)
 function generateCustomerEmail(details: OrderDetailsForConfirmation, siteConfig: any): string {
     const itemsHtml = details.items.map(item => `
         <tr>
@@ -123,73 +124,47 @@ function generateAdminEmail(details: OrderDetailsForConfirmation, siteConfig: an
 
 export async function POST(req: NextRequest) {
   try {
-    const { orderForSheet, orderDetailsForConfirmation } = await req.json();
+    const { orderDetailsForConfirmation } = await req.json();
     
-    // --- 1. Submit to Google Sheet (and wait for it) ---
-    const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
-    if (googleScriptUrl) {
-      const sheetResponse = await fetch(googleScriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderForSheet),
-        // Important: Keepalive can be unreliable in some serverless environments.
-        // We are now awaiting the response, so it's not needed.
-      });
+    // --- Send Emails ---
+    const siteConfig = await getSiteConfig();
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASS;
+    const adminEmail = siteConfig.email;
 
-      if (!sheetResponse.ok) {
-        // Try to get more detailed error from Google Script response
-        const errorText = await sheetResponse.text();
-        console.error('Google Sheet submission failed:', errorText);
-        throw new Error(`Failed to submit to Google Sheet. Status: ${sheetResponse.status}. Message: ${errorText}`);
-      }
+    if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
+        const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
+        const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
+
+        // Send customer email
+        await sendEmail({
+            to: orderDetailsForConfirmation.customer.email,
+            subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
+            bodyHtml: customerEmailBody,
+            siteName: siteConfig.name,
+            gmailUser: gmailUser
+        });
+
+        // Send admin email
+        await sendEmail({
+            to: adminEmail,
+            subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
+            bodyHtml: adminEmailBody,
+            replyTo: orderDetailsForConfirmation.customer.email,
+            siteName: siteConfig.name,
+            gmailUser: gmailUser
+        });
+
     } else {
-      console.warn('Google Script URL is not configured. Sheet submission skipped.');
+        console.warn("Email service is not configured. Skipping email sending.");
     }
     
-    // --- 2. Send Emails (Fire and forget is okay for this part) ---
-    (async () => {
-      try {
-        const siteConfig = await getSiteConfig();
-        const gmailUser = process.env.GMAIL_USER;
-        const gmailPass = process.env.GMAIL_PASS;
-        const adminEmail = siteConfig.email;
-
-        if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
-            const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
-            const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
-
-            // Send customer email
-            sendEmail({
-                to: orderDetailsForConfirmation.customer.email,
-                subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
-                bodyHtml: customerEmailBody,
-                siteName: siteConfig.name,
-                gmailUser: gmailUser
-            }).catch(e => console.error('Failed to send customer email in background:', e));
-
-            // Send admin email
-            sendEmail({
-                to: adminEmail,
-                subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
-                bodyHtml: adminEmailBody,
-                replyTo: orderDetailsForConfirmation.customer.email,
-                siteName: siteConfig.name,
-                gmailUser: gmailUser
-            }).catch(e => console.error('Failed to send admin email in background:', e));
-
-        } else {
-            console.warn("Email service is not configured. Skipping email sending in background.");
-        }
-      } catch (emailError) {
-          console.error('Error sending emails in background:', emailError);
-      }
-    })();
-    
-    // --- 3. Return success response to the client ---
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ status: 'success', message: 'Emails sent (or skipped).' });
 
   } catch (error: any) {
-    console.error('Error processing order:', error);
-    return NextResponse.json({ error: 'Failed to process order.', details: error.message }, { status: 500 });
+    console.error('Error sending confirmation emails:', error);
+    return NextResponse.json({ error: 'Failed to process emails.', details: error.message }, { status: 500 });
   }
 }
+
+    
