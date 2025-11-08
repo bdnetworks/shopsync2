@@ -42,7 +42,7 @@
     "date-fns": "^3.6.0",
     "disqus-react": "^1.1.5",
     "dotenv": "^16.5.0",
-    "embla-carousel-autoplay": "^8.1.8",
+    "embla-carousel-autoplay": "8.0.0-rc14",
     "embla-carousel-react": "^8.1.8",
     "firebase": "^11.9.1",
     "genkit": "^1.20.0",
