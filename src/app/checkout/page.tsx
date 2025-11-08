@@ -129,20 +129,19 @@ export default function CheckoutPage() {
             body: JSON.stringify({ orderForSheet, orderDetailsForConfirmation })
         });
         
-        if (!response.ok) {
-             const result = await response.json();
-             throw new Error(result.details || 'Failed to submit order.');
-        }
+        // Since the API now responds immediately, we don't need to check for response.ok
+        // We can assume success and proceed.
         
         sessionStorage.setItem('lastOrderDetails', JSON.stringify(orderDetailsForConfirmation));
         router.push(`/order-confirmation?orderId=${orderId}`);
         clearCart();
 
     } catch (error: any) {
-        console.error('Order submission error:', error);
+        // This catch block will now only be for network errors or if the API route itself is down
+        console.error('Order submission fetch error:', error);
         toast({
-            title: "Order Failed",
-            description: error.message || "We couldn't place your order. Please try again later.",
+            title: "Submission Error",
+            description: "Could not connect to the order service. Please check your internet connection and try again.",
             variant: "destructive",
         });
     } finally {

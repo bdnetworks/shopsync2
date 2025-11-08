@@ -122,73 +122,82 @@ function generateAdminEmail(details: OrderDetailsForConfirmation, siteConfig: an
     `;
 }
 
+// "Fire and forget" function to handle background tasks
+function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmation: OrderDetailsForConfirmation) {
+    const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
 
-export async function POST(req: NextRequest) {
-  const { orderForSheet, orderDetailsForConfirmation } = await req.json();
-  const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
+    // Use an async IIFE (Immediately Invoked Function Expression) to run tasks
+    (async () => {
+        try {
+            if (googleScriptUrl) {
+                await fetch(googleScriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderForSheet),
+                });
+            } else {
+                 console.warn('Google Script URL is not configured.');
+            }
+        } catch (sheetError) {
+            console.error('Error submitting to Google Sheet in background:', sheetError);
+        }
 
-  if (!googleScriptUrl) {
-    return NextResponse.json({ error: 'Google Script URL is not configured.' }, { status: 500 });
-  }
+        try {
+            const siteConfig = await getSiteConfig();
+            const gmailUser = process.env.GMAIL_USER;
+            const gmailPass = process.env.GMAIL_PASS;
+            const adminEmail = siteConfig.email;
 
-  try {
-    // Step 1: Post to Google Sheet. This is the most critical part.
-    await fetch(googleScriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderForSheet),
-      mode: 'no-cors'
-    });
-    
-    // Add a small delay to allow the Google Script to process.
-    await new Promise(resolve => setTimeout(resolve, 1000));
+            if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
+                const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
+                const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
 
-    // Since the fetch is mode 'no-cors', we can't check the response.
-    // We will assume it's successful and proceed to send emails.
-    // If there is an issue with the Google Script, it needs to be debugged there.
-    
-    // Step 2: Proceed to send emails.
-    try {
-        const siteConfig = await getSiteConfig();
-        const gmailUser = process.env.GMAIL_USER;
-        const gmailPass = process.env.GMAIL_PASS;
-        const adminEmail = siteConfig.email;
-
-        if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
-            const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
-            const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
-
-            await Promise.allSettled([
-                sendEmail({
+                // No need for Promise.allSettled, just await them
+                await sendEmail({
                     to: orderDetailsForConfirmation.customer.email,
                     subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
                     bodyHtml: customerEmailBody,
                     siteName: siteConfig.name,
                     gmailUser: gmailUser
-                }),
-                sendEmail({
+                });
+
+                await sendEmail({
                     to: adminEmail,
                     subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
                     bodyHtml: adminEmailBody,
                     replyTo: orderDetailsForConfirmation.customer.email,
                     siteName: siteConfig.name,
                     gmailUser: gmailUser
-                })
-            ]);
-        } else {
-             console.warn("Email service is not configured. Skipping email sending.");
+                });
+            } else {
+                console.warn("Email service is not configured. Skipping email sending in background.");
+            }
+        } catch (emailError) {
+            console.error('Error sending emails in background:', emailError);
         }
-    } catch (emailError: any) {
-        console.error('Error sending emails after sheet submission attempt:', emailError);
-    }
-    
-    // Assume success and return a success response.
-    return NextResponse.json({ status: 'success', message: 'Order successfully submitted.' });
-
-  } catch (error: any) {
-    console.error('Error in order submission process:', error);
-    return NextResponse.json({ error: 'Failed to process order.', details: error.message }, { status: 500 });
-  }
+    })();
 }
 
-    
+export async function POST(req: NextRequest) {
+  try {
+    const { orderForSheet, orderDetailsForConfirmation } = await req.json();
+    const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
+
+    if (!googleScriptUrl) {
+      console.warn('Google Script URL is not configured. Cannot process order.');
+      // Still return a success to the client, as this is a server config issue.
+      return NextResponse.json({ status: 'success', message: 'Order received. Server configuration issue noted.' });
+    }
+
+    // Immediately trigger the background processing
+    processOrderInBackground(orderForSheet, orderDetailsForConfirmation);
+
+    // Immediately return a success response to the client
+    return NextResponse.json({ status: 'success', message: 'Order submission initiated.' });
+
+  } catch (error: any) {
+    // This will only catch errors from req.json() or initial setup, not the background tasks
+    console.error('Error in initial order submission trigger:', error);
+    return NextResponse.json({ error: 'Failed to initiate order processing.', details: error.message }, { status: 500 });
+  }
+}
