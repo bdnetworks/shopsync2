@@ -141,8 +141,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (!sheetResponse.ok) {
-        // If the sheet fails, we stop and return an error.
+        // If the sheet fails, we stop and return an error with the text response.
         const errorText = await sheetResponse.text();
+        console.error(`Google Sheet API Error: ${errorText}`);
         throw new Error(`Failed to post to Google Sheet. Status: ${sheetResponse.status}. Response: ${errorText}`);
     }
 

@@ -142,7 +142,7 @@ export default function CheckoutPage() {
         console.error('Order submission error:', error);
         toast({
             title: "Order Failed",
-            description: error.message || "We couldn't place your order. Please check the details or try again later.",
+            description: error.message || "We couldn't place your order. Please try again later.",
             variant: "destructive",
         });
     } finally {
