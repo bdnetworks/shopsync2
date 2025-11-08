@@ -116,18 +116,30 @@ export default function CheckoutPage() {
       orderDate: orderDate,
     };
 
+    const googleScriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+
+    if (!googleScriptUrl) {
+        toast({
+            title: "Configuration Error",
+            description: "Google Script URL is not configured. Please contact support.",
+            variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+    }
+
     try {
-        const response = await fetch('/api/add-to-sheet', {
+        const response = await fetch(googleScriptUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderForSheet)
+            mode: 'no-cors', // Important for cross-origin requests to Google Scripts
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderForSheet),
         });
 
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || 'An unknown error occurred during submission.');
-        }
+        // With 'no-cors', we can't inspect the response, so we optimistically proceed.
+        // The catch block will handle network failures.
         
         sessionStorage.setItem('lastOrderDetails', JSON.stringify(orderDetailsForConfirmation));
         router.push(`/order-confirmation?orderId=${orderId}`);
@@ -137,7 +149,7 @@ export default function CheckoutPage() {
         console.error('Order submission failed:', error);
         toast({
             title: "Order Failed",
-            description: `Could not submit your order. Please try again. Details: ${error.message}`,
+            description: `Could not submit your order. Please check your network and try again. Details: ${error.message}`,
             variant: "destructive",
         });
     } finally {
