@@ -139,6 +139,9 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(orderForSheet),
       mode: 'no-cors'
     });
+    
+    // Add a small delay to allow the Google Script to process.
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Since the fetch is mode 'no-cors', we can't check the response.
     // We will assume it's successful and proceed to send emails.
