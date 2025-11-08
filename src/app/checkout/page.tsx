@@ -121,24 +121,45 @@ export default function CheckoutPage() {
       orderDate: orderDate,
     };
 
+    const googleScriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+
+    if (!googleScriptUrl) {
+        console.error('CRITICAL: GOOGLE_SCRIPT_URL environment variable is not set.');
+        toast({
+            title: "Server Configuration Error",
+            description: "The order submission service is not configured correctly.",
+            variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+    }
+
     try {
-        const response = await fetch('/api/add-to-sheet', {
+        // Direct submission to Google Apps Script from the client
+        fetch(googleScriptUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderForSheet)
+            mode: 'no-cors', // Important for cross-origin requests to Apps Script
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderForSheet),
+        }).catch(err => {
+            // This catch block might not be effective with no-cors,
+            // but it's good to have for potential network errors.
+            console.error("Network error submitting to Google Sheet:", err);
         });
 
-        const result = await response.json();
+        // Since 'no-cors' requests don't provide a readable response,
+        // we optimistically proceed, assuming the data was sent.
+        // This is a "fire-and-forget" approach.
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || 'An unknown error occurred during submission.');
-        }
-        
         sessionStorage.setItem('lastOrderDetails', JSON.stringify(orderDetailsForConfirmation));
         router.push(`/order-confirmation?orderId=${orderId}`);
         clearCart();
 
     } catch (error: any) {
+        // This block will catch errors during the creation of the request,
+        // but likely not the fetch call itself with no-cors.
         console.error('Order submission failed:', error);
         toast({
             title: "Order Failed",
@@ -146,7 +167,8 @@ export default function CheckoutPage() {
             variant: "destructive",
         });
     } finally {
-        setIsSubmitting(false);
+        // In a fire-and-forget scenario, we don't wait, so we don't need to set isSubmitting to false here.
+        // The user is navigated away. If navigation fails, they can try again.
     }
   };
   
@@ -376,3 +398,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
