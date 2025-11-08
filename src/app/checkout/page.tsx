@@ -125,13 +125,13 @@ export default function CheckoutPage() {
         const response = await fetch('/api/add-to-sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderForSheet, orderDetailsForConfirmation })
+            body: JSON.stringify(orderForSheet)
         });
 
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-          throw new Error(result.details || 'An unknown error occurred during submission.');
+          throw new Error(result.message || 'An unknown error occurred during submission.');
         }
         
         sessionStorage.setItem('lastOrderDetails', JSON.stringify(orderDetailsForConfirmation));
@@ -376,5 +376,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
