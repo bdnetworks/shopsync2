@@ -138,20 +138,22 @@ export async function POST(req: NextRequest) {
     const gmailPass = process.env.GMAIL_PASS;
     const adminEmail = siteConfig.email;
     
-    // 2. Post to Google Sheet and Send Emails in parallel
+    // 2. Prepare all promises
+    const allPromises: Promise<any>[] = [];
+
+    // Google Sheet Promise
     const sheetPromise = fetch(googleScriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderForSheet),
     });
+    allPromises.push(sheetPromise);
 
-    const emailPromises: Promise<any>[] = [];
-    
-    // Only attempt to send emails if credentials are provided
+    // Email Promises (if configured)
     if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
         // Customer Email
         const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
-        emailPromises.push(
+        allPromises.push(
             sendEmail({
                 to: orderDetailsForConfirmation.customer.email,
                 subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
@@ -162,7 +164,7 @@ export async function POST(req: NextRequest) {
         );
         // Admin Email
         const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
-        emailPromises.push(
+        allPromises.push(
             sendEmail({
                 to: adminEmail,
                 subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
@@ -175,11 +177,12 @@ export async function POST(req: NextRequest) {
     } else {
         console.warn("Email service is not configured. Skipping email sending.");
     }
-
-    const [sheetResponse] = await Promise.allSettled([sheetPromise, ...emailPromises]);
+    
+    // Execute all promises in parallel
+    const [sheetResponse, ...emailResponses] = await Promise.allSettled(allPromises);
 
     // Handle sheet response - it's the primary critical path
-    if (sheetResponse.status === 'rejected' || !sheetResponse.value.ok) {
+    if (sheetResponse.status === 'rejected' || (sheetResponse.status === 'fulfilled' && !sheetResponse.value.ok)) {
         const errorMsg = sheetResponse.status === 'rejected' 
             ? sheetResponse.reason.message 
             : `Failed to post data to Google Sheet. Status: ${sheetResponse.value.status}`;
@@ -194,5 +197,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to process order.', details: error.message }, { status: 500 });
   }
 }
-
-    
