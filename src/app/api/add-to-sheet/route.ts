@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
     if (!googleScriptUrl) {
       console.error('CRITICAL: GOOGLE_SCRIPT_URL environment variable is not set.');
-      return NextResponse.json({ success: false, message: 'Server configuration error.' }, { status: 500 });
+      return NextResponse.json({ success: false, message: 'Server configuration error.', details: 'Google Script URL is not configured on the server.' }, { status: 500 });
     }
 
     // 3. Forward the data to the Google Apps Script
@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
-      // The script expects the data directly, not nested.
-      body: JSON.stringify(orderForSheet),
+      // The script now expects the data nested under 'orderForSheet'
+      body: JSON.stringify({ orderForSheet }),
     });
     
     // Check if the fetch itself was successful
