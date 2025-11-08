@@ -143,7 +143,6 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderForSheet),
-      signal: AbortSignal.timeout(10000) // 10 seconds timeout
     });
 
     const emailPromises: Promise<any>[] = [];
@@ -192,9 +191,6 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Error in order submission process:', error);
-    if (error.name === 'TimeoutError') {
-        return NextResponse.json({ error: 'Request to Google Sheet timed out.', details: error.message }, { status: 504 });
-    }
     return NextResponse.json({ error: 'Failed to process order.', details: error.message }, { status: 500 });
   }
 }
