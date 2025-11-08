@@ -132,71 +132,63 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // 1. Fetch site config
-    const siteConfig = await getSiteConfig();
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GMAIL_PASS;
-    const adminEmail = siteConfig.email;
-    
-    // 2. Post to Google Sheet and Send Emails in parallel
-    const sheetPromise = fetch(googleScriptUrl, {
+    // Step 1: Post to Google Sheet. This is the most critical part.
+    const sheetResponse = await fetch(googleScriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderForSheet),
-      signal: AbortSignal.timeout(10000) // 10 seconds timeout
     });
 
-    const emailPromises: Promise<any>[] = [];
-    
-    // Only attempt to send emails if credentials are provided
-    if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
-        // Customer Email
-        const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
-        emailPromises.push(
-            sendEmail({
-                to: orderDetailsForConfirmation.customer.email,
-                subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
-                bodyHtml: customerEmailBody,
-                siteName: siteConfig.name,
-                gmailUser: gmailUser
-            }).catch(e => console.error("Failed to send customer email:", e)) // prevent email failure from stopping the whole process
-        );
-        // Admin Email
-        const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
-        emailPromises.push(
-            sendEmail({
-                to: adminEmail,
-                subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
-                bodyHtml: adminEmailBody,
-                replyTo: orderDetailsForConfirmation.customer.email,
-                siteName: siteConfig.name,
-                gmailUser: gmailUser
-            }).catch(e => console.error("Failed to send admin email:", e)) // prevent email failure from stopping the whole process
-        );
-    } else {
-        console.warn("Email service is not configured. Skipping email sending.");
+    if (!sheetResponse.ok) {
+        // If the sheet fails, we stop and return an error.
+        const errorText = await sheetResponse.text();
+        throw new Error(`Failed to post to Google Sheet. Status: ${sheetResponse.status}. Response: ${errorText}`);
     }
 
-    const [sheetResponse] = await Promise.allSettled([sheetPromise, ...emailPromises]);
+    // Step 2: If sheet submission is successful, proceed to send emails.
+    // We wrap this in a try/catch so that email failure doesn't break the whole flow.
+    try {
+        const siteConfig = await getSiteConfig();
+        const gmailUser = process.env.GMAIL_USER;
+        const gmailPass = process.env.GMAIL_PASS;
+        const adminEmail = siteConfig.email;
 
-    // Handle sheet response - it's the primary critical path
-    if (sheetResponse.status === 'rejected' || !sheetResponse.value.ok) {
-        const errorMsg = sheetResponse.status === 'rejected' 
-            ? sheetResponse.reason.message 
-            : `Failed to post data to Google Sheet. Status: ${sheetResponse.value.status}`;
-        
-        throw new Error(errorMsg);
+        // Only attempt to send emails if credentials and admin email are properly configured
+        if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
+            // Send customer and admin emails in parallel
+            const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
+            const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
+
+            await Promise.allSettled([
+                sendEmail({
+                    to: orderDetailsForConfirmation.customer.email,
+                    subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
+                    bodyHtml: customerEmailBody,
+                    siteName: siteConfig.name,
+                    gmailUser: gmailUser
+                }),
+                sendEmail({
+                    to: adminEmail,
+                    subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
+                    bodyHtml: adminEmailBody,
+                    replyTo: orderDetailsForConfirmation.customer.email,
+                    siteName: siteConfig.name,
+                    gmailUser: gmailUser
+                })
+            ]);
+        } else {
+             console.warn("Email service is not configured. Skipping email sending.");
+        }
+    } catch (emailError: any) {
+        // Log the email error, but don't fail the request since the sheet was updated.
+        console.error('Error sending emails after successful sheet submission:', emailError);
     }
     
+    // Since the sheet was successful, return a success response.
     return NextResponse.json({ status: 'success', message: 'Order successfully submitted.' });
 
   } catch (error: any) {
     console.error('Error in order submission process:', error);
-    if (error.name === 'TimeoutError') {
-        return NextResponse.json({ error: 'Request to Google Sheet timed out.', details: error.message }, { status: 504 });
-    }
     return NextResponse.json({ error: 'Failed to process order.', details: error.message }, { status: 500 });
   }
 }
-
-    
