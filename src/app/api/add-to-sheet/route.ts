@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getSiteConfig } from '@/config/site';
 import type { CartItem } from '@/lib/types';
@@ -126,6 +127,7 @@ export async function POST(req: NextRequest) {
   const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
 
   if (!googleScriptUrl) {
+    console.error('Google Script URL is not configured.');
     return NextResponse.json({ error: 'Google Script URL is not configured.' }, { status: 500 });
   }
 
@@ -144,15 +146,15 @@ export async function POST(req: NextRequest) {
         throw new Error(`Failed to post data to Google Sheet. Status: ${sheetResponse.status}`);
     }
 
-    // Step 2: If sheet submission is successful, send emails (non-critical path)
+    // Step 2: If sheet submission is successful, try to send emails (non-critical path)
     // We run this after the main success, so email failures don't block the order.
-    const siteConfig = await getSiteConfig();
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GMAIL_PASS;
-    const adminEmail = siteConfig.email;
+    try {
+        const siteConfig = await getSiteConfig();
+        const gmailUser = process.env.GMAIL_USER;
+        const gmailPass = process.env.GMAIL_PASS;
+        const adminEmail = siteConfig.email;
 
-    if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
-        try {
+        if (gmailUser && gmailUser !== 'your-email@gmail.com' && gmailPass && adminEmail) {
             // Customer Email
             const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
             await sendEmail({
@@ -173,19 +175,19 @@ export async function POST(req: NextRequest) {
                 siteName: siteConfig.name,
                 gmailUser: gmailUser
             });
-        } catch (emailError: any) {
-            // Log email errors but don't fail the overall request since sheet was successful
-            console.error("Failed to send one or more emails:", emailError);
         }
-    } else {
-        console.warn("Email service is not configured. Skipping email sending.");
+    } catch (emailError: any) {
+        // Log email errors but don't fail the overall request since sheet was successful
+        console.error("Non-critical error: Failed to send one or more emails:", emailError);
     }
     
     // Return success response since the critical path (Google Sheet) was successful
     return NextResponse.json({ status: 'success', message: 'Order successfully submitted.' });
 
   } catch (error: any) {
-    console.error('Error in order submission process:', error);
+    console.error('Critical error in order submission process:', error);
     return NextResponse.json({ error: 'Failed to process order.', details: error.message }, { status: 500 });
   }
 }
+
+    
