@@ -127,26 +127,28 @@ export async function POST(req: NextRequest) {
     
     // --- 1. Submit to Google Sheet (and wait for it) ---
     const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
-    if (googleScriptUrl) {
-      const sheetResponse = await fetch(googleScriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderForSheet),
-        // Important: Keepalive can be unreliable in some serverless environments.
-        // We are now awaiting the response, so it's not needed.
-      });
-
-      if (!sheetResponse.ok) {
-        // Try to get more detailed error from Google Script response
-        const errorText = await sheetResponse.text();
-        console.error('Google Sheet submission failed:', errorText);
-        throw new Error(`Failed to submit to Google Sheet. Status: ${sheetResponse.status}. Message: ${errorText}`);
-      }
-    } else {
-      console.warn('Google Script URL is not configured. Sheet submission skipped.');
+    if (!googleScriptUrl) {
+      throw new Error('Google Script URL is not configured. Please set GOOGLE_SCRIPT_URL environment variable.');
     }
-    
-    // --- 2. Send Emails (Fire and forget is okay for this part) ---
+
+    const sheetResponse = await fetch(googleScriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderForSheet),
+    });
+
+    if (!sheetResponse.ok) {
+      const errorText = await sheetResponse.text();
+      console.error('Google Sheet submission failed:', errorText);
+      throw new Error(`Failed to submit to Google Sheet. Status: ${sheetResponse.status}. Message: ${errorText}`);
+    }
+
+    const sheetResult = await sheetResponse.json();
+    if (!sheetResult.success) {
+        throw new Error(`Google Script returned an error: ${sheetResult.message}`);
+    }
+
+    // --- 2. Send Emails (Fire and forget in the background) ---
     (async () => {
       try {
         const siteConfig = await getSiteConfig();
@@ -186,10 +188,12 @@ export async function POST(req: NextRequest) {
     })();
     
     // --- 3. Return success response to the client ---
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: 'Order placed successfully!' });
 
   } catch (error: any) {
     console.error('Error processing order:', error);
-    return NextResponse.json({ error: 'Failed to process order.', details: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to process order.', details: error.message }, { status: 500 });
   }
 }
+
+    
