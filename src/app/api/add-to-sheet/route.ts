@@ -128,24 +128,25 @@ function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmatio
     const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
 
     // Use an async IIFE (Immediately Invoked Function Expression) to run tasks
+    // This ensures the main function can return a response quickly.
     (async () => {
         // --- 1. Submit to Google Sheet ---
-        try {
-            if (googleScriptUrl) {
-                // We use node-fetch and don't await the promise, letting it run in the background
+        if (googleScriptUrl) {
+            try {
+                // We use node-fetch and don't await the promise, letting it run in the background.
+                // The .catch() is crucial for logging any errors from the fetch promise itself.
                 fetch(googleScriptUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderForSheet),
                 }).catch(sheetError => {
-                    // Log errors from the fetch promise itself, this is crucial for debugging
                     console.error('Error submitting to Google Sheet in background:', sheetError);
                 });
-            } else {
-                 console.warn('Google Script URL is not configured.');
+            } catch (initialError) {
+                console.error('Initial error setting up background sheet submission:', initialError);
             }
-        } catch (initialError) {
-             console.error('Initial error setting up background sheet submission:', initialError);
+        } else {
+            console.warn('Google Script URL is not configured. Sheet submission skipped.');
         }
         
         // --- 2. Send Emails ---
@@ -159,16 +160,16 @@ function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmatio
                 const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
                 const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
 
-                // Send customer email
+                // Send customer email (fire and forget)
                 sendEmail({
                     to: orderDetailsForConfirmation.customer.email,
                     subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
                     bodyHtml: customerEmailBody,
                     siteName: siteConfig.name,
                     gmailUser: gmailUser
-                }).catch(e => console.error('Failed to send customer email:', e));
+                }).catch(e => console.error('Failed to send customer email in background:', e));
 
-                // Send admin email
+                // Send admin email (fire and forget)
                 sendEmail({
                     to: adminEmail,
                     subject: `[${siteConfig.name}] New Order Received! (#${orderDetailsForConfirmation.orderId})`,
@@ -176,7 +177,7 @@ function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmatio
                     replyTo: orderDetailsForConfirmation.customer.email,
                     siteName: siteConfig.name,
                     gmailUser: gmailUser
-                }).catch(e => console.error('Failed to send admin email:', e));
+                }).catch(e => console.error('Failed to send admin email in background:', e));
 
             } else {
                 console.warn("Email service is not configured. Skipping email sending in background.");
@@ -191,14 +192,16 @@ export async function POST(req: NextRequest) {
   try {
     const { orderForSheet, orderDetailsForConfirmation } = await req.json();
     
-    // Immediately trigger the background processing without awaiting it
+    // Immediately trigger the background processing without awaiting it.
+    // This allows the API to return a response to the client instantly.
     processOrderInBackground(orderForSheet, orderDetailsForConfirmation);
 
-    // Immediately return a success response to the client
+    // Immediately return a success response to the client.
     return NextResponse.json({ status: 'success', message: 'Order submission initiated.' });
 
   } catch (error: any) {
-    // This will only catch errors from req.json() or initial setup, not the background tasks
+    // This will only catch errors from req.json() or the initial setup of processOrderInBackground.
+    // It will NOT catch errors from within the async IIFE (like fetch or sendEmail failures).
     console.error('Error in initial order submission trigger:', error);
     return NextResponse.json({ error: 'Failed to initiate order processing.', details: error.message }, { status: 500 });
   }
