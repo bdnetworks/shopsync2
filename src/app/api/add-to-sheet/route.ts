@@ -130,16 +130,20 @@ function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmatio
     (async () => {
         try {
             if (googleScriptUrl) {
-                await fetch(googleScriptUrl, {
+                // We don't await this, letting it run in the background
+                fetch(googleScriptUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderForSheet),
+                }).catch(sheetError => {
+                    // Log errors from the fetch promise itself
+                    console.error('Error submitting to Google Sheet in background:', sheetError);
                 });
             } else {
                  console.warn('Google Script URL is not configured.');
             }
-        } catch (sheetError) {
-            console.error('Error submitting to Google Sheet in background:', sheetError);
+        } catch (initialError) {
+             console.error('Initial error setting up background processing:', initialError);
         }
 
         try {
@@ -152,7 +156,7 @@ function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmatio
                 const customerEmailBody = generateCustomerEmail(orderDetailsForConfirmation, siteConfig);
                 const adminEmailBody = generateAdminEmail(orderDetailsForConfirmation, siteConfig);
 
-                // No need for Promise.allSettled, just await them
+                // No need for Promise.allSettled, just await them sequentially but without blocking the main response
                 await sendEmail({
                     to: orderDetailsForConfirmation.customer.email,
                     subject: `Your Order Confirmation from ${siteConfig.name} (#${orderDetailsForConfirmation.orderId})`,
@@ -181,15 +185,8 @@ function processOrderInBackground(orderForSheet: any, orderDetailsForConfirmatio
 export async function POST(req: NextRequest) {
   try {
     const { orderForSheet, orderDetailsForConfirmation } = await req.json();
-    const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
-
-    if (!googleScriptUrl) {
-      console.warn('Google Script URL is not configured. Cannot process order.');
-      // Still return a success to the client, as this is a server config issue.
-      return NextResponse.json({ status: 'success', message: 'Order received. Server configuration issue noted.' });
-    }
-
-    // Immediately trigger the background processing
+    
+    // Immediately trigger the background processing without awaiting it
     processOrderInBackground(orderForSheet, orderDetailsForConfirmation);
 
     // Immediately return a success response to the client
@@ -201,3 +198,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to initiate order processing.', details: error.message }, { status: 500 });
   }
 }
+
+    

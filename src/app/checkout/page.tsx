@@ -128,20 +128,25 @@ export default function CheckoutPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ orderForSheet, orderDetailsForConfirmation })
         });
+
+        if (!response.ok) {
+          // The API now responds immediately, so this block might not be hit
+          // for background processing errors, but it's good practice to keep it.
+          const errorResult = await response.json();
+          throw new Error(errorResult.details || 'An unknown error occurred during submission.');
+        }
         
-        // Since the API now responds immediately, we don't need to check for response.ok
-        // We can assume success and proceed.
-        
+        // Since the API now responds immediately, we can assume success and proceed.
         sessionStorage.setItem('lastOrderDetails', JSON.stringify(orderDetailsForConfirmation));
         router.push(`/order-confirmation?orderId=${orderId}`);
         clearCart();
 
     } catch (error: any) {
-        // This catch block will now only be for network errors or if the API route itself is down
+        // This catch block is for network errors or if the API route itself is down
         console.error('Order submission fetch error:', error);
         toast({
             title: "Submission Error",
-            description: "Could not connect to the order service. Please check your internet connection and try again.",
+            description: `Could not connect to the order service. Please check your internet connection and try again. Details: ${error.message}`,
             variant: "destructive",
         });
     } finally {
@@ -375,3 +380,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
